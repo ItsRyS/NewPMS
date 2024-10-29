@@ -6,7 +6,7 @@ import EmailIcon from '@mui/icons-material/Email';
 const Footer = () => {
   return (
     <Box
-      component="footer"
+      component="Footer"
       sx={{
         display: 'flex',
         alignItems: 'center',

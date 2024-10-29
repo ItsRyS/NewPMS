@@ -1,7 +1,7 @@
 import Container from "@mui/material/Container";
 import Navbar from "../components/Layout/Navbar";
-import Footer from "../components/Layout/Footer";
 import Typography from "@mui/material/Typography";
+import Footer from "../components/Layout/Footer";
 const Home = () => {
   return (
     <>
