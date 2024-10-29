@@ -1,22 +1,32 @@
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
-import Box from '@mui/material/Box';
-import Navbar from '../components/Layout/Navbar';
-
+import Container from "@mui/material/Container";
+import Navbar from "../components/Layout/Navbar";
+import Footer from "../components/Layout/Footer";
+import Typography from "@mui/material/Typography";
 const Home = () => {
   return (
     <>
-      <Navbar />
-      <Container maxWidth="md" sx={{ paddingTop: '80px' }}> {/* เพิ่ม padding-top */}
-        <Box sx={{ my: 4 }}>
-          <Typography variant="h4" component="h1" gutterBottom>
-            Welcome to NewPMS
-          </Typography>
-          <Typography variant="body1">
-            This is the home page of NewPMS, your personal management system. Explore the features and manage your tasks efficiently.
-          </Typography>
-        </Box>
+      <Navbar /> 
+      
+      <Container
+        className="search"
+        maxWidth={false} 
+        sx={{
+          paddingTop: "80px",
+          backgroundColor: "#b9e5e8",
+          width: "100%",
+          position: "fixed",
+          padding: "16px",
+          top: 65,
+          left: 0,
+          maxWidth: "100vw",
+          boxSizing: "border-box",
+        }}
+      >
+        <Typography variant="body2" color="textSecondary">
+        dsfaasdfasdfadsf
+      </Typography>
       </Container>
+     <Footer />
     </>
   );
 };
