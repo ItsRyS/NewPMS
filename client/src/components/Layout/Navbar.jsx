@@ -4,6 +4,10 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import { Link } from "react-router-dom";
+import MenuBookIcon from "@mui/icons-material/MenuBook";
+import HandshakeIcon from "@mui/icons-material/Handshake";
+;
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 
 const Navbar = () => {
   return (
@@ -27,11 +31,39 @@ const Navbar = () => {
           >
             <span style={{ color: "#ff8000" }}>IT</span>-PMS
           </Typography>
+          {/* Menu Items */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <Button
+              color="inherit"
+              startIcon={<MenuBookIcon />}
+              component={Link}
+              to="/courses"
+            >
+              หลักสูตรคุณภาพสูง
+            </Button>
+            <Button
+              color="inherit"
+              startIcon={<HandshakeIcon />}
+              component={Link}
+              to="/services"
+            >
+              บริการของเรา
+            </Button>
 
-          {/* Login Button */}
-          <Button color="inherit" component={Link} to="/signIn">
-            Login
-          </Button>
+            <Button
+              variant="contained"
+              color="warning"
+              startIcon={<PlayArrowIcon />}
+              component={Link}
+              to="/signIn"
+              sx={{
+                fontWeight: "bold",
+                color: "#222",
+              }}
+            >
+              เข้าสู่ระบบ
+            </Button>
+          </Box>
         </Toolbar>
       </AppBar>
     </Box>
