@@ -1,140 +1,164 @@
-import * as React from 'react';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import CssBaseline from '@mui/material/CssBaseline';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormLabel from '@mui/material/FormLabel';
-import FormControl from '@mui/material/FormControl';
-import Link from '@mui/material/Link';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
-import Stack from '@mui/material/Stack';
-import MuiCard from '@mui/material/Card';
-import { styled } from '@mui/material/styles';
-import AppTheme from '../utils/shared-theme/AppTheme';
-import {SitemarkIcon } from './CustomIcons';
-import ColorModeSelect from '../utils/shared-theme/ColorModeSelect';
+import * as React from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom"; // นำเข้า useNavigate
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import CssBaseline from "@mui/material/CssBaseline";
+import FormLabel from "@mui/material/FormLabel";
+import FormControl from "@mui/material/FormControl";
+import Link from "@mui/material/Link";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
+import Stack from "@mui/material/Stack";
+import MuiCard from "@mui/material/Card";
+import { styled } from "@mui/material/styles";
+import AppTheme from "../utils/shared-theme/AppTheme";
+import { SitemarkIcon } from "./CustomIcons";
+import ColorModeSelect from "../utils/shared-theme/ColorModeSelect";
 
 const Card = styled(MuiCard)(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  alignSelf: 'center',
-  width: '100%',
+  display: "flex",
+  flexDirection: "column",
+  alignSelf: "center",
+  width: "100%",
   padding: theme.spacing(4),
   gap: theme.spacing(2),
-  margin: 'auto',
+  margin: "auto",
   boxShadow:
-    'hsla(220, 30%, 5%, 0.05) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.05) 0px 15px 35px -5px',
-  [theme.breakpoints.up('sm')]: {
-    width: '450px',
+    "hsla(220, 30%, 5%, 0.05) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.05) 0px 15px 35px -5px",
+  [theme.breakpoints.up("sm")]: {
+    width: "450px",
   },
-  ...theme.applyStyles('dark', {
+  ...theme.applyStyles("dark", {
     boxShadow:
-      'hsla(220, 30%, 5%, 0.5) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px',
+      "hsla(220, 30%, 5%, 0.5) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px",
   }),
 }));
 
 const SignUpContainer = styled(Stack)(({ theme }) => ({
-  height: 'calc((1 - var(--template-frame-height, 0)) * 100dvh)',
-  minHeight: '100%',
+  height: "calc((1 - var(--template-frame-height, 0)) * 100dvh)",
+  minHeight: "100%",
   padding: theme.spacing(2),
-  [theme.breakpoints.up('sm')]: {
+  [theme.breakpoints.up("sm")]: {
     padding: theme.spacing(4),
   },
-  '&::before': {
+  "&::before": {
     content: '""',
-    display: 'block',
-    position: 'absolute',
+    display: "block",
+    position: "absolute",
     zIndex: -1,
     inset: 0,
     backgroundImage:
-      'radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))',
-    backgroundRepeat: 'no-repeat',
-    ...theme.applyStyles('dark', {
+      "radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))",
+    backgroundRepeat: "no-repeat",
+    ...theme.applyStyles("dark", {
       backgroundImage:
-        'radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%))',
+        "radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%))",
     }),
   },
 }));
 
 export default function SignUp(props) {
   const [emailError, setEmailError] = React.useState(false);
-  const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
+  const [emailErrorMessage, setEmailErrorMessage] = React.useState("");
   const [passwordError, setPasswordError] = React.useState(false);
-  const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
+  const [passwordErrorMessage, setPasswordErrorMessage] = React.useState("");
   const [nameError, setNameError] = React.useState(false);
-  const [nameErrorMessage, setNameErrorMessage] = React.useState('');
+  const [nameErrorMessage, setNameErrorMessage] = React.useState("");
+
+  const navigate = useNavigate(); // ใช้ useNavigate สำหรับเปลี่ยนหน้า
 
   const validateInputs = () => {
-    const email = document.getElementById('email');
-    const password = document.getElementById('password');
-    const name = document.getElementById('name');
+    const email = document.getElementById("email");
+    const password = document.getElementById("password");
+    const name = document.getElementById("name");
 
     let isValid = true;
 
     if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
       setEmailError(true);
-      setEmailErrorMessage('Please enter a valid email address.');
+      setEmailErrorMessage("Please enter a valid email address.");
       isValid = false;
     } else {
       setEmailError(false);
-      setEmailErrorMessage('');
+      setEmailErrorMessage("");
     }
 
     if (!password.value || password.value.length < 6) {
       setPasswordError(true);
-      setPasswordErrorMessage('Password must be at least 6 characters long.');
+      setPasswordErrorMessage("Password must be at least 6 characters long.");
       isValid = false;
     } else {
       setPasswordError(false);
-      setPasswordErrorMessage('');
+      setPasswordErrorMessage("");
     }
 
     if (!name.value || name.value.length < 1) {
       setNameError(true);
-      setNameErrorMessage('Name is required.');
+      setNameErrorMessage("Name is required.");
       isValid = false;
     } else {
       setNameError(false);
-      setNameErrorMessage('');
+      setNameErrorMessage("");
     }
 
     return isValid;
   };
 
-  const handleSubmit = (event) => {
-    if (nameError || emailError || passwordError) {
-      event.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!validateInputs()) {
       return;
     }
+
     const data = new FormData(event.currentTarget);
-    console.log({
-      name: data.get('name'),
-      lastName: data.get('lastName'),
-      email: data.get('email'),
-      password: data.get('password'),
-    });
+    const userData = {
+      username: data.get("name"), // เปลี่ยนเป็น username
+      email: data.get("email"),
+      password: data.get("password"),
+    };
+
+    try {
+      const response = await axios.post("http://localhost:5000/api/auth/register", userData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.status === 201) {
+        alert("สมัครสมาชิกสำเร็จ! กำลังเปลี่ยนไปที่หน้าเข้าสู่ระบบ"); // แจ้งเตือนผู้ใช้
+        navigate("/signin"); // พาผู้ใช้ไปยังหน้า SignIn
+      }
+    } catch (error) {
+      if (error.response) {
+        console.error("เกิดข้อผิดพลาดจากเซิร์ฟเวอร์:", error.response.data.error);
+        alert("เกิดข้อผิดพลาด: " + error.response.data.error); // แสดงข้อผิดพลาดให้ผู้ใช้
+      } else {
+        console.error("เกิดข้อผิดพลาดในการเชื่อมต่อ:", error.message);
+        alert("เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์");
+      }
+    }
   };
 
   return (
     <AppTheme {...props}>
       <CssBaseline enableColorScheme />
-      <ColorModeSelect sx={{ position: 'fixed', top: '1rem', right: '1rem' }} />
+      <ColorModeSelect sx={{ position: "fixed", top: "1rem", right: "1rem" }} />
       <SignUpContainer direction="column" justifyContent="space-between">
         <Card variant="outlined">
           <SitemarkIcon />
           <Typography
             component="h1"
             variant="h4"
-            sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}
+            sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
           >
             Sign up
           </Typography>
           <Box
             component="form"
             onSubmit={handleSubmit}
-            sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+            sx={{ display: "flex", flexDirection: "column", gap: 2 }}
           >
             <FormControl>
               <FormLabel htmlFor="name">Full name</FormLabel>
@@ -147,7 +171,7 @@ export default function SignUp(props) {
                 placeholder="Jon Snow"
                 error={nameError}
                 helperText={nameErrorMessage}
-                color={nameError ? 'error' : 'primary'}
+                color={nameError ? "error" : "primary"}
               />
             </FormControl>
             <FormControl>
@@ -162,7 +186,7 @@ export default function SignUp(props) {
                 variant="outlined"
                 error={emailError}
                 helperText={emailErrorMessage}
-                color={passwordError ? 'error' : 'primary'}
+                color={emailError ? "error" : "primary"}
               />
             </FormControl>
             <FormControl>
@@ -178,35 +202,30 @@ export default function SignUp(props) {
                 variant="outlined"
                 error={passwordError}
                 helperText={passwordErrorMessage}
-                color={passwordError ? 'error' : 'primary'}
+                color={passwordError ? "error" : "primary"}
               />
             </FormControl>
-            <FormControlLabel
-              control={<Checkbox value="allowExtraEmails" color="primary" />}
-              label="I want to receive updates via email."
-            />
+
             <Button
               type="submit"
               fullWidth
               variant="contained"
-              onClick={validateInputs}
             >
               Sign up
             </Button>
-            <Typography sx={{ textAlign: 'center' }}>
-              Already have an account?{' '}
+            <Typography sx={{ textAlign: "center" }}>
+              Already have an account?{" "}
               <span>
                 <Link
                   href="SignIn"
                   variant="body2"
-                  sx={{ alignSelf: 'center' }}
+                  sx={{ alignSelf: "center" }}
                 >
                   Sign in
                 </Link>
               </span>
             </Typography>
           </Box>
-          
         </Card>
       </SignUpContainer>
     </AppTheme>
