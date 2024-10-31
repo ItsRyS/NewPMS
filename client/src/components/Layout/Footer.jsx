@@ -12,7 +12,7 @@ const Footer = () => {
         alignItems: 'center',
         justifyContent: 'space-between',  // Space between text and icons
         padding: '16px',
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#110f01',
         width: '100%',
         maxWidth: '100vw',
         position: 'fixed',  // Fix the position at the bottom
@@ -23,16 +23,16 @@ const Footer = () => {
       }}
     >
       <Box>
-        <Typography variant="body2" color="textSecondary">
+        <Typography variant="body2" color="#f0f4f8">
           สงวนลิขสิทธิ์ © 2567 - ข้อมูลและเนื้อหาทั้งหมด - บริษัท ไลลาร์ เพอฟอร์ม จำกัด
         </Typography>
        
       </Box>
       <Box sx={{ display: 'flex', gap: '8px' }}>
-        <IconButton href="https://github.com" target="_blank" color="inherit">
+        <IconButton href="https://github.com" target="_blank" color="f0f4f8">
           <GitHubIcon />
         </IconButton>
-        <IconButton href="mailto:ForzaLyraBelil@outlook.com" color="inherit">
+        <IconButton href="mailto:ForzaLyraBelil@outlook.com" color="f0f4f8">
           <EmailIcon />
         </IconButton>
       </Box>

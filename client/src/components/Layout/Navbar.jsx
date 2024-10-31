@@ -6,7 +6,6 @@ import Button from "@mui/material/Button";
 import { Link } from "react-router-dom";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import HandshakeIcon from "@mui/icons-material/Handshake";
-;
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 
 const Navbar = () => {
@@ -15,8 +14,7 @@ const Navbar = () => {
       <AppBar
         position="fixed"
         sx={{
-          backgroundColor: "#4A628A",
-          position: "fixed",
+          backgroundColor: "#01153e",
           top: 0,
           width: "100%",
           zIndex: 99,
@@ -55,7 +53,7 @@ const Navbar = () => {
               color="warning"
               startIcon={<PlayArrowIcon />}
               component={Link}
-              to="/signIn"
+              to="/SignIn" // Link to the SignIn route
               sx={{
                 fontWeight: "bold",
                 color: "#222",
