@@ -6,7 +6,6 @@
 
 A comprehensive web-based project management system built with React and Node.js, featuring Material UI design and real-time project tracking capabilities.
 
-![Project Preview](https://via.placeholder.com/800x400?text=IT-PMS+Preview)
 
 ## ✨ Features
 
