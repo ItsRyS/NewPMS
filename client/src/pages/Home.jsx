@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
-import Navbar from "../components/Layout/navbar";
-import Footer from "../components/Layout/footer";
+import NavbarHome from "../components/Layout/navbarHome";
+import FooterHome from "../components/Layout/footerHome";
 import { DataGrid } from "@mui/x-data-grid";
 import { TextField, MenuItem } from "@mui/material";
 import api from "../services/api"; // Import instance ของ Axios
@@ -52,10 +52,10 @@ const Home = () => {
 
   return (
     <>
-      <Navbar />
+      <NavbarHome />
       <Container
         className="content-main"
-        maxWidth={false} // ปรับให้ถูกต้อง ไม่มีเครื่องหมาย {}
+        maxWidth={false}
         sx={{
           paddingTop: "auto",
           paddingBottom: "auto",
@@ -113,7 +113,7 @@ const Home = () => {
           </div>
         </Box>
       </Container>
-      <Footer />
+      <FooterHome />
     </>
   );
 };

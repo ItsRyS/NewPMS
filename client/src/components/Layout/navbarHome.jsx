@@ -8,7 +8,7 @@ import MenuBookIcon from "@mui/icons-material/MenuBook";
 import HandshakeIcon from "@mui/icons-material/Handshake";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 
-const Navbar = () => {
+const NavbarHome = () => {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar
@@ -47,7 +47,6 @@ const Navbar = () => {
             >
               บริการของเรา
             </Button>
-
             <Button
               variant="contained"
               color="warning"
@@ -68,4 +67,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+export default NavbarHome;

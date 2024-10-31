@@ -1,12 +1,11 @@
-
 import { Box, Typography, IconButton } from '@mui/material';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import EmailIcon from '@mui/icons-material/Email';
 
-const Footer = () => {
+const FooterHome = () => {
   return (
     <Box
-      component="Footer"
+      component="footer"
       sx={{
         display: 'flex',
         alignItems: 'center',
@@ -26,13 +25,12 @@ const Footer = () => {
         <Typography variant="body2" color="#f0f4f8">
           สงวนลิขสิทธิ์ © 2567 - ข้อมูลและเนื้อหาทั้งหมด - บริษัท ไลลาร์ เพอฟอร์ม จำกัด
         </Typography>
-       
       </Box>
       <Box sx={{ display: 'flex', gap: '8px' }}>
-        <IconButton href="https://github.com" target="_blank" color="f0f4f8">
+        <IconButton href="https://github.com" target="_blank" color="inherit">
           <GitHubIcon />
         </IconButton>
-        <IconButton href="mailto:ForzaLyraBelil@outlook.com" color="f0f4f8">
+        <IconButton href="mailto:ForzaLyraBelil@outlook.com" color="inherit">
           <EmailIcon />
         </IconButton>
       </Box>
@@ -40,4 +38,4 @@ const Footer = () => {
   );
 };
 
-export default Footer;
+export default FooterHome;
