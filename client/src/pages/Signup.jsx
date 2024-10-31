@@ -120,11 +120,15 @@ export default function SignUp(props) {
     };
 
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/register", userData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/register",
+        userData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (response.status === 201) {
         alert("สมัครสมาชิกสำเร็จ! กำลังเปลี่ยนไปที่หน้าเข้าสู่ระบบ"); // แจ้งเตือนผู้ใช้
@@ -132,7 +136,10 @@ export default function SignUp(props) {
       }
     } catch (error) {
       if (error.response) {
-        console.error("เกิดข้อผิดพลาดจากเซิร์ฟเวอร์:", error.response.data.error);
+        console.error(
+          "เกิดข้อผิดพลาดจากเซิร์ฟเวอร์:",
+          error.response.data.error
+        );
         alert("เกิดข้อผิดพลาด: " + error.response.data.error); // แสดงข้อผิดพลาดให้ผู้ใช้
       } else {
         console.error("เกิดข้อผิดพลาดในการเชื่อมต่อ:", error.message);
@@ -206,11 +213,7 @@ export default function SignUp(props) {
               />
             </FormControl>
 
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-            >
+            <Button type="submit" fullWidth variant="contained">
               Sign up
             </Button>
             <Typography sx={{ textAlign: "center" }}>
