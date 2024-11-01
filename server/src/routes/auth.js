@@ -80,8 +80,23 @@ router.post('/login', async (req, res) => {
   }
 });
 
+router.post('/verifyToken', (req, res) => {
+  const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ isValid: false });
+  }
+
+  try {
+    jwt.verify(token, process.env.JWT_SECRET || 'itPmsKey');
+    return res.json({ isValid: true });
+  } catch (error) {
+    console.error('Invalid token:', error);
+    return res.status(401).json({ isValid: false });
+  }
+});
+
 // เส้นทางที่ต้องการการตรวจสอบ token
-router.get('/protected', authenticateToken, (req, res) => {
+router.get('/verifyToken', authenticateToken, (req, res) => {
   res.json({ message: 'This is a protected route', user: req.user });
 });
 

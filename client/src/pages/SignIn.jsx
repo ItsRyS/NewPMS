@@ -14,7 +14,7 @@ import MuiCard from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import ForgotPassword from "./ForgotPassword";
+
 import { SitemarkIcon } from "./CustomIcons";
 import AppTheme from "../utils/shared-theme/AppTheme";
 import ColorModeSelect from "../utils/shared-theme/ColorModeSelect";
@@ -66,17 +66,8 @@ export default function SignIn(props) {
   const [emailErrorMessage, setEmailErrorMessage] = React.useState("");
   const [passwordError, setPasswordError] = React.useState(false);
   const [passwordErrorMessage, setPasswordErrorMessage] = React.useState("");
-  const [open, setOpen] = React.useState(false);
   const [serverError, setServerError] = React.useState("");
   const navigate = useNavigate();
-
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -95,22 +86,20 @@ export default function SignIn(props) {
         // เก็บ token ลง localStorage
         localStorage.setItem("token", token);
 
-        // เปลี่ยนเส้นทางตาม role
+        // ตรวจสอบ role เพื่อเปลี่ยนเส้นทางไปยังหน้า dashboard ที่เหมาะสม
         if (role === "admin") {
           navigate("/adminHome");
-        } else {
+        } else if (role === "student") {
           navigate("/studentHome");
+        } else {
+          setServerError("Unknown role, please contact support.");
         }
       } else {
         setServerError("Login failed: Token not received.");
       }
     } catch (error) {
       console.error("Sign-in error:", error);
-      if (error.response && error.response.data && error.response.data.error) {
-        setServerError(error.response.data.error);
-      } else {
-        setServerError("Sign-in failed. Please check your credentials.");
-      }
+      setServerError(error.response?.data?.error || "Sign-in failed. Please check your credentials.");
     }
   };
 
@@ -173,9 +162,6 @@ export default function SignIn(props) {
             <FormControl>
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                 <FormLabel htmlFor="password">Password</FormLabel>
-                <Link component="button" type="button" onClick={handleClickOpen} variant="body2" sx={{ alignSelf: "baseline" }}>
-                  Forgot your password?
-                </Link>
               </Box>
               <TextField
                 error={passwordError}
@@ -192,17 +178,15 @@ export default function SignIn(props) {
               />
             </FormControl>
             <FormControlLabel control={<Checkbox value="remember" color="primary" />} label="Remember me" />
-            <ForgotPassword open={open} handleClose={handleClose} />
+            
             <Button type="submit" fullWidth variant="contained">
               Sign in
             </Button>
             <Typography sx={{ textAlign: "center" }}>
               Don&apos;t have an account?{" "}
-              <span>
-                <Link href="Signup" variant="body2" sx={{ alignSelf: "center" }}>
-                  Sign up
-                </Link>
-              </span>
+              <Link href="Signup" variant="body2" sx={{ alignSelf: "center" }}>
+                Sign up
+              </Link>
             </Typography>
           </Box>
         </Card>
