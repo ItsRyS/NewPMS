@@ -51,7 +51,7 @@ const Home = () => {
   );
 
   return (
-    <>
+    <> 
       <NavbarHome />
       <Container
         className="content-main"
