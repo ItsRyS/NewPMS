@@ -1,0 +1,28 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "IT-PMS Terminals",
+      "dependsOn": ["Open Client Terminal", "Open Server Terminal"],
+      "problemMatcher": []
+    },
+    {
+      "label": "Client Terminal",
+      "type": "shell",
+      "command": "cmd",
+      "problemMatcher": [],
+      "options": {
+        "cwd": "F:\\NewPMS\\client"
+      }
+    },
+    {
+      "label": "Server Terminal",
+      "type": "shell",
+      "command": "cmd",
+      "problemMatcher": [],
+      "options": {
+        "cwd": "F:\\NewPMS\\server"
+      }
+    }
+  ]
+}

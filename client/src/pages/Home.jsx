@@ -4,23 +4,43 @@ import Box from "@mui/material/Box";
 import NavbarHome from "../components/Layout/navbarHome";
 import FooterHome from "../components/Layout/footerHome";
 import { DataGrid } from "@mui/x-data-grid";
-import { TextField, MenuItem } from "@mui/material";
-import api from "../services/api"; // Import instance ของ Axios
+import { TextField, MenuItem, Button, Modal } from "@mui/material";
+import { Worker, Viewer } from "@react-pdf-viewer/core";
+import "@react-pdf-viewer/core/lib/styles/index.css";
+import "@react-pdf-viewer/default-layout/lib/styles/index.css";
+import moment from "moment"; // Ensure moment is installed
+import api from "../services/api"; // Axios instance
 
 const Home = () => {
   const [projects, setProjects] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchField, setSearchField] = useState("project_name_th");
+  const [open, setOpen] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState("");
 
   useEffect(() => {
     api
-      .get("/projects") // เรียกใช้ api instance ที่กำหนด baseURL แล้ว
+      .get("/projects")
       .then((response) => {
-        console.log("Fetched projects:", response.data); // ตรวจสอบข้อมูล
-        setProjects(response.data);
+        // Format date using moment.js
+        const formattedProjects = response.data.map((project) => ({
+          ...project,
+          project_create_time: moment(project.project_create_time).format("DD/MM/YYYY"), // Adjust date format as needed
+        }));
+        setProjects(formattedProjects);
       })
       .catch((error) => console.error("Error fetching projects:", error));
   }, []);
+
+  const handleOpen = (documentPath) => {
+    setSelectedDocument(documentPath);
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setSelectedDocument("");
+  };
 
   const columns = [
     { field: "project_name_th", headerName: "ชื่อโครงการ (TH)", flex: 1 },
@@ -30,16 +50,35 @@ const Home = () => {
     {
       field: "project_status",
       headerName: "สถานะ",
-      flex: 0.5,
+      flex: 0.3,
       headerAlign: "center",
       align: "center",
     },
     {
       field: "project_create_time",
       headerName: "วันที่สร้าง",
+      flex: 0.3,
+      headerAlign: "center",
+      align: "center",
+    },
+    {
+      field: "view_document",
+      headerName: "รายละเอียดเอกสาร",
       flex: 0.5,
       headerAlign: "center",
       align: "center",
+      renderCell: (params) => (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() =>
+            handleOpen(`http://localhost:5000/upload/Document/${params.row.view_document}`) // Adjust URL as needed
+          }
+          disabled={!params.row.view_document} // Disable button if document path is missing
+        >
+          ดูเอกสาร
+        </Button>
+      ),
     },
   ];
 
@@ -51,7 +90,7 @@ const Home = () => {
   );
 
   return (
-    <> 
+    <>
       <NavbarHome />
       <Container
         className="content-main"
@@ -108,11 +147,35 @@ const Home = () => {
               pageSize={5}
               rowsPerPageOptions={[5, 10, 20]}
               disableSelectionOnClick
-              getRowId={(row) => row.project_id} // ต้องมี field "project_id" ในข้อมูล
+              getRowId={(row) => row.project_id}
             />
           </div>
         </Box>
       </Container>
+
+      <Modal open={open} onClose={handleClose}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "80%",
+            height: "80%",
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            p: 4,
+          }}
+        >
+          <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
+            {selectedDocument ? (
+              <Viewer fileUrl={selectedDocument} />
+            ) : (
+              <p>No document selected</p>
+            )}
+          </Worker>
+        </Box>
+      </Modal>
       <FooterHome />
     </>
   );
