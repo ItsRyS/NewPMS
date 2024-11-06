@@ -10,6 +10,7 @@ import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/default-layout/lib/styles/index.css";
 import moment from "moment"; // Ensure moment is installed
 import api from "../services/api"; // Axios instance
+import { Outlet } from "react-router-dom";
 
 const Home = () => {
   const [projects, setProjects] = useState([]);
@@ -92,6 +93,7 @@ const Home = () => {
   return (
     <>
       <NavbarHome />
+      <Outlet />
       <Container
         className="content-main"
         maxWidth={false}

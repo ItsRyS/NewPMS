@@ -52,7 +52,7 @@ const NavbarHome = () => {
               color="warning"
               startIcon={<PlayArrowIcon />}
               component={Link}
-              to="/SignIn" // Link to the SignIn route
+              to="/SignIn"
               sx={{
                 fontWeight: "bold",
                 color: "#222",

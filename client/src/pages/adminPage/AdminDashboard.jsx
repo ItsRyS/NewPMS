@@ -1,24 +1,24 @@
-
 // src/pages/adminPage/AdminHome.js
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { verifyToken } from '../../services/api';
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { verifyToken } from "../../services/api";
+import SideNavAdmin from "../../components/Layout/SideNavAdmin";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
     const checkToken = async () => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) {
-        navigate('/SignIn'); // ถ้าไม่มี token ให้เปลี่ยนเส้นทางไปหน้า SignIn
+        navigate("/SignIn"); // ถ้าไม่มี token ให้เปลี่ยนเส้นทางไปหน้า SignIn
         return;
       }
 
       const isValid = await verifyToken(token);
       if (!isValid) {
-        localStorage.removeItem('token'); // ลบ token ถ้าไม่ถูกต้อง
-        navigate('/SignIn'); // เปลี่ยนเส้นทางไปหน้า SignIn
+        localStorage.removeItem("token"); // ลบ token ถ้าไม่ถูกต้อง
+        navigate("/SignIn"); // เปลี่ยนเส้นทางไปหน้า SignIn
       }
     };
 
@@ -28,7 +28,11 @@ const AdminDashboard = () => {
   return (
     <div>
       <h1>Welcome to Admin Dashboard</h1>
-      {/* เนื้อหาของ Admin Dashboard */}
+      {
+        <>
+          <SideNavAdmin />
+        </>
+      }
     </div>
   );
 };

@@ -6,7 +6,6 @@ import CssBaseline from "@mui/material/CssBaseline";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import FormLabel from "@mui/material/FormLabel";
 import FormControl from "@mui/material/FormControl";
-import Link from "@mui/material/Link";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
@@ -14,8 +13,8 @@ import MuiCard from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
-import { SitemarkIcon } from "./CustomIcons";
+import Link from "@mui/material/Link"; // ต้องเพิ่ม
+import { SitemarkIcon } from "../utils/shared-theme/CustomIcons";
 import AppTheme from "../utils/shared-theme/AppTheme";
 import ColorModeSelect from "../utils/shared-theme/ColorModeSelect";
 
@@ -79,14 +78,15 @@ export default function SignIn(props) {
     const password = data.get("password");
 
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/login", { email, password });
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/login",
+        { email, password }
+      );
       const { token, role } = response.data;
 
       if (token) {
-        // เก็บ token ลง localStorage
         localStorage.setItem("token", token);
 
-        // ตรวจสอบ role เพื่อเปลี่ยนเส้นทางไปยังหน้า dashboard ที่เหมาะสม
         if (role === "admin") {
           navigate("/adminHome");
         } else if (role === "student") {
@@ -99,7 +99,10 @@ export default function SignIn(props) {
       }
     } catch (error) {
       console.error("Sign-in error:", error);
-      setServerError(error.response?.data?.error || "Sign-in failed. Please check your credentials.");
+      setServerError(
+        error.response?.data?.error ||
+          "Sign-in failed. Please check your credentials."
+      );
     }
   };
 
@@ -133,14 +136,56 @@ export default function SignIn(props) {
     <AppTheme {...props}>
       <CssBaseline enableColorScheme />
       <SignInContainer direction="column" justifyContent="space-between">
-        <ColorModeSelect sx={{ position: "fixed", top: "1rem", right: "1rem" }} />
+        <ColorModeSelect
+          sx={{ position: "fixed", top: "1rem", right: "1rem" }}
+        />
         <Card variant="outlined">
           <SitemarkIcon />
-          <Typography component="h1" variant="h4" sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}>
-            Sign in
-          </Typography>
-          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ display: "flex", flexDirection: "column", width: "100%", gap: 2 }}>
-            {serverError && <Typography color="error">{serverError}</Typography>}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              width: "100%",
+            }}
+          >
+            <Typography
+              component="h1"
+              variant="h4"
+              sx={{ fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
+            >
+              Sign in
+            </Typography>
+            <Typography
+              onClick={() => navigate("/")}
+              sx={{
+                textDecoration: "none",
+                color: "primary.main",
+                cursor: "pointer",
+                "&:hover": {
+                  textDecoration: "underline",
+                },
+                fontSize: "1rem",
+                fontWeight: "bold",
+              }}
+            >
+              Home
+            </Typography>
+          </Box>
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            noValidate
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              width: "100%",
+              gap: 2,
+            }}
+          >
+            {serverError && (
+              <Typography color="error">{serverError}</Typography>
+            )}
             <FormControl>
               <FormLabel htmlFor="email">Email</FormLabel>
               <TextField
@@ -155,8 +200,6 @@ export default function SignIn(props) {
                 required
                 fullWidth
                 variant="outlined"
-                color={emailError ? "error" : "primary"}
-                sx={{ ariaLabel: "email" }}
               />
             </FormControl>
             <FormControl>
@@ -174,17 +217,19 @@ export default function SignIn(props) {
                 required
                 fullWidth
                 variant="outlined"
-                color={passwordError ? "error" : "primary"}
               />
             </FormControl>
-            <FormControlLabel control={<Checkbox value="remember" color="primary" />} label="Remember me" />
-            
+            <FormControlLabel
+              control={<Checkbox value="remember" color="primary" />}
+              label="Remember me"
+            />
+
             <Button type="submit" fullWidth variant="contained">
               Sign in
             </Button>
             <Typography sx={{ textAlign: "center" }}>
               Don&apos;t have an account?{" "}
-              <Link href="Signup" variant="body2" sx={{ alignSelf: "center" }}>
+              <Link href="SignUp" variant="body2" sx={{ alignSelf: "center" }}>
                 Sign up
               </Link>
             </Typography>

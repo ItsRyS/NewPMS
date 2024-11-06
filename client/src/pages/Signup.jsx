@@ -13,7 +13,7 @@ import Stack from "@mui/material/Stack";
 import MuiCard from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
 import AppTheme from "../utils/shared-theme/AppTheme";
-import { SitemarkIcon } from "./CustomIcons";
+import { SitemarkIcon } from "../utils/shared-theme/CustomIcons";
 import ColorModeSelect from "../utils/shared-theme/ColorModeSelect";
 
 const Card = styled(MuiCard)(({ theme }) => ({
@@ -155,13 +155,38 @@ export default function SignUp(props) {
       <SignUpContainer direction="column" justifyContent="space-between">
         <Card variant="outlined">
           <SitemarkIcon />
-          <Typography
-            component="h1"
-            variant="h4"
-            sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              width: "100%",
+            }}
           >
-            Sign up
-          </Typography>
+            <Typography
+              component="h1"
+              variant="h4"
+              sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
+            >
+              Sign up
+            </Typography>
+            <Typography
+              onClick={() => navigate("/")}
+              sx={{
+                textDecoration: "none",
+                color: "primary.main",
+                cursor: "pointer",
+                "&:hover": {
+                  textDecoration: "underline",
+                },
+                fontSize: "1rem",
+                fontWeight: "bold",
+              }}
+            >
+              Home
+            </Typography>
+          </Box>
+
           <Box
             component="form"
             onSubmit={handleSubmit}
