@@ -1,10 +1,9 @@
 // src/pages/adminPage/AdminHome.js
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import { verifyToken } from "../../services/api";
-import SideNavAdmin from "../../components/Layout/SideNavAdmin";
 
-const AdminDashboard = () => {
+const AdminHome = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,14 +26,15 @@ const AdminDashboard = () => {
 
   return (
     <div>
-      <h1>Welcome to Admin Dashboard</h1>
+      
       {
         <>
-          <SideNavAdmin />
+        <Outlet />
+          
         </>
       }
     </div>
   );
 };
 
-export default AdminDashboard;
+export default AdminHome;
