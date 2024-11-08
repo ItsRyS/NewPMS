@@ -11,7 +11,7 @@ const menuItems = [
   {
     text: "คณะอาจารย์",
     icon: <AssignmentIndTwoToneIcon />,
-    to: "/Professor",
+    to: "/TeacherPage",
     variant: "text", // default
   },
   {

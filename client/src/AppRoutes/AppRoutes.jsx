@@ -1,5 +1,5 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Professor from "../pages/Professor";
+
 import Home from "../pages/Home";
 import SignIn from "../pages/SignIn";
 import SignUp from "../pages/SignUp";
@@ -8,6 +8,7 @@ import LayoutAdmin from "../Layout/LayoutAdmin";
 import LayoutStudent from "../Layout/LayoutStudent";
 import AdminHome from "../pages/adminPage/AdminHome";
 import StudentHome from "../pages/studentPage/StudentHome";
+import TeacherPage from "../pages/TeacherPage";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -16,7 +17,7 @@ const router = createBrowserRouter([
       { index: true, element: <Home /> },
       { path: "SignIn", element: <SignIn /> },
       { path: "SignUp", element: <SignUp /> },
-      { path: "Professor", element: <Professor /> },
+      { path: "TeacherPage", element: <TeacherPage /> },
     ],
   },
   {
