@@ -2,9 +2,11 @@ import { Outlet } from "react-router-dom";
 
 const LayoutMain = () => {
   return (
-    <>
-      <Outlet />
-    </>
+    <div style={{ display: "flex" }}>
+      <div style={{ flex: 1 }}>
+        <Outlet />
+      </div>
+    </div>
   );
 };
 

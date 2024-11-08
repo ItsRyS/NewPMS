@@ -4,6 +4,8 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const authRoutes = require("./src/routes/auth");
 const projectRoutes = require("./src/routes/projects");
+const teacherRoutes = require("./src/routes/teacher");
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -22,7 +24,7 @@ app.use(bodyParser.json());
 // กำหนดเส้นทาง API สำหรับ projects และ auth
 app.use("/api/projects", projectRoutes);
 app.use("/api/auth", authRoutes);
-
+app.use("/api/teacher", teacherRoutes);
 
 // Endpoint ใหม่สำหรับทดสอบการเชื่อมต่อ API
 app.get("/api/test", (req, res) => {

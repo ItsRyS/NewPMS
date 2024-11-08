@@ -1,6 +1,6 @@
 // src/pages/adminPage/AdminHome.js
 import { useEffect } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { verifyToken } from "../../services/api";
 
 const AdminHome = () => {
@@ -26,10 +26,8 @@ const AdminHome = () => {
 
   return (
     <div>
-      
       {
         <>
-        <Outlet />
           
         </>
       }

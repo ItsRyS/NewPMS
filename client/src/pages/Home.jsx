@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
-import NavbarHome from "../components/Layout/navbarHome";
-import FooterHome from "../components/Layout/footerHome";
+import NavbarHome from "../components/NavHome";
+import FooterHome from "../components/FooterHome";
 import { DataGrid } from "@mui/x-data-grid";
 import { TextField, MenuItem, Button, Modal } from "@mui/material";
 import { Worker, Viewer } from "@react-pdf-viewer/core";
@@ -26,7 +26,9 @@ const Home = () => {
         // Format date using moment.js
         const formattedProjects = response.data.map((project) => ({
           ...project,
-          project_create_time: moment(project.project_create_time).format("DD/MM/YYYY"), // Adjust date format as needed
+          project_create_time: moment(project.project_create_time).format(
+            "DD/MM/YYYY"
+          ), // Adjust date format as needed
         }));
         setProjects(formattedProjects);
       })
@@ -72,8 +74,11 @@ const Home = () => {
         <Button
           variant="contained"
           color="primary"
-          onClick={() =>
-            handleOpen(`http://localhost:5000/upload/Document/${params.row.view_document}`) // Adjust URL as needed
+          onClick={
+            () =>
+              handleOpen(
+                `http://localhost:5000/upload/Document/${params.row.view_document}`
+              ) // Adjust URL as needed
           }
           disabled={!params.row.view_document} // Disable button if document path is missing
         >
@@ -103,7 +108,7 @@ const Home = () => {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          minHeight: "100vh",
+          minHeight: "95vh",
           boxSizing: "border-box",
         }}
       >
