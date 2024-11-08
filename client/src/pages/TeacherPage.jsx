@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from "react"; 
 import {
   Card,
   CardContent,
@@ -9,16 +9,25 @@ import {
   Modal,
   Button,
   Container,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 import axios from "axios";
 import NavbarHome from "../components/NavHome";
 import FooterHome from "../components/FooterHome";
 
 const TeacherPage = () => {
-  const [teachers, setTeachers] = useState([]); // เก็บข้อมูลอาจารย์ทั้งหมด
-  const [selectedTeacher, setSelectedTeacher] = useState(null); // เก็บข้อมูลอาจารย์ที่เลือก
-  const [open, setOpen] = useState(false); // จัดการสถานะ Modal
-  const [error, setError] = useState(null); // จัดการข้อผิดพลาด
+  const [teachers, setTeachers] = useState([]); // All teachers data
+  const [filteredTeachers, setFilteredTeachers] = useState([]); // Filtered data
+  const [selectedTeacher, setSelectedTeacher] = useState(null); // For modal
+  const [open, setOpen] = useState(false); // Modal open state
+  const [error, setError] = useState(null); // Error handling
+  const [searchTerm, setSearchTerm] = useState(""); // Name search term
+  const [expertiseFilter, setExpertiseFilter] = useState(""); // Expertise filter
+  const [expertiseOptions, setExpertiseOptions] = useState([]); // Dropdown options
 
   const handleOpen = (teacher) => {
     setSelectedTeacher(teacher);
@@ -31,11 +40,18 @@ const TeacherPage = () => {
   };
 
   useEffect(() => {
-    // เรียก API เพื่อดึงข้อมูลอาจารย์
+    // Fetch teacher data from API
     axios
-      .get("http://localhost:5000/api/teacher") // ตรวจสอบให้ตรงกับ Endpoint
+      .get("http://localhost:5000/api/teacher") // Adjust your endpoint
       .then((response) => {
-        setTeachers(response.data); // ตั้งค่า State ด้วยข้อมูลที่ได้รับ
+        setTeachers(response.data);
+        setFilteredTeachers(response.data);
+
+        // Extract unique expertise options
+        const uniqueExpertise = [
+          ...new Set(response.data.map((teacher) => teacher.teacher_expert)),
+        ];
+        setExpertiseOptions(uniqueExpertise);
       })
       .catch((err) => {
         console.error("Error fetching data:", err);
@@ -43,33 +59,76 @@ const TeacherPage = () => {
       });
   }, []);
 
+  useEffect(() => {
+    // Combine search and expertise filters
+    const filtered = teachers.filter((teacher) => {
+      const matchesName = teacher.teacher_name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      const matchesExpertise =
+        expertiseFilter === "" || teacher.teacher_expert === expertiseFilter;
+
+      return matchesName && matchesExpertise;
+    });
+    setFilteredTeachers(filtered);
+  }, [searchTerm, expertiseFilter, teachers]);
+
   return (
     <>
       <NavbarHome />
       <Container
         className="content-teacher"
-        maxWidth={false}
+        maxWidth="lg" 
         sx={{
-          paddingTop: "auto",
-          paddingBottom: "auto",
+          backgroundColor: "#ffffff", 
           display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          minHeight: "100vh",
-          boxSizing: "border-box",
           flexDirection: "column",
+          alignItems: "center",
+          marginTop: 11,
+          justifyContent: "center",
+          boxShadow: 10,
+          borderRadius: "12px",
+          padding: 0, // Remove padding from the container
         }}
       >
-        <Box sx={{ flexGrow: 1, padding: 3, width: "100%", paddingTop: 10 }}>
-          {/* แสดงข้อความ error หากเกิดข้อผิดพลาด */}
+        <Box sx={{ width: '100%', padding: 2 }}> {/* Add padding to inner content instead */}
           {error && (
             <Typography variant="body1" color="error" sx={{ mb: 3 }}>
               {error}
             </Typography>
           )}
 
+          {/* Search and Filter Row */}
+          <Grid container spacing={2} sx={{ mb: 4 }}>
+            <Grid item xs={12} sm={8}>
+              <TextField
+                label="ค้นหาชื่ออาจารย์"
+                variant="outlined"
+                fullWidth
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <FormControl fullWidth>
+                <InputLabel>กรองตามความชำนาญ</InputLabel>
+                <Select
+                  value={expertiseFilter}
+                  onChange={(e) => setExpertiseFilter(e.target.value)}
+                >
+                  <MenuItem value="">แสดงทั้งหมด</MenuItem>
+                  {expertiseOptions.map((expertise, index) => (
+                    <MenuItem key={index} value={expertise}>
+                      {expertise}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
+
           <Grid container spacing={3}>
-            {teachers.map((teacher) => (
+            {filteredTeachers.map((teacher) => (
               <Grid item xs={12} sm={6} md={4} key={teacher.teacher_id}>
                 <Card
                   onClick={() => handleOpen(teacher)}
@@ -83,13 +142,16 @@ const TeacherPage = () => {
                   />
                   <CardContent>
                     <Typography variant="h6">{teacher.teacher_name}</Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      ความชำนาญ: {teacher.teacher_expert}
+                    </Typography>
                   </CardContent>
                 </Card>
               </Grid>
             ))}
           </Grid>
 
-          {/* Modal แสดงข้อมูลอาจารย์แบบละเอียด */}
+          {/* Modal to display detailed info */}
           <Modal open={open} onClose={handleClose}>
             <Box
               sx={{
@@ -121,6 +183,9 @@ const TeacherPage = () => {
                   </Typography>
                   <Typography variant="body1">
                     <strong>อีเมล์:</strong> {selectedTeacher.teacher_email}
+                  </Typography>
+                  <Typography variant="body1">
+                    <strong>ความชำนาญ:</strong> {selectedTeacher.teacher_expert}
                   </Typography>
                   <Typography variant="body1">
                     <strong>ข้อมูลเพิ่มเติม:</strong>{" "}
