@@ -7,9 +7,11 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Link from "@mui/material/Link";
 import Box from "@mui/material/Box";
+import { useNavigate } from "react-router-dom";
 
 export default function NavAdmin() {
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const navigate = useNavigate();
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -17,6 +19,17 @@ export default function NavAdmin() {
 
   const handleMenuClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    // Clear token from localStorage
+    localStorage.removeItem("token");
+
+    // Close the menu
+    handleMenuClose();
+
+    // Redirect to SignIn page
+    navigate("/SignIn");
   };
 
   return (
@@ -33,7 +46,7 @@ export default function NavAdmin() {
       <Toolbar sx={{ justifyContent: "space-between" }}>
         {/* Logo */}
         <Box sx={{ display: "flex", alignItems: "center" }}>
-          <Link to="/" style={{ textDecoration: "none" }}> {/* ลิงก์ไปยัง Home */}
+          <Link href="/" style={{ textDecoration: "none" }}> {/* Link to Home */}
             <img
               src="/it_logo.png"
               alt="IT-PMS Logo"
@@ -70,7 +83,7 @@ export default function NavAdmin() {
           >
             <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
             <MenuItem onClick={handleMenuClose}>Account</MenuItem>
-            <MenuItem onClick={handleMenuClose}>Logout</MenuItem>
+            <MenuItem onClick={handleLogout}>Logout</MenuItem>
           </Menu>
         </Box>
       </Toolbar>
