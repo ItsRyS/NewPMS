@@ -154,7 +154,18 @@ export default function SignUp(props) {
       <ColorModeSelect sx={{ position: "fixed", top: "1rem", right: "1rem" }} />
       <SignUpContainer direction="column" justifyContent="space-between">
         <Card variant="outlined">
-          <SitemarkIcon />
+        <Box
+            sx={{
+              width: "200px", // Adjust width to 100px
+              height: "80px", // Adjust height to 20px
+            }}
+          >
+            <img
+              src="/it_logo.png"
+              alt="IT-PMS Logo"
+              style={{ width: "100%", height: "100%", objectFit: "scale-down" }}
+            />
+          </Box>
           <Box
             sx={{
               display: "flex",

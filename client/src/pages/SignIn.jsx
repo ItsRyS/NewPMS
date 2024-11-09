@@ -14,7 +14,6 @@ import { styled } from "@mui/material/styles";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Link from "@mui/material/Link"; // ต้องเพิ่ม
-import { SitemarkIcon } from "../utils/shared-theme/CustomIcons";
 import AppTheme from "../utils/shared-theme/AppTheme";
 import ColorModeSelect from "../utils/shared-theme/ColorModeSelect";
 
@@ -140,7 +139,19 @@ export default function SignIn(props) {
           sx={{ position: "fixed", top: "1rem", right: "1rem" }}
         />
         <Card variant="outlined">
-          <SitemarkIcon />
+          <Box
+            sx={{
+              width: "200px", // Adjust width to 100px
+              height: "80px", // Adjust height to 20px
+            }}
+          >
+            <img
+              src="/it_logo.png"
+              alt="IT-PMS Logo"
+              style={{ width: "100%", height: "100%", objectFit: "scale-down" }}
+            />
+          </Box>
+
           <Box
             sx={{
               display: "flex",
