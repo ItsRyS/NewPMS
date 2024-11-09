@@ -13,7 +13,7 @@ import Stack from "@mui/material/Stack";
 import MuiCard from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
 import AppTheme from "../utils/shared-theme/AppTheme";
-import { SitemarkIcon } from "../utils/shared-theme/CustomIcons";
+
 import ColorModeSelect from "../utils/shared-theme/ColorModeSelect";
 
 const Card = styled(MuiCard)(({ theme }) => ({
@@ -154,7 +154,7 @@ export default function SignUp(props) {
       <ColorModeSelect sx={{ position: "fixed", top: "1rem", right: "1rem" }} />
       <SignUpContainer direction="column" justifyContent="space-between">
         <Card variant="outlined">
-        <Box
+          <Box
             sx={{
               width: "200px", // Adjust width to 100px
               height: "80px", // Adjust height to 20px
@@ -185,7 +185,7 @@ export default function SignUp(props) {
               onClick={() => navigate("/")}
               sx={{
                 textDecoration: "none",
-                color: "primary.main",
+                color: "#ffffff",
                 cursor: "pointer",
                 "&:hover": {
                   textDecoration: "underline",

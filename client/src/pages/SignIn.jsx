@@ -171,7 +171,7 @@ export default function SignIn(props) {
               onClick={() => navigate("/")}
               sx={{
                 textDecoration: "none",
-                color: "primary.main",
+                color: "#ffffff",
                 cursor: "pointer",
                 "&:hover": {
                   textDecoration: "underline",
