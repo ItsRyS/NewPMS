@@ -1,4 +1,4 @@
-import { useState } from "react";
+import  { useState } from "react";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
@@ -8,12 +8,15 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Typography from "@mui/material/Typography";
-import { Box } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import { Box, useTheme, useMediaQuery } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-
-export default function NavAdmin() {
+import PropTypes from "prop-types";
+export default function NavAdmin({ onMenuClick }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -37,11 +40,18 @@ export default function NavAdmin() {
         boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
         color: "#333",
         zIndex: 1201,
-        width: "calc(100% - 240px)", // ปรับขนาดความกว้างให้เท่ากับพื้นที่ที่เหลือ
-        ml: "240px", // เลื่อน NavAdmin ไปทางขวาให้ตรงกับตำแหน่งของ SideAdmin
+        width: isMobile ? "100%" : "calc(100% - 240px)",
+        ml: isMobile ? 0 : "240px",
       }}
     >
       <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+        {/* Hamburger Menu for Mobile */}
+        {isMobile && (
+          <IconButton edge="start" color="inherit" onClick={onMenuClick} sx={{ mr: 2 }}>
+            <MenuIcon />
+          </IconButton>
+        )}
+
         <Typography variant="h6" sx={{ color: "#333", fontWeight: "bold" }}>
           Dashboard
         </Typography>
@@ -85,3 +95,7 @@ export default function NavAdmin() {
     </AppBar>
   );
 }
+
+NavAdmin.propTypes = {
+  onMenuClick: PropTypes.func.isRequired,
+};

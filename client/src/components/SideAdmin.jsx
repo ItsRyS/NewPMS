@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React from "react";
 import { Drawer, Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Divider, Collapse } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ColorLensIcon from "@mui/icons-material/ColorLens";
@@ -7,9 +7,9 @@ import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import WidgetsIcon from "@mui/icons-material/Widgets";
 import StarIcon from "@mui/icons-material/Star";
-
-export default function SideAdmin() {
-  const [openComponents, setOpenComponents] = useState(false);
+import PropTypes from "prop-types";
+export default function SideAdmin({ open, onClose, isMobile }) {
+  const [openComponents, setOpenComponents] = React.useState(false);
 
   const handleToggleComponents = () => {
     setOpenComponents(!openComponents);
@@ -17,16 +17,21 @@ export default function SideAdmin() {
 
   return (
     <Drawer
-      variant="permanent"
+      variant={isMobile ? "temporary" : "permanent"}
+      open={open}
+      onClose={onClose}
       sx={{
         width: 240,
         flexShrink: 0,
         "& .MuiDrawer-paper": {
           width: 240,
           boxSizing: "border-box",
-          backgroundColor: "#01153e",
+          backgroundColor: "#2d3a46",
           color: "#ffffff",
         },
+      }}
+      ModalProps={{
+        keepMounted: true, // สำหรับการทำงานที่ดีขึ้นบนมือถือ
       }}
     >
       <Box sx={{ padding: 2, display: "flex", flexDirection: "column", alignItems: "center" }}>
@@ -103,3 +108,8 @@ export default function SideAdmin() {
     </Drawer>
   );
 }
+SideAdmin.propTypes = {
+  open: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  isMobile: PropTypes.bool.isRequired,
+};
