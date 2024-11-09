@@ -1,18 +1,20 @@
-import React from "react";
+import { useState } from "react";
+import PropTypes from "prop-types";
 import { Drawer, Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Divider, Collapse } from "@mui/material";
+import { Link } from "react-router-dom";
 import DashboardIcon from "@mui/icons-material/Dashboard";
-import ColorLensIcon from "@mui/icons-material/ColorLens";
-import FormatTextdirectionLToRIcon from "@mui/icons-material/FormatTextdirectionLToR";
+import PeopleIcon from "@mui/icons-material/People";
+import AssignmentIcon from "@mui/icons-material/Assignment";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
-import WidgetsIcon from "@mui/icons-material/Widgets";
-import StarIcon from "@mui/icons-material/Star";
-import PropTypes from "prop-types";
-export default function SideAdmin({ open, onClose, isMobile }) {
-  const [openComponents, setOpenComponents] = React.useState(false);
 
-  const handleToggleComponents = () => {
-    setOpenComponents(!openComponents);
+export default function SideAdmin({ open, onClose, isMobile }) {
+  const [openProjectManagement, setOpenProjectManagement] = useState(false);
+
+  const toggleProjectManagement = () => {
+    setOpenProjectManagement(!openProjectManagement);
   };
 
   return (
@@ -31,22 +33,20 @@ export default function SideAdmin({ open, onClose, isMobile }) {
         },
       }}
       ModalProps={{
-        keepMounted: true, // สำหรับการทำงานที่ดีขึ้นบนมือถือ
+        keepMounted: true,
       }}
     >
       <Box sx={{ padding: 2, display: "flex", flexDirection: "column", alignItems: "center" }}>
-        {/* Logo */}
         <Typography variant="h6" sx={{ fontWeight: "bold", color: "#ffffff" }}>
-          COREUI REACT.JS
+          IT-PMS
         </Typography>
       </Box>
 
       <Divider sx={{ borderColor: "#374151" }} />
 
-      {/* Main Menu */}
       <List>
         <ListItem disablePadding>
-          <ListItemButton>
+          <ListItemButton component={Link} to="/adminHome">
             <ListItemIcon>
               <DashboardIcon sx={{ color: "#9CA3AF" }} />
             </ListItemIcon>
@@ -55,59 +55,60 @@ export default function SideAdmin({ open, onClose, isMobile }) {
         </ListItem>
 
         <Typography variant="body2" sx={{ padding: 2, color: "#9CA3AF" }}>
-          Theme
+          User Management
         </Typography>
-
         <ListItem disablePadding>
-          <ListItemButton>
+          <ListItemButton component={Link} to="/adminHome/manage-user">
             <ListItemIcon>
-              <ColorLensIcon sx={{ color: "#9CA3AF" }} />
+              <PeopleIcon sx={{ color: "#9CA3AF" }} />
             </ListItemIcon>
-            <ListItemText primary="Colors" />
-          </ListItemButton>
-        </ListItem>
-
-        <ListItem disablePadding>
-          <ListItemButton>
-            <ListItemIcon>
-              <FormatTextdirectionLToRIcon sx={{ color: "#9CA3AF" }} />
-            </ListItemIcon>
-            <ListItemText primary="Typography" />
+            <ListItemText primary="Manage Users" />
           </ListItemButton>
         </ListItem>
 
         <Typography variant="body2" sx={{ padding: 2, color: "#9CA3AF" }}>
-          Components
+          Project Management
         </Typography>
-
-        <ListItemButton onClick={handleToggleComponents}>
+        <ListItemButton onClick={toggleProjectManagement}>
           <ListItemIcon>
-            <WidgetsIcon sx={{ color: "#9CA3AF" }} />
+            <AssignmentIcon sx={{ color: "#9CA3AF" }} />
           </ListItemIcon>
-          <ListItemText primary="Components" />
-          {openComponents ? <ExpandLess /> : <ExpandMore />}
+          <ListItemText primary="Projects" />
+          {openProjectManagement ? <ExpandLess /> : <ExpandMore />}
         </ListItemButton>
-        
-        <Collapse in={openComponents} timeout="auto" unmountOnExit>
+        <Collapse in={openProjectManagement} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>
-            <ListItemButton sx={{ pl: 4 }}>
+            <ListItemButton component={Link} to="/adminHome/CheckProject" sx={{ pl: 4 }}>
               <ListItemIcon>
-                <StarIcon sx={{ color: "#9CA3AF" }} />
+                <CheckCircleIcon sx={{ color: "#9CA3AF" }} />
               </ListItemIcon>
-              <ListItemText primary="Buttons" />
+              <ListItemText primary="Check Project" />
             </ListItemButton>
-            <ListItemButton sx={{ pl: 4 }}>
+            <ListItemButton component={Link} to="/adminHome/release-project" sx={{ pl: 4 }}>
               <ListItemIcon>
-                <StarIcon sx={{ color: "#9CA3AF" }} />
+                <CheckCircleIcon sx={{ color: "#9CA3AF" }} />
               </ListItemIcon>
-              <ListItemText primary="Forms" />
+              <ListItemText primary="Release Project" />
             </ListItemButton>
           </List>
         </Collapse>
+
+        <Typography variant="body2" sx={{ padding: 2, color: "#9CA3AF" }}>
+          Document Management
+        </Typography>
+        <ListItem disablePadding>
+          <ListItemButton component={Link} to="/adminHome/upload-doc">
+            <ListItemIcon>
+              <CloudUploadIcon sx={{ color: "#9CA3AF" }} />
+            </ListItemIcon>
+            <ListItemText primary="Upload Document" />
+          </ListItemButton>
+        </ListItem>
       </List>
     </Drawer>
   );
 }
+
 SideAdmin.propTypes = {
   open: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,

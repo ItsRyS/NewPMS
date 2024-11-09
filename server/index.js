@@ -1,10 +1,12 @@
 require("dotenv").config();
 const express = require("express");
+const path = require("path"); // เพิ่ม path ที่นี่
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const authRoutes = require("./src/routes/auth");
 const projectRoutes = require("./src/routes/projects");
 const teacherRoutes = require("./src/routes/teacher");
+const documentRoutes = require("./src/routes/document");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -21,19 +23,23 @@ app.use(
 app.use(express.json());
 app.use(bodyParser.json());
 
-// กำหนดเส้นทาง API สำหรับ projects และ auth
+// เส้นทาง static สำหรับโฟลเดอร์ upload
+app.use("/upload", express.static(path.join(__dirname, "upload")));
+
+// กำหนดเส้นทาง API สำหรับ projects, auth และ document
 app.use("/api/projects", projectRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/teacher", teacherRoutes);
+app.use("/api/document", documentRoutes);
 
 // Endpoint ใหม่สำหรับทดสอบการเชื่อมต่อ API
 app.get("/api/test", (req, res) => {
-  res.json({ message: "API is working!" }); // ส่ง JSON สำหรับทดสอบ
+  res.json({ message: "API is working!" });
 });
 
 // Endpoint ที่ root path
 app.get("/", (req, res) => {
-  res.send("Hello from server"); // ส่งข้อความทดสอบ
+  res.send("Hello from server");
 });
 
 // จัดการกรณีไม่พบ endpoint ที่ระบุ
