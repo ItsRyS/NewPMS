@@ -1,16 +1,19 @@
 import { Outlet } from "react-router-dom";
 import SideAdmin from "../components/SideAdmin";
 import NavAdmin from "../components/NavAdmin";
-import FooterHome from "../components/FooterHome";
 
 const LayoutAdmin = () => {
   return (
-    <div style={{ display: "flex" }}>
+    <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
+      {/* Sidebar */}
       <SideAdmin />
-      <div style={{ flex: 1 }}>
+
+      {/* Main Content */}
+      <div style={{ flex: 1, marginLeft: "240px", display: "flex", flexDirection: "column" }}>
         <NavAdmin />
-        <Outlet />
-        <FooterHome />
+        <div style={{ flex: 1, paddingTop: "64px", overflow: "auto" }}>
+          <Outlet />
+        </div>
       </div>
     </div>
   );

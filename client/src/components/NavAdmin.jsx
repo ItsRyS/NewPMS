@@ -1,16 +1,18 @@
-import React from "react";
+import { useState } from "react";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import Avatar from "@mui/material/Avatar";
+import Badge from "@mui/material/Badge";
+import NotificationsIcon from "@mui/icons-material/Notifications";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
-import Link from "@mui/material/Link";
-import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import { Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 export default function NavAdmin() {
-  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);
   const navigate = useNavigate();
 
   const handleMenuOpen = (event) => {
@@ -22,13 +24,8 @@ export default function NavAdmin() {
   };
 
   const handleLogout = () => {
-    // Clear token from localStorage
     localStorage.removeItem("token");
-
-    // Close the menu
     handleMenuClose();
-
-    // Redirect to SignIn page
     navigate("/SignIn");
   };
 
@@ -36,33 +33,31 @@ export default function NavAdmin() {
     <AppBar
       position="fixed"
       sx={{
-        backgroundColor: "#01153e",
-        top: 0,
-        width: "100%",
-        boxShadow: "none",
-        padding: "0 20px",
+        backgroundColor: "#ffffff",
+        boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+        color: "#333",
+        zIndex: 1201,
+        width: "calc(100% - 240px)", // ปรับขนาดความกว้างให้เท่ากับพื้นที่ที่เหลือ
+        ml: "240px", // เลื่อน NavAdmin ไปทางขวาให้ตรงกับตำแหน่งของ SideAdmin
       }}
     >
-      <Toolbar sx={{ justifyContent: "space-between" }}>
-        {/* Logo */}
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <Link href="/" style={{ textDecoration: "none" }}> {/* Link to Home */}
-            <img
-              src="/it_logo.png"
-              alt="IT-PMS Logo"
-              style={{ height: "40px", width: "auto", marginRight: "8px" }}
-            />
-          </Link>
-        </Box>
+      <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+        <Typography variant="h6" sx={{ color: "#333", fontWeight: "bold" }}>
+          Dashboard
+        </Typography>
 
-        {/* Right side */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          {/* Avatar */}
+          {/* Notifications Icon */}
+          <IconButton color="inherit">
+            <Badge badgeContent={4} color="error">
+              <NotificationsIcon />
+            </Badge>
+          </IconButton>
+
+          {/* User Avatar */}
           <IconButton onClick={handleMenuOpen} sx={{ p: 0 }}>
             <Avatar alt="User Profile" src="https://i.pravatar.cc/300" />
           </IconButton>
-
-          {/* Dropdown Menu */}
           <Menu
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
@@ -70,7 +65,7 @@ export default function NavAdmin() {
             PaperProps={{
               sx: {
                 mt: 1.5,
-                minWidth: 200,
+                minWidth: 150,
                 backgroundColor: "#ffffff",
                 color: "#333",
                 "& .MuiMenuItem-root": {
@@ -82,7 +77,7 @@ export default function NavAdmin() {
             }}
           >
             <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-            <MenuItem onClick={handleMenuClose}>Account</MenuItem>
+            <MenuItem onClick={handleMenuClose}>Settings</MenuItem>
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
           </Menu>
         </Box>

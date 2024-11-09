@@ -10,17 +10,17 @@ const AdminHome = () => {
     const checkToken = async () => {
       const token = localStorage.getItem("token");
       if (!token) {
-        navigate("/SignIn"); // ถ้าไม่มี token ให้เปลี่ยนเส้นทางไปหน้า SignIn
+        navigate("/SignIn"); // Redirect if no token
         return;
       }
-
+  
       const isValid = await verifyToken(token);
       if (!isValid) {
-        localStorage.removeItem("token"); // ลบ token ถ้าไม่ถูกต้อง
-        navigate("/SignIn"); // เปลี่ยนเส้นทางไปหน้า SignIn
+        localStorage.removeItem("token"); // Remove invalid token
+        navigate("/SignIn"); // Redirect to SignIn
       }
     };
-
+  
     checkToken();
   }, [navigate]);
 
