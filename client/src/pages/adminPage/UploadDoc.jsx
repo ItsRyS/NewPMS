@@ -1,5 +1,15 @@
 import { useState, useEffect } from "react";
-import { Box, Button, Grid, Typography, Paper, TextField, Dialog, DialogActions, DialogContent } from "@mui/material";
+import {
+  Box,
+  Button,
+  Grid,
+  Typography,
+  Paper,
+  TextField,
+  Dialog,
+  
+  DialogContent,
+} from "@mui/material";
 import axios from "axios";
 
 const UploadDoc = () => {
@@ -49,11 +59,15 @@ const UploadDoc = () => {
     formData.append("uploaded_by", 1); // Adjust user ID as needed
 
     try {
-      const response = await axios.post("http://localhost:5000/api/document/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await axios.post(
+        "http://localhost:5000/api/document/upload",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       alert(response.data.message);
 
       const newDoc = {
@@ -118,7 +132,12 @@ const UploadDoc = () => {
                 value={docDescription}
                 onChange={(e) => setDocDescription(e.target.value)}
               />
-              <Button variant="contained" color="primary" fullWidth onClick={handleUpload}>
+              <Button
+                variant="contained"
+                color="primary"
+                fullWidth
+                onClick={handleUpload}
+              >
                 เพิ่มเอกสาร
               </Button>
             </Box>
@@ -132,9 +151,16 @@ const UploadDoc = () => {
               <Box>
                 {documents.map((doc, index) => (
                   <Box key={index} mb={2}>
-                    <Typography variant="body1"><strong>ชื่อ:</strong> {doc.doc_title}</Typography>
-                    <Typography variant="body2"><strong>คำอธิบาย:</strong> {doc.doc_description}</Typography>
-                    <Typography variant="body2"><strong>วันที่:</strong> {new Date(doc.upload_date).toLocaleString()}</Typography>
+                    <Typography variant="body1">
+                      <strong>ชื่อ:</strong> {doc.doc_title}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>คำอธิบาย:</strong> {doc.doc_description}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>วันที่:</strong>{" "}
+                      {new Date(doc.upload_date).toLocaleString()}
+                    </Typography>
                     <Button
                       variant="outlined"
                       color="primary"
@@ -154,25 +180,32 @@ const UploadDoc = () => {
       <Dialog
         open={openDialog}
         onClose={handleCloseDialog}
-        fullWidth
-        maxWidth="xl"
-        sx={{ "& .MuiDialog-paper": { width: "100%", height: "100%" } }}
+        maxWidth="lg"
+        
+        sx={{
+          "& .MuiDialog-paper": { margin: 0, width: "100%", height: "100%" },
+        }}
       >
-        <DialogContent sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
+        <DialogContent
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100%",
+            padding: 0,
+          }}
+        >
           {pdfPath && (
             <iframe
               src={pdfPath}
               width="100%"
               height="100%"
               title="PDF Viewer"
+              style={{ border: "none" }} // ลบขอบรอบ iframe
             ></iframe>
           )}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog} color="primary">
-            ปิด
-          </Button>
-        </DialogActions>
+        
       </Dialog>
     </Box>
   );
