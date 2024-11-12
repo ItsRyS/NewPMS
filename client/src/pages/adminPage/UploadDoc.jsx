@@ -7,19 +7,20 @@ import {
   Paper,
   TextField,
   Dialog,
-  
   DialogContent,
 } from "@mui/material";
 import axios from "axios";
 
 const UploadDoc = () => {
   const [file, setFile] = useState(null);
+  const [fileName, setFileName] = useState(""); // เก็บชื่อไฟล์ที่เลือก
   const [docTitle, setDocTitle] = useState("");
   const [docDescription, setDocDescription] = useState("");
-  const [documents, setDocuments] = useState([]); // State สำหรับเก็บเอกสารที่ดึงมาจากฐานข้อมูล
-  const [pdfPath, setPdfPath] = useState(""); // State สำหรับเก็บ path ของ PDF ที่จะดู
-  const [openDialog, setOpenDialog] = useState(false); // State สำหรับควบคุมการแสดง Dialog
+  const [documents, setDocuments] = useState([]); 
+  const [pdfPath, setPdfPath] = useState(""); 
+  const [openDialog, setOpenDialog] = useState(false); 
 
+  // ดึงข้อมูลเอกสารจากเซิร์ฟเวอร์เมื่อเริ่มต้นหรือเมื่อเอกสารเปลี่ยนแปลง
   useEffect(() => {
     const fetchDocuments = async () => {
       try {
@@ -38,11 +39,11 @@ const UploadDoc = () => {
       if (selectedFile.type !== "application/pdf") {
         alert("กรุณาเลือกไฟล์ PDF เท่านั้น");
         setFile(null);
-        setDocTitle("");
+        setFileName(""); // ล้างชื่อไฟล์หากไม่ใช่ PDF
         return;
       }
       setFile(selectedFile);
-      setDocTitle(selectedFile.name.replace(".pdf", ""));
+      setFileName(selectedFile.name); // บันทึกชื่อไฟล์
     }
   };
 
@@ -56,7 +57,7 @@ const UploadDoc = () => {
     formData.append("file", file);
     formData.append("doc_title", docTitle);
     formData.append("doc_description", docDescription);
-    formData.append("uploaded_by", 1); // Adjust user ID as needed
+    formData.append("uploaded_by", 1);
 
     try {
       const response = await axios.post(
@@ -70,16 +71,12 @@ const UploadDoc = () => {
       );
       alert(response.data.message);
 
-      const newDoc = {
-        doc_title: docTitle,
-        doc_description: docDescription,
-        doc_path: response.data.doc_path,
-        uploaded_by: 1,
-        upload_date: new Date().toISOString(),
-      };
-      setDocuments([newDoc, ...documents]);
+      // ดึงข้อมูลเอกสารใหม่ทั้งหมดหลังจากอัปโหลดสำเร็จ
+      const updatedDocuments = await axios.get("http://localhost:5000/api/document");
+      setDocuments(updatedDocuments.data);
 
       setFile(null);
+      setFileName(""); // ล้างชื่อไฟล์หลังอัปโหลดสำเร็จ
       setDocTitle("");
       setDocDescription("");
     } catch (error) {
@@ -89,39 +86,70 @@ const UploadDoc = () => {
   };
 
   const handleViewDocument = (docPath) => {
+    if (!docPath) {
+      console.error("Document path is undefined");
+      alert("ไม่พบเอกสารสำหรับการดู");
+      return;
+    }
     setPdfPath(`http://localhost:5000/${docPath}`);
-    setOpenDialog(true); // Open the dialog to view the PDF
+    setOpenDialog(true);
+  };
+
+  const handleDeleteDocument = async (docId) => {
+    if (window.confirm("คุณแน่ใจหรือไม่ว่าต้องการลบเอกสารนี้?")) {
+      try {
+        await axios.delete(`http://localhost:5000/api/document/${docId}`);
+        alert("ลบเอกสารสำเร็จ");
+        setDocuments(documents.filter((doc) => doc.doc_id !== docId));
+      } catch (error) {
+        console.error("Error deleting document:", error);
+        alert("การลบเอกสารล้มเหลว");
+      }
+    }
   };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
-    setPdfPath(""); // Clear the PDF path when closing
+    setPdfPath("");
   };
 
   return (
     <Box sx={{ padding: 3, backgroundColor: "#f0f4f8" }}>
-      <Box display="flex" justifyContent="flex-end" mb={2}>
-        <Button variant="contained" color="primary" component="label">
-          เพิ่มไฟล์
-          <input type="file" hidden accept=".pdf" onChange={handleFileChange} />
-        </Button>
-      </Box>
-
       <Paper variant="outlined">
         <Grid container>
           <Grid item xs={6} sx={{ borderRight: "1px solid #000" }}>
             <Box p={2}>
               <Typography variant="h6" align="center">
-                Document in database
+                เพิ่มเอกสาร
               </Typography>
-              <TextField
-                label="ชื่อเอกสาร"
-                variant="outlined"
-                fullWidth
-                margin="normal"
-                value={docTitle}
-                disabled
-              />
+              <Box display="flex" alignItems="center" mb={2}>
+                <TextField
+                  label="ชื่อเอกสาร"
+                  variant="outlined"
+                  fullWidth
+                  value={docTitle}
+                  onChange={(e) => setDocTitle(e.target.value)}
+                />
+                <Button
+                  variant="contained"
+                  component="label"
+                  sx={{ ml: 2 }}
+                >
+                  เลือกไฟล์
+                  <input
+                    type="file"
+                    hidden
+                    accept=".pdf"
+                    onChange={handleFileChange}
+                  />
+                </Button>
+              </Box>
+              {/* แสดงชื่อไฟล์ที่เลือก */}
+              {fileName && (
+                <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+                  ชื่อไฟล์ที่เลือก: {fileName}
+                </Typography>
+              )}
               <TextField
                 label="คำอธิบายเอกสาร"
                 variant="outlined"
@@ -138,7 +166,7 @@ const UploadDoc = () => {
                 fullWidth
                 onClick={handleUpload}
               >
-                เพิ่มเอกสาร
+                อัปโหลดเอกสาร
               </Button>
             </Box>
           </Grid>
@@ -165,8 +193,16 @@ const UploadDoc = () => {
                       variant="outlined"
                       color="primary"
                       onClick={() => handleViewDocument(doc.doc_path)}
+                      sx={{ mr: 1 }}
                     >
                       ดูเอกสาร
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="secondary"
+                      onClick={() => handleDeleteDocument(doc.doc_id)}
+                    >
+                      ลบเอกสาร
                     </Button>
                   </Box>
                 ))}
@@ -176,12 +212,10 @@ const UploadDoc = () => {
         </Grid>
       </Paper>
 
-      {/* PDF Viewer Dialog */}
       <Dialog
         open={openDialog}
         onClose={handleCloseDialog}
         maxWidth="lg"
-        
         sx={{
           "& .MuiDialog-paper": { margin: 0, width: "100%", height: "100%" },
         }}
@@ -201,11 +235,10 @@ const UploadDoc = () => {
               width="100%"
               height="100%"
               title="PDF Viewer"
-              style={{ border: "none" }} // ลบขอบรอบ iframe
+              style={{ border: "none" }}
             ></iframe>
           )}
         </DialogContent>
-        
       </Dialog>
     </Box>
   );

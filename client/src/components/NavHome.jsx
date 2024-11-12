@@ -38,9 +38,11 @@ const NavbarHome = () => {
       <Toolbar sx={{ justifyContent: "space-between" }}>
         {/* Logo */}
         <Box sx={{ display: "flex", alignItems: "center" }}>
-          <Link to="/" style={{ textDecoration: "none" }}> {/* ลิงก์ไปยัง Home */}
+          <Link to="/" style={{ textDecoration: "none" }}>
+            {" "}
+            {/* ลิงก์ไปยัง Home */}
             <img
-              src="/it_logo.png"
+              src="/it_logo2.svg"
               alt="IT-PMS Logo"
               style={{ height: "40px", width: "auto", marginRight: "8px" }}
             />
