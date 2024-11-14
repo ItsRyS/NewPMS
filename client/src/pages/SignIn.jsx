@@ -81,10 +81,11 @@ export default function SignIn(props) {
         "http://localhost:5000/api/auth/login",
         { email, password }
       );
-      const { token, role } = response.data;
+      const { token, role ,username} = response.data;
 
       if (token) {
         localStorage.setItem("token", token);
+        localStorage.setItem("username", username);
 
         if (role === "admin") {
           navigate("/adminHome");

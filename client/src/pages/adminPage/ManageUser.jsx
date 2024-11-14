@@ -15,6 +15,8 @@ import {
 } from '@mui/material';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import api from '../../services/api'; // axios instance
+import EditIcon from '@mui/icons-material/Edit';
+
 
 const ManageUser = () => {
   const [users, setUsers] = useState([]);
@@ -98,16 +100,17 @@ const ManageUser = () => {
       getActions: (params) => [
         <GridActionsCellItem
           key={`edit-${params.id}`}
+          icon={<EditIcon />}
           label="Edit"
           onClick={() => handleOpen(params.row)}
-          showInMenu
+          showInMenu={false}
         />,
         <GridActionsCellItem
           key={`delete-${params.id}`}
           icon={<DeleteForeverIcon />}
           label="Delete"
           onClick={() => deleteUser(params.id)}
-          showInMenu
+          showInMenu={false}
         />
       ],
     },

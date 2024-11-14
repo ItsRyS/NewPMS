@@ -44,6 +44,7 @@ router.post('/register', async (req, res) => {
 });
 
 // เส้นทางสำหรับ Login
+// ใน login route
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -73,7 +74,8 @@ router.post('/login', async (req, res) => {
       { expiresIn: '1h' }
     );
 
-    res.json({ token, role: user.role });
+    // เพิ่ม username ลงใน response
+    res.json({ token, role: user.role, username: user.username });
   } catch (error) {
     console.error('เกิดข้อผิดพลาดในการเข้าสู่ระบบ:', error);
     res.status(500).json({ error: 'เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์' });

@@ -1,4 +1,4 @@
-import  { useState } from "react";
+import { useState, useEffect } from "react";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
@@ -12,11 +12,22 @@ import MenuIcon from "@mui/icons-material/Menu";
 import { Box, useTheme, useMediaQuery } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
+
 export default function NavAdmin({ onMenuClick }) {
   const [anchorEl, setAnchorEl] = useState(null);
+  const [username, setUsername] = useState("");
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
+  useEffect(() => {
+    const storedUsername = localStorage.getItem("username"); // ดึงชื่อผู้ใช้จาก localStorage
+    if (storedUsername) {
+      setUsername(storedUsername);
+    } else {
+      console.log("ไม่พบชื่อผู้ใช้ใน localStorage");
+    }
+  }, []);
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -28,6 +39,7 @@ export default function NavAdmin({ onMenuClick }) {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("username"); // ลบชื่อผู้ใช้เมื่อออกจากระบบ
     handleMenuClose();
     navigate("/SignIn");
   };
@@ -45,9 +57,13 @@ export default function NavAdmin({ onMenuClick }) {
       }}
     >
       <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-        {/* Hamburger Menu for Mobile */}
         {isMobile && (
-          <IconButton edge="start" color="inherit" onClick={onMenuClick} sx={{ mr: 2 }}>
+          <IconButton
+            edge="start"
+            color="inherit"
+            onClick={onMenuClick}
+            sx={{ mr: 2 }}
+          >
             <MenuIcon />
           </IconButton>
         )}
@@ -57,16 +73,14 @@ export default function NavAdmin({ onMenuClick }) {
         </Typography>
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          {/* Notifications Icon */}
           <IconButton color="inherit">
             <Badge badgeContent={4} color="error">
               <NotificationsIcon />
             </Badge>
           </IconButton>
 
-          {/* User Avatar */}
           <IconButton onClick={handleMenuOpen} sx={{ p: 0 }}>
-            <Avatar alt="User Profile" src="https://i.pravatar.cc/300" />
+            <Avatar alt={username} src="https://i.pravatar.cc/300" />
           </IconButton>
           <Menu
             anchorEl={anchorEl}
@@ -86,6 +100,11 @@ export default function NavAdmin({ onMenuClick }) {
               },
             }}
           >
+            <MenuItem disabled>
+              <Typography variant="body2">
+                {username || "User not found"}
+              </Typography>
+            </MenuItem>
             <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
             <MenuItem onClick={handleMenuClose}>Settings</MenuItem>
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
