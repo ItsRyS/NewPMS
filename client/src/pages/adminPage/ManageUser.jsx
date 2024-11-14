@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
 import {
   Button,
@@ -10,6 +10,10 @@ import {
   DialogTitle,
   TextField,
   Box,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
 } from "@mui/material";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import EditIcon from "@mui/icons-material/Edit";
@@ -17,6 +21,7 @@ import api from "../../services/api"; // axios instance
 
 const ManageUser = () => {
   const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editUser, setEditUser] = useState(null);
@@ -27,6 +32,8 @@ const ManageUser = () => {
     role: "",
   });
   const [errors, setErrors] = useState({});
+  const [searchField, setSearchField] = useState("username");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetchUsers();
@@ -41,6 +48,20 @@ const ManageUser = () => {
       console.error("Failed to fetch users", error);
     }
   };
+
+  const filterUsers = useCallback(() => {
+    const filtered = users.filter((user) =>
+      user[searchField]
+        .toString()
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase())
+    );
+    setFilteredUsers(filtered);
+  }, [users, searchField, searchQuery]);
+
+  useEffect(() => {
+    filterUsers();
+  }, [filterUsers]);
 
   const validateForm = () => {
     let newErrors = {};
@@ -127,10 +148,10 @@ const ManageUser = () => {
     <Container
       sx={{
         display: "flex",
-        justifyContent: "center", // จัดให้อยู่กึ่งกลางแนวนอน
-        alignItems: "center", // จัดให้อยู่กึ่งกลางแนวตั้ง
-        minHeight: "60vh", // ครอบคลุมความสูงทั้งหมดของหน้าจอ
-       
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "90vh",
+        mt: 0,
       }}
     >
       <Box
@@ -139,28 +160,55 @@ const ManageUser = () => {
           boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
           borderRadius: "8px",
           padding: "20px",
-          width: "100%", // กำหนดความกว้างให้เหมาะสม
-          maxWidth: "900px", // ความกว้างสูงสุด
+          width: "100%",
+          maxWidth: "900px",
         }}
       >
-        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
           <Typography variant="h5" gutterBottom>
-          Manage Users
-        </Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          size="small"
-          onClick={() => handleOpen()}
-          style={{ textTransform: "none" }}
-        >
-          Add User
-        </Button>
+            Manage Users
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            size="small"
+            onClick={() => handleOpen()}
+            style={{ textTransform: "none" }}
+          >
+            Add User
+          </Button>
         </Box>
-        
-        <div style={{ height: "auto", width: "100%", marginTop: "20px" }}>
+
+        <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+          <FormControl
+            variant="outlined"
+            size="small"
+            sx={{ minWidth: 150 }} // เพิ่ม minWidth เพื่อกำหนดความกว้างขั้นต่ำ
+          >
+            <InputLabel>Search By</InputLabel>
+            <Select
+              value={searchField}
+              onChange={(e) => setSearchField(e.target.value)}
+              label="Search By"
+            >
+              <MenuItem value="username">Username</MenuItem>
+              <MenuItem value="email">Email</MenuItem>
+              <MenuItem value="role">Role</MenuItem>
+            </Select>
+          </FormControl>
+          <TextField
+            label={`Search by ${searchField}`}
+            variant="outlined"
+            size="small"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            fullWidth
+          />
+        </Box>
+
+        <div style={{ height: 400, width: "100%" }}>
           <DataGrid
-            rows={users}
+            rows={filteredUsers}
             columns={columns}
             getRowId={(row) => row.user_id}
             loading={loading}
