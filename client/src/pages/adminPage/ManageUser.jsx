@@ -115,15 +115,15 @@ const ManageUser = () => {
   };
 
   const columns = [
-    { field: "user_id", headerName: "ID", width: 90 },
-    { field: "username", headerName: "Username", width: 150 },
-    { field: "email", headerName: "Email", width: 200 },
-    { field: "role", headerName: "Role", width: 150 },
+    { field: "user_id", headerName: "ID", flex: 0.2 },
+    { field: "username", headerName: "Username", flex: 1 },
+    { field: "email", headerName: "Email", flex: 1 },
+    { field: "role", headerName: "Role", flex: 0.4 },
     {
       field: "actions",
       type: "actions",
       headerName: "Actions",
-      width: 150,
+      flex: 1,
       renderHeader: () => <Typography variant="body2">Actions</Typography>,
       getActions: (params) => [
         <GridActionsCellItem
@@ -152,6 +152,7 @@ const ManageUser = () => {
         alignItems: "center",
         minHeight: "90vh",
         mt: 0,
+        padding: { xs: 2, md: 4 },
       }}
     >
       <Box
@@ -162,9 +163,20 @@ const ManageUser = () => {
           padding: "20px",
           width: "100%",
           maxWidth: "900px",
+          overflow: "hidden", // ป้องกันทะลุขอบ
+          textAlign: "center", // ช่วยจัดเรียงกลาง
         }}
       >
-        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            mb: 2,
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "stretch", sm: "center" },
+            gap: 2,
+          }}
+        >
           <Typography variant="h5" gutterBottom>
             Manage Users
           </Typography>
@@ -179,11 +191,11 @@ const ManageUser = () => {
           </Button>
         </Box>
 
-        <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+        <Box sx={{ display: "flex", gap: 2, mb: 2, flexWrap: "wrap" }}>
           <FormControl
             variant="outlined"
             size="small"
-            sx={{ minWidth: 150 }} // เพิ่ม minWidth เพื่อกำหนดความกว้างขั้นต่ำ
+            sx={{ minWidth: { xs: "100%", sm: 150 } }}
           >
             <InputLabel>Search By</InputLabel>
             <Select
@@ -202,19 +214,31 @@ const ManageUser = () => {
             size="small"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            fullWidth
+            sx={{ minWidth: { xs: "100%", sm: 150 } }}
           />
         </Box>
 
-        <div style={{ height: 400, width: "100%" }}>
+        <Box
+          sx={{
+            height: 400,
+            width: "100%",
+            overflow: "hidden",
+          }}
+        >
           <DataGrid
+            autoWidth
             rows={filteredUsers}
             columns={columns}
             getRowId={(row) => row.user_id}
             loading={loading}
             disableSelectionOnClick
+            sx={{
+              "& .MuiDataGrid-root": {
+                border: "none",
+              },
+            }}
           />
-        </div>
+        </Box>
       </Box>
 
       <Dialog open={open} onClose={handleClose}>
