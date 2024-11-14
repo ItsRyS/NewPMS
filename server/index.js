@@ -1,17 +1,20 @@
 require("dotenv").config();
 const express = require("express");
-const path = require("path"); // เพิ่ม path ที่นี่
+const path = require("path");
 const cors = require("cors");
 const bodyParser = require("body-parser");
+
+// Import Routes
 const authRoutes = require("./src/routes/auth");
 const projectRoutes = require("./src/routes/projects");
 const teacherRoutes = require("./src/routes/teacher");
 const documentRoutes = require("./src/routes/document");
+const userRoutes = require("./src/routes/users");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ตั้งค่า CORS ให้รองรับการเชื่อมต่อจาก frontend ที่ http://localhost:5173
+// CORS Configuration
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -19,41 +22,42 @@ app.use(
   })
 );
 
-// Middleware เพื่อแปลงข้อมูล JSON จาก request body
-app.use(express.json());
-app.use(bodyParser.json());
+// Middleware
+app.use(express.json()); // Parse JSON requests
+app.use(bodyParser.json()); // Parse JSON bodies
 
-// เส้นทาง static สำหรับโฟลเดอร์ upload
+// Static Files
 app.use("/upload", express.static(path.join(__dirname, "upload")));
 
-// กำหนดเส้นทาง API สำหรับ projects, auth และ document
+// API Routes
 app.use("/api/projects", projectRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/teacher", teacherRoutes);
 app.use("/api/document", documentRoutes);
+app.use("/api/users", userRoutes);
 
-// Endpoint ใหม่สำหรับทดสอบการเชื่อมต่อ API
+// Test Endpoint
 app.get("/api/test", (req, res) => {
   res.json({ message: "API is working!" });
 });
 
-// Endpoint ที่ root path
+// Root Endpoint
 app.get("/", (req, res) => {
   res.send("Hello from server");
 });
 
-// จัดการกรณีไม่พบ endpoint ที่ระบุ
-app.use((req, res, next) => {
+// Handle 404 Not Found
+app.use((req, res) => {
   res.status(404).json({ error: "Endpoint not found" });
 });
 
-// จัดการข้อผิดพลาดทั้งหมด
+// Global Error Handler
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: "An unexpected error occurred" });
+  console.error("Error stack:", err.stack); // Log error stack for debugging
+  res.status(500).json({ error: "An unexpected error occurred", details: err.message });
 });
 
-// เริ่มเซิร์ฟเวอร์
+// Start Server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
