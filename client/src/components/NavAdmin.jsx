@@ -78,10 +78,22 @@ export default function NavAdmin({ onMenuClick }) {
               <NotificationsIcon />
             </Badge>
           </IconButton>
+          <Box onClick={handleMenuOpen} 
+            sx={{
+              justifyContent: "space-between",
+              display: "flex",
+              alignItems: "center",
+              p : 1
+            }}
+          >
+            <IconButton >
+              <Avatar alt={username} src="https://i.pravatar.cc/300" />
+            </IconButton>
+            <Typography variant="body2" sx={{ color: "#333" }}>
+              {username || "User not found"}
+            </Typography>
+          </Box>
 
-          <IconButton onClick={handleMenuOpen} sx={{ p: 0 }}>
-            <Avatar alt={username} src="https://i.pravatar.cc/300" />
-          </IconButton>
           <Menu
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
