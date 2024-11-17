@@ -40,21 +40,41 @@ exports.createUser = async (req, res) => {
 };
 
 // Update user
-exports.updateUser = (req, res) => {
+exports.updateUser = async (req, res) => {
   const { id } = req.params;
-  const { username, email, role } = req.body;
+  const { username, email, role, password } = req.body;
 
-  db.query(
-    'UPDATE users SET username = ?, email = ?, role = ? WHERE user_id = ?',
-    [username, email, role, id],
-    (err) => {
-      if (err) {
-        console.error('Failed to update user:', err);
-        return res.status(500).json({ error: 'Failed to update user' });
-      }
-      res.json({ message: 'User updated successfully' });
+  try {
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      db.query(
+        'UPDATE users SET username = ?, email = ?, role = ?, password = ? WHERE user_id = ?',
+        [username, email, role, hashedPassword, id],
+        (err) => {
+          if (err) {
+            console.error('Failed to update user:', err);
+            return res.status(500).json({ error: 'Failed to update user' });
+          }
+          res.json({ message: 'User updated successfully' });
+        }
+      );
+    } else {
+      db.query(
+        'UPDATE users SET username = ?, email = ?, role = ? WHERE user_id = ?',
+        [username, email, role, id],
+        (err) => {
+          if (err) {
+            console.error('Failed to update user:', err);
+            return res.status(500).json({ error: 'Failed to update user' });
+          }
+          res.json({ message: 'User updated successfully' });
+        }
+      );
     }
-  );
+  } catch (error) {
+    console.error('Error updating user:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 };
 
 // Delete user

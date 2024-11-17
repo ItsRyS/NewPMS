@@ -163,8 +163,6 @@ const ManageUser = () => {
           padding: "20px",
           width: "100%",
           maxWidth: "900px",
-          overflow: "hidden", // ป้องกันทะลุขอบ
-          textAlign: "center", // ช่วยจัดเรียงกลาง
         }}
       >
         <Box
@@ -172,9 +170,6 @@ const ManageUser = () => {
             display: "flex",
             justifyContent: "space-between",
             mb: 2,
-            flexDirection: { xs: "column", sm: "row" },
-            alignItems: { xs: "stretch", sm: "center" },
-            gap: 2,
           }}
         >
           <Typography variant="h5" gutterBottom>
@@ -185,13 +180,12 @@ const ManageUser = () => {
             color="primary"
             size="small"
             onClick={() => handleOpen()}
-            style={{ textTransform: "none" }}
           >
             Add User
           </Button>
         </Box>
 
-        <Box sx={{ display: "flex", gap: 2, mb: 2, flexWrap: "wrap" }}>
+        <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
           <FormControl
             variant="outlined"
             size="small"
@@ -214,7 +208,7 @@ const ManageUser = () => {
             size="small"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            sx={{ minWidth: { xs: "100%", sm: 150 } }}
+            fullWidth
           />
         </Box>
 
@@ -222,7 +216,6 @@ const ManageUser = () => {
           sx={{
             height: 400,
             width: "100%",
-            overflow: "hidden",
           }}
         >
           <DataGrid
@@ -232,11 +225,6 @@ const ManageUser = () => {
             getRowId={(row) => row.user_id}
             loading={loading}
             disableSelectionOnClick
-            sx={{
-              "& .MuiDataGrid-root": {
-                border: "none",
-              },
-            }}
           />
         </Box>
       </Box>
@@ -244,43 +232,47 @@ const ManageUser = () => {
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>{editUser ? "Edit User" : "Add User"}</DialogTitle>
         <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Username"
-            fullWidth
-            value={form.username}
-            onChange={(e) => setForm({ ...form, username: e.target.value })}
-            error={!!errors.username}
-            helperText={errors.username}
-          />
-          <TextField
-            margin="dense"
-            label="Email"
-            fullWidth
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-            error={!!errors.email}
-            helperText={errors.email}
-          />
-          {!editUser && (
-            <TextField
-              margin="dense"
-              label="Password"
-              type="password"
-              fullWidth
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-            />
-          )}
-          <TextField
-            margin="dense"
-            label="Role"
-            fullWidth
-            value={form.role}
-            onChange={(e) => setForm({ ...form, role: e.target.value })}
-          />
-        </DialogContent>
+  <TextField
+    autoFocus
+    margin="dense"
+    label="Username"
+    fullWidth
+    value={form.username}
+    onChange={(e) => setForm({ ...form, username: e.target.value })}
+    error={!!errors.username}
+    helperText={errors.username}
+  />
+  <TextField
+    margin="dense"
+    label="Email"
+    fullWidth
+    value={form.email}
+    onChange={(e) => setForm({ ...form, email: e.target.value })}
+    error={!!errors.email}
+    helperText={errors.email}
+  />
+  <TextField
+    margin="dense"
+    label="Password"
+    type="password"
+    fullWidth
+    value={form.password}
+    onChange={(e) => setForm({ ...form, password: e.target.value })}
+  />
+  
+  {/* เปลี่ยนจาก TextField เป็น Select สำหรับ Role */}
+  <FormControl fullWidth margin="dense">
+    <InputLabel>Role</InputLabel>
+    <Select
+      value={form.role}
+      onChange={(e) => setForm({ ...form, role: e.target.value })}
+      label="Role"
+    >
+      <MenuItem value="admin">Admin</MenuItem>
+      <MenuItem value="student">Student</MenuItem>
+    </Select>
+  </FormControl>
+</DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
           <Button onClick={handleSubmit} variant="contained" color="primary">

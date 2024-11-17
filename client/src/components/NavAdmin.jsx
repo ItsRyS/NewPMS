@@ -98,9 +98,9 @@ export default function NavAdmin({ onMenuClick }) {
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
             onClose={handleMenuClose}
-            PaperProps={{
-              sx: {
-                mt: 1.5,
+            sx={{
+              "& .MuiMenu-paper": {
+                mt: 0,
                 minWidth: 150,
                 backgroundColor: "#ffffff",
                 color: "#333",
@@ -111,12 +111,8 @@ export default function NavAdmin({ onMenuClick }) {
                 },
               },
             }}
+            
           >
-            <MenuItem disabled>
-              <Typography variant="body2">
-                {username || "User not found"}
-              </Typography>
-            </MenuItem>
             <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
             <MenuItem onClick={handleMenuClose}>Settings</MenuItem>
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
