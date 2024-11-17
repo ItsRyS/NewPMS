@@ -1,6 +1,17 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
-import { Drawer, Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Divider, Collapse } from "@mui/material";
+import {
+  Drawer,
+  Box,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Typography,
+  Divider,
+  Collapse,
+} from "@mui/material";
 import { Link } from "react-router-dom";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PeopleIcon from "@mui/icons-material/People";
@@ -36,7 +47,14 @@ export default function SideAdmin({ open, onClose, isMobile }) {
         keepMounted: true,
       }}
     >
-      <Box sx={{ padding: 2, display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <Box
+        sx={{
+          padding: 2,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
         <Typography variant="h6" sx={{ fontWeight: "bold", color: "#ffffff" }}>
           IT-PMS
         </Typography>
@@ -65,6 +83,14 @@ export default function SideAdmin({ open, onClose, isMobile }) {
             <ListItemText primary="Manage Users" />
           </ListItemButton>
         </ListItem>
+        <ListItem disablePadding>
+          <ListItemButton component={Link} to="/adminHome/TeacherInfo">
+            <ListItemIcon>
+              <PeopleIcon sx={{ color: "#9CA3AF" }} />
+            </ListItemIcon>
+            <ListItemText primary="Add TeacherInfo" />
+          </ListItemButton>
+        </ListItem>
 
         <Typography variant="body2" sx={{ padding: 2, color: "#9CA3AF" }}>
           Project Management
@@ -78,13 +104,21 @@ export default function SideAdmin({ open, onClose, isMobile }) {
         </ListItemButton>
         <Collapse in={openProjectManagement} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>
-            <ListItemButton component={Link} to="/adminHome/CheckProject" sx={{ pl: 4 }}>
+            <ListItemButton
+              component={Link}
+              to="/adminHome/CheckProject"
+              sx={{ pl: 4 }}
+            >
               <ListItemIcon>
                 <CheckCircleIcon sx={{ color: "#9CA3AF" }} />
               </ListItemIcon>
               <ListItemText primary="Check Project" />
             </ListItemButton>
-            <ListItemButton component={Link} to="/adminHome/release-project" sx={{ pl: 4 }}>
+            <ListItemButton
+              component={Link}
+              to="/adminHome/release-project"
+              sx={{ pl: 4 }}
+            >
               <ListItemIcon>
                 <CheckCircleIcon sx={{ color: "#9CA3AF" }} />
               </ListItemIcon>

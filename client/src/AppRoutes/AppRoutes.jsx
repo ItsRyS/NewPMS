@@ -13,6 +13,8 @@ import CheckProject from "../pages/adminPage/CheckProject";
 import ManageUser from "../pages/adminPage/ManageUser";
 import ReleaseProject from "../pages/adminPage/ReleaseProject";
 import UploadDoc from "../pages/adminPage/UploadDoc";
+import TeacherInfo from "../pages/adminPage/TeacherInfo";
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -33,6 +35,7 @@ const router = createBrowserRouter([
       { path: "manage-user", element: <ManageUser /> },
       { path: "release-project", element: <ReleaseProject /> },
       { path: "upload-doc", element: <UploadDoc /> },
+      { path: "TeacherInfo", element: <TeacherInfo /> },
     ],
   },
   {
