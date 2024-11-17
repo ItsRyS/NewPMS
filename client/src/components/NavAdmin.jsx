@@ -41,7 +41,7 @@ export default function NavAdmin({ onMenuClick }) {
     localStorage.removeItem("token");
     localStorage.removeItem("username"); // ลบชื่อผู้ใช้เมื่อออกจากระบบ
     handleMenuClose();
-    navigate("/SignIn");
+    navigate("/");
   };
 
   return (
