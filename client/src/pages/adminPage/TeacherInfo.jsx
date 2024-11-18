@@ -13,6 +13,7 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  Typography,
 } from "@mui/material";
 import api from "../../services/api"; // Axios instance
 
@@ -26,11 +27,13 @@ const TeacherInfo = () => {
     teacher_expert: "",
     teacher_image: null, // เก็บไฟล์
   });
-  const [selectedFileName, setSelectedFileName] = useState(""); // เก็บชื่อไฟล์ที่เลือก
+  const [selectedFileName, setSelectedFileName] = useState(""); // ชื่อไฟล์ที่เลือก
   const [isEdit, setIsEdit] = useState(false);
   const [editId, setEditId] = useState(null);
   const [viewTeacher, setViewTeacher] = useState(null);
   const [openForm, setOpenForm] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [teacherToDelete, setTeacherToDelete] = useState(null); // ติดตามข้อมูลอาจารย์ที่จะลบ
 
   useEffect(() => {
     fetchTeachers();
@@ -45,10 +48,23 @@ const TeacherInfo = () => {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = (teacher) => {
+    setTeacherToDelete(teacher);
+    setConfirmDelete(true);
+  };
+
+  const confirmDeleteTeacher = async () => {
+    if (!teacherToDelete || !teacherToDelete.teacher_id) {
+      console.error("Teacher ID is undefined. Cannot delete.");
+      setConfirmDelete(false);
+      return;
+    }
+
     try {
-      await api.delete(`/teacher/${id}`);
+      await api.delete(`/teacher/${teacherToDelete.teacher_id}`);
       fetchTeachers();
+      setConfirmDelete(false);
+      setTeacherToDelete(null);
     } catch (error) {
       console.error("Failed to delete teacher:", error);
     }
@@ -61,9 +77,9 @@ const TeacherInfo = () => {
       teacher_email: teacher.teacher_email,
       teacher_bio: teacher.teacher_bio,
       teacher_expert: teacher.teacher_expert,
-      teacher_image: teacher.teacher_image || null, // เก็บค่ารูปภาพปัจจุบันหรือ NULL
+      teacher_image: teacher.teacher_image || null, // คงค่ารูปภาพปัจจุบัน
     });
-    setSelectedFileName("");
+    setSelectedFileName(teacher.teacher_image ? teacher.teacher_image : ""); // ชื่อรูปเดิม
     setIsEdit(true);
     setEditId(teacher.teacher_id);
     setOpenForm(true);
@@ -86,7 +102,7 @@ const TeacherInfo = () => {
       teacher_expert: "",
       teacher_image: null,
     });
-    setSelectedFileName(""); // รีเซ็ตชื่อไฟล์เมื่อเพิ่มข้อมูลใหม่
+    setSelectedFileName("");
     setIsEdit(false);
     setOpenForm(true);
   };
@@ -100,7 +116,7 @@ const TeacherInfo = () => {
   const handleFileChange = (e) => {
     if (e.target.files.length > 0) {
       setForm({ ...form, teacher_image: e.target.files[0] });
-      setSelectedFileName(e.target.files[0].name); // แสดงชื่อไฟล์ที่เลือก
+      setSelectedFileName(e.target.files[0].name);
     }
   };
 
@@ -114,9 +130,9 @@ const TeacherInfo = () => {
     formData.append("teacher_expert", form.teacher_expert || "");
 
     if (form.teacher_image instanceof File) {
-      formData.append("teacher_image", form.teacher_image); // แนบไฟล์ใหม่
-    } else {
-      formData.append("teacher_image", form.teacher_image || ""); // ส่งค่ารูปภาพปัจจุบันหรือ NULL
+      formData.append("teacher_image", form.teacher_image);
+    } else if (isEdit && selectedFileName) {
+      formData.append("teacher_image", selectedFileName);
     }
 
     try {
@@ -143,35 +159,88 @@ const TeacherInfo = () => {
         Add New Teacher
       </Button>
 
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>ID</TableCell>
+              <TableCell>Name</TableCell>
+              <TableCell>Phone</TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell>Expertise</TableCell>
+              <TableCell>Image</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {teachers.map((teacher) => (
+              <TableRow key={teacher.teacher_id}>
+                <TableCell>{teacher.teacher_id}</TableCell>
+                <TableCell>{teacher.teacher_name}</TableCell>
+                <TableCell>{teacher.teacher_phone}</TableCell>
+                <TableCell>{teacher.teacher_email}</TableCell>
+                <TableCell>{teacher.teacher_expert}</TableCell>
+                <TableCell>
+                  {teacher.teacher_image ? (
+                    <img
+                      src={`http://localhost:5000/upload/pic/${teacher.teacher_image}`}
+                      alt={teacher.teacher_name}
+                      style={{ width: 50, height: 50, objectFit: "cover" }}
+                    />
+                  ) : (
+                    <span>No Image</span>
+                  )}
+                </TableCell>
+                <TableCell>
+                  <Button onClick={() => handleView(teacher)} color="primary">
+                    View
+                  </Button>
+                  <Button onClick={() => handleEdit(teacher)} color="warning">
+                    Edit
+                  </Button>
+                  <Button onClick={() => handleDelete(teacher)} color="error">
+                    Delete
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {/* Confirm Delete Dialog */}
+      <Dialog open={confirmDelete} onClose={() => setConfirmDelete(false)}>
+        <DialogTitle>ยืนยันการลบ</DialogTitle>
+        <DialogContent>
+          <Typography>
+            คุณต้องการลบอาจารย์ {teacherToDelete?.teacher_name} หรือไม่?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDelete(false)} color="secondary">
+            ยกเลิก
+          </Button>
+          <Button onClick={confirmDeleteTeacher} color="error">
+            ลบ
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* View Teacher Dialog */}
       {viewTeacher && (
         <Dialog open={!!viewTeacher} onClose={handleCloseView}>
           <DialogTitle>Teacher Details</DialogTitle>
           <DialogContent>
-            <p>
-              <strong>Name:</strong> {viewTeacher.teacher_name}
-            </p>
-            <p>
-              <strong>Phone:</strong> {viewTeacher.teacher_phone}
-            </p>
-            <p>
-              <strong>Email:</strong> {viewTeacher.teacher_email}
-            </p>
-            <p>
-              <strong>Bio:</strong> {viewTeacher.teacher_bio}
-            </p>
-            <p>
-              <strong>Expertise:</strong> {viewTeacher.teacher_expert}
-            </p>
+            <p><strong>Name:</strong> {viewTeacher.teacher_name}</p>
+            <p><strong>Phone:</strong> {viewTeacher.teacher_phone}</p>
+            <p><strong>Email:</strong> {viewTeacher.teacher_email}</p>
+            <p><strong>Expertise:</strong> {viewTeacher.teacher_expert}</p>
             {viewTeacher.teacher_image && (
-              <p>
-                <strong>Image:</strong>
-                <br />
-                <img
-                  src={`http://localhost:5000/upload/pic/${viewTeacher.teacher_image}`}
-                  alt={viewTeacher.teacher_name}
-                  style={{ width: 100, height: 100, objectFit: "cover" }}
-                />
-              </p>
+              <img
+                src={`http://localhost:5000/upload/pic/${viewTeacher.teacher_image}`}
+                alt={viewTeacher.teacher_name}
+                style={{ width: 100, height: 100, objectFit: "cover" }}
+              />
             )}
           </DialogContent>
           <DialogActions>
@@ -180,6 +249,7 @@ const TeacherInfo = () => {
         </Dialog>
       )}
 
+      {/* Form Dialog */}
       <Dialog open={openForm} onClose={handleCloseForm}>
         <DialogTitle>{isEdit ? "Edit Teacher" : "Add New Teacher"}</DialogTitle>
         <DialogContent>
@@ -249,59 +319,6 @@ const TeacherInfo = () => {
           </form>
         </DialogContent>
       </Dialog>
-
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Phone</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Expertise</TableCell>
-              <TableCell>Image</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {teachers.map((teacher) => (
-              <TableRow key={teacher.teacher_id}>
-                <TableCell>{teacher.teacher_id}</TableCell>
-                <TableCell>{teacher.teacher_name}</TableCell>
-                <TableCell>{teacher.teacher_phone}</TableCell>
-                <TableCell>{teacher.teacher_email}</TableCell>
-                <TableCell>{teacher.teacher_expert}</TableCell>
-                <TableCell>
-                  {teacher.teacher_image ? (
-                    <img
-                      src={`http://localhost:5000/upload/pic/${teacher.teacher_image}`}
-                      alt={teacher.teacher_name}
-                      style={{ width: 50, height: 50, objectFit: "cover" }}
-                    />
-                  ) : (
-                    <span>No Image</span>
-                  )}
-                </TableCell>
-
-                <TableCell>
-                  <Button onClick={() => handleView(teacher)} color="primary">
-                    View
-                  </Button>
-                  <Button onClick={() => handleEdit(teacher)} color="warning">
-                    Edit
-                  </Button>
-                  <Button
-                    onClick={() => handleDelete(teacher.teacher_id)}
-                    color="error"
-                  >
-                    Delete
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
     </div>
   );
 };

@@ -1,6 +1,7 @@
 const multer = require('multer');
 const path = require('path');
 const db = require("../config/db");
+const fs = require('fs');
 
 // ตั้งค่า Storage และ Path
 const storage = multer.diskStorage({
@@ -58,7 +59,7 @@ exports.createTeacher = (req, res) => {
 exports.updateTeacher = (req, res) => {
   const { id } = req.params;
   const { teacher_name, teacher_phone, teacher_email, teacher_bio, teacher_expert } = req.body;
-  let teacher_image = req.file ? req.file.filename : req.body.teacher_image; 
+  let teacher_image = req.file ? req.file.filename : req.body.teacher_image;
 
   if (!teacher_name || !teacher_email) {
     return res.status(400).json({ error: "Missing required fields" });
@@ -89,15 +90,43 @@ exports.updateTeacher = (req, res) => {
   });
 };
 
-
 // ลบข้อมูลอาจารย์
 exports.deleteTeacher = (req, res) => {
   const { id } = req.params;
-  db.query("DELETE FROM teacher_info WHERE teacher_id = ?", [id], (err, result) => {
-    if (err) return res.status(500).json({ error: "Database delete failed" });
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: "Teacher not found" });
+
+  // ค้นหาไฟล์รูปภาพในฐานข้อมูล
+  const findImageQuery = 'SELECT teacher_image FROM teacher_info WHERE teacher_id = ?';
+  db.query(findImageQuery, [id], (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: 'Database query failed' });
     }
-    res.json({ message: "Teacher deleted" });
+
+    if (results.length > 0 && results[0].teacher_image) {
+      // ชี้ไปที่ตำแหน่งไฟล์จริง
+      const imagePath = path.join(__dirname, '../../upload/pic', results[0].teacher_image);
+
+      // ตรวจสอบไฟล์ก่อนลบ
+      if (fs.existsSync(imagePath)) {
+        fs.unlink(imagePath, (unlinkErr) => {
+          if (unlinkErr) {
+            console.error('Failed to delete image:', unlinkErr);
+          } else {
+            console.log('Image deleted successfully:', imagePath);
+          }
+        });
+      } else {
+        console.warn('Image file not found, skipping deletion:', imagePath);
+      }
+    }
+
+    // ลบข้อมูลอาจารย์จากฐานข้อมูล
+    const deleteQuery = 'DELETE FROM teacher_info WHERE teacher_id = ?';
+    db.query(deleteQuery, [id], (deleteErr) => {
+      if (deleteErr) {
+        return res.status(500).json({ error: 'Failed to delete teacher' });
+      }
+
+      res.json({ message: 'Teacher deleted successfully' });
+    });
   });
 };
