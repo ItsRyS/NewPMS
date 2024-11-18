@@ -1,4 +1,20 @@
+const multer = require('multer');
+const path = require('path');
 const db = require("../config/db");
+
+// ตั้งค่า Storage และ Path
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, './upload/pic'); // เก็บรูปภาพในโฟลเดอร์ pic ภายใต้ upload
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); // ใช้ timestamp + นามสกุลไฟล์
+  }
+});
+
+const upload = multer({ storage: storage });
+
+exports.uploadMiddleware = upload.single('teacher_image');
 
 // ดึงข้อมูลอาจารย์ทั้งหมด
 exports.getAllTeachers = (req, res) => {
@@ -20,13 +36,15 @@ exports.getTeacherById = (req, res) => {
 
 // สร้างข้อมูลอาจารย์ใหม่
 exports.createTeacher = (req, res) => {
-  const { teacher_name, teacher_phone, teacher_email, teacher_bio, teacher_expert, teacher_image } = req.body;
+  const { teacher_name, teacher_phone, teacher_email, teacher_bio, teacher_expert } = req.body;
+  const teacher_image = req.file ? req.file.filename : null;
+
   if (!teacher_name || !teacher_email) {
     return res.status(400).json({ error: "Missing required fields" });
   }
 
   const sql = `
-    INSERT INTO teacher_info (teacher_name, teacher_phone, teacher_email, teacher_bio, teacher_expert, teacher_image) 
+    INSERT INTO teacher_info (teacher_name, teacher_phone, teacher_email, teacher_bio, teacher_expert, teacher_image)
     VALUES (?, ?, ?, ?, ?, ?)
   `;
 
@@ -39,10 +57,16 @@ exports.createTeacher = (req, res) => {
 // อัปเดตข้อมูลอาจารย์
 exports.updateTeacher = (req, res) => {
   const { id } = req.params;
-  const { teacher_name, teacher_phone, teacher_email, teacher_bio, teacher_expert, teacher_image } = req.body;
+  const { teacher_name, teacher_phone, teacher_email, teacher_bio, teacher_expert } = req.body;
+  let teacher_image = req.file ? req.file.filename : req.body.teacher_image; 
 
   if (!teacher_name || !teacher_email) {
     return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  // หากไม่มีการอัปโหลดรูปภาพและไม่มีค่าภายในฐานข้อมูล
+  if (!teacher_image) {
+    teacher_image = null; // ปล่อยให้เป็นค่า NULL ได้
   }
 
   const sql = `
@@ -64,6 +88,7 @@ exports.updateTeacher = (req, res) => {
     res.json({ message: "Teacher updated successfully" });
   });
 };
+
 
 // ลบข้อมูลอาจารย์
 exports.deleteTeacher = (req, res) => {

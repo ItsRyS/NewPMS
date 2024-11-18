@@ -28,7 +28,7 @@ app.use(bodyParser.json()); // Parse JSON bodies
 
 // Static Files
 app.use("/upload", express.static(path.join(__dirname, "upload")));
-
+app.use('/upload', express.static('upload')); // ให้บริการไฟล์ในโฟลเดอร์ upload
 // API Routes
 app.use("/api/projects", projectRoutes);
 app.use("/api/auth", authRoutes);
