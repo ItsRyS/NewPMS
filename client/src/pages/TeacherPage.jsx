@@ -29,6 +29,8 @@ const TeacherPage = () => {
   const [expertiseFilter, setExpertiseFilter] = useState(""); // Expertise filter
   const [expertiseOptions, setExpertiseOptions] = useState([]); // Dropdown options
 
+  const placeholderImage = "https://via.placeholder.com/140x100?text=No+Image"; // Placeholder URL
+
   const handleOpen = (teacher) => {
     setSelectedTeacher(teacher);
     setOpen(true);
@@ -76,7 +78,8 @@ const TeacherPage = () => {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       <NavbarHome />
-      <Box sx={{ flex: 1, paddingBottom: "64px" }}> {/* Adds space for the fixed footer */}
+      <Box sx={{ flex: 1, paddingBottom: "64px" }}>
+        {/* Adds space for the fixed footer */}
         <Container
           className="content-teacher"
           maxWidth="lg"
@@ -85,12 +88,11 @@ const TeacherPage = () => {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            marginBlock : "90px",
+            marginBlock: "90px",
             justifyContent: "center",
             boxShadow: 10,
             borderRadius: "12px",
             padding: 0,
-            
           }}
         >
           <Box sx={{ width: "100%", padding: 2 }}>
@@ -141,8 +143,12 @@ const TeacherPage = () => {
                     <CardMedia
                       component="img"
                       height="140"
-                      image={teacher.teacher_image}
-                      alt={teacher.teacher_name}
+                      image={
+                        teacher.teacher_image
+                          ? `http://localhost:5000/upload/pic/${teacher.teacher_image}`
+                          : placeholderImage
+                      }
+                      alt={teacher.teacher_name || "No Image"}
                     />
                     <CardContent>
                       <Typography variant="h6">{teacher.teacher_name}</Typography>
@@ -175,8 +181,12 @@ const TeacherPage = () => {
                     <CardMedia
                       component="img"
                       height="200"
-                      image={selectedTeacher.teacher_image}
-                      alt={selectedTeacher.teacher_name}
+                      image={
+                        selectedTeacher.teacher_image
+                          ? `http://localhost:5000/upload/pic/${selectedTeacher.teacher_image}`
+                          : placeholderImage
+                      }
+                      alt={selectedTeacher.teacher_name || "No Image"}
                     />
                     <Typography variant="h5" gutterBottom>
                       {selectedTeacher.teacher_name}
@@ -191,9 +201,14 @@ const TeacherPage = () => {
                       <strong>ความชำนาญ:</strong> {selectedTeacher.teacher_expert}
                     </Typography>
                     <Typography variant="body1">
-                      <strong>ข้อมูลเพิ่มเติม:</strong> {selectedTeacher.teacher_bio}
+                      <strong>ข้อมูลเพิ่มเติม:</strong>{" "}
+                      {selectedTeacher.teacher_bio}
                     </Typography>
-                    <Button onClick={handleClose} variant="contained" sx={{ mt: 2 }}>
+                    <Button
+                      onClick={handleClose}
+                      variant="contained"
+                      sx={{ mt: 2 }}
+                    >
                       ปิด
                     </Button>
                   </>
