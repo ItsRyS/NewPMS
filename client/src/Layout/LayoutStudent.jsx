@@ -15,7 +15,15 @@ const LayoutStudent = () => {
         handleDrawerToggle={() => {}}
         setTitle={setTitle}
       />
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+      {/* เพิ่มการเว้นที่สำหรับ Sidebar */}
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+          marginLeft: { sm: "240px" }, // เว้นที่สำหรับ Sidebar
+        }}
+      >
         <Toolbar />
         <Outlet />
       </Box>
