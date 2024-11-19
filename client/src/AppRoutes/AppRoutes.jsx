@@ -15,6 +15,7 @@ import ReleaseProject from "../pages/adminPage/ReleaseProject";
 import UploadDoc from "../pages/adminPage/UploadDoc";
 import TeacherInfo from "../pages/adminPage/TeacherInfo";
 
+import SideStudent from "../components/SideStudent";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -41,7 +42,10 @@ const router = createBrowserRouter([
   {
     path: "/studentHome",
     element: <LayoutStudent />,
-    children: [{ index: true, element: <StudentHome /> }],
+    children: [
+      { index: true, element: <StudentHome /> },
+      { path: "SideStudent", element: <SideStudent /> },
+    ],
   },
 ]);
 
