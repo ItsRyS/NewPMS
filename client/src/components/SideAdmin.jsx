@@ -11,6 +11,7 @@ import {
   Typography,
   Divider,
   Collapse,
+  Toolbar,
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -47,6 +48,9 @@ export default function SideAdmin({ open, onClose, isMobile }) {
         keepMounted: true,
       }}
     >
+      {/* Toolbar เพื่อเว้นระยะห่างจาก AppBar */}
+      <Toolbar />
+
       <Box
         sx={{
           padding: 2,

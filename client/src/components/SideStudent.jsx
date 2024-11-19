@@ -1,93 +1,116 @@
-
-import { Drawer, List, ListItem, ListItemIcon, ListItemText, IconButton } from '@mui/material';
-import { Home, School, Assignment, AccountCircle, Logout } from '@mui/icons-material';
-import MenuIcon from '@mui/icons-material/Menu';
-import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import PropTypes from "prop-types"; // Import PropTypes
+import {
+  Drawer,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Toolbar,
+} from "@mui/material";
+import { Home, School, Assignment, Logout } from "@mui/icons-material";
+import { NavLink, useNavigate } from "react-router-dom"; // Import useNavigate
 
 const drawerWidth = 240;
 
-const SideStudent = () => {
-    const [mobileOpen, setMobileOpen] = useState(false);
+const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
+  const navigate = useNavigate(); // ใช้ useNavigate สำหรับนำทาง
 
-    const handleDrawerToggle = () => {
-        setMobileOpen(!mobileOpen);
-    };
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+    navigate("/"); // นำทางกลับไปยังหน้าหลัก
+  };
 
-    const drawerContent = (
-        <div>
-            <List>
-                <NavLink to="/dashboard" style={{ textDecoration: 'none', color: 'inherit' }}>
-                    <ListItem button>
-                        <ListItemIcon><Home /></ListItemIcon>
-                        <ListItemText primary="Dashboard" />
-                    </ListItem>
-                </NavLink>
-                <NavLink to="/courses" style={{ textDecoration: 'none', color: 'inherit' }}>
-                    <ListItem button>
-                        <ListItemIcon><School /></ListItemIcon>
-                        <ListItemText primary="Courses" />
-                    </ListItem>
-                </NavLink>
-                <NavLink to="/assignments" style={{ textDecoration: 'none', color: 'inherit' }}>
-                    <ListItem button>
-                        <ListItemIcon><Assignment /></ListItemIcon>
-                        <ListItemText primary="Assignments" />
-                    </ListItem>
-                </NavLink>
-                <NavLink to="/profile" style={{ textDecoration: 'none', color: 'inherit' }}>
-                    <ListItem button>
-                        <ListItemIcon><AccountCircle /></ListItemIcon>
-                        <ListItemText primary="Profile" />
-                    </ListItem>
-                </NavLink>
-                <NavLink to="/logout" style={{ textDecoration: 'none', color: 'inherit' }}>
-                    <ListItem button>
-                        <ListItemIcon><Logout /></ListItemIcon>
-                        <ListItemText primary="Logout" />
-                    </ListItem>
-                </NavLink>
-            </List>
-        </div>
-    );
+  const drawerContent = (
+    <>
+      <Toolbar />
+      <List>
+        <NavLink
+          to="/studentHome"
+          style={{ textDecoration: "none", color: "inherit" }}
+        >
+          <ListItemButton onClick={() => setTitle("Dashboard")}>
+            <ListItemIcon>
+              <Home />
+            </ListItemIcon>
+            <ListItemText primary="Dashboard" />
+          </ListItemButton>
+        </NavLink>
+        <NavLink
+          to="/studentHome/Documentation"
+          style={{ textDecoration: "none", color: "inherit" }}
+        >
+          <ListItemButton onClick={() => setTitle("Documentation")}>
+            <ListItemIcon>
+              <School />
+            </ListItemIcon>
+            <ListItemText primary="Documentation" />
+          </ListItemButton>
+        </NavLink>
+        <NavLink
+          to="/studentHome/projectRequest"
+          style={{ textDecoration: "none", color: "inherit" }}
+        >
+          <ListItemButton onClick={() => setTitle("Project Request")}>
+            <ListItemIcon>
+              <Assignment />
+            </ListItemIcon>
+            <ListItemText primary="Project Request" />
+          </ListItemButton>
+        </NavLink>
+        <NavLink
+          to="/studentHome/SendProject"
+          style={{ textDecoration: "none", color: "inherit" }}
+        >
+          <ListItemButton onClick={() => setTitle("Send Project")}>
+            <ListItemIcon>
+              <Assignment />
+            </ListItemIcon>
+            <ListItemText primary="Send Project" />
+          </ListItemButton>
+        </NavLink>
+        <ListItemButton onClick={handleLogout}>
+          <ListItemIcon>
+            <Logout />
+          </ListItemIcon>
+          <ListItemText primary="Logout" />
+        </ListItemButton>
+      </List>
+    </>
+  );
 
-    return (
-        <div style={{ display: 'flex' }}>
-            <IconButton
-                color="inherit"
-                aria-label="open drawer"
-                edge="start"
-                onClick={handleDrawerToggle}
-                sx={{ display: { sm: 'none' } }}
-            >
-                <MenuIcon />
-            </IconButton>
-            <Drawer
-                variant="temporary"
-                open={mobileOpen}
-                onClose={handleDrawerToggle}
-                ModalProps={{
-                    keepMounted: true,
-                }}
-                sx={{
-                    display: { xs: 'block', sm: 'none' },
-                    '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
-                }}
-            >
-                {drawerContent}
-            </Drawer>
-            <Drawer
-                variant="permanent"
-                sx={{
-                    display: { xs: 'none', sm: 'block' },
-                    '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
-                }}
-                open
-            >
-                {drawerContent}
-            </Drawer>
-        </div>
-    );
+  return (
+    <>
+      <Drawer
+        variant="temporary"
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        ModalProps={{ keepMounted: true }}
+        sx={{
+          display: { xs: "block", sm: "none" },
+          "& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
+        }}
+      >
+        {drawerContent}
+      </Drawer>
+      <Drawer
+        variant="permanent"
+        sx={{
+          display: { xs: "none", sm: "block" },
+          "& .MuiDrawer-paper": { width: drawerWidth, boxSizing: "border-box" },
+        }}
+        open
+      >
+        {drawerContent}
+      </Drawer>
+    </>
+  );
+};
+
+SideStudent.propTypes = {
+  mobileOpen: PropTypes.bool.isRequired,
+  handleDrawerToggle: PropTypes.func.isRequired,
+  setTitle: PropTypes.func.isRequired,
 };
 
 export default SideStudent;

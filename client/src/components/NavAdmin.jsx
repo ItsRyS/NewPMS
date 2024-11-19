@@ -21,7 +21,7 @@ export default function NavAdmin({ onMenuClick }) {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   useEffect(() => {
-    const storedUsername = localStorage.getItem("username"); // ดึงชื่อผู้ใช้จาก localStorage
+    const storedUsername = localStorage.getItem("username"); 
     if (storedUsername) {
       setUsername(storedUsername);
     } else {
@@ -39,7 +39,7 @@ export default function NavAdmin({ onMenuClick }) {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("username"); // ลบชื่อผู้ใช้เมื่อออกจากระบบ
+    localStorage.removeItem("username");
     handleMenuClose();
     navigate("/");
   };
@@ -51,7 +51,7 @@ export default function NavAdmin({ onMenuClick }) {
         backgroundColor: "#ffffff",
         boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
         color: "#333",
-        zIndex: 1201,
+        zIndex: (theme) => theme.zIndex.drawer + 1, // Ensure AppBar is above Drawer
         width: isMobile ? "100%" : "calc(100% - 240px)",
         ml: isMobile ? 0 : "240px",
       }}
@@ -69,7 +69,13 @@ export default function NavAdmin({ onMenuClick }) {
         )}
 
         <Typography variant="h6" sx={{ color: "#333", fontWeight: "bold" }}>
-          Dashboard
+          <Box>
+            <img
+              src="/it_logo2.svg"
+              alt="IT-PMS Logo"
+              style={{ height: "60px", width: "auto", marginRight: "8px" }}
+            />
+          </Box>
         </Typography>
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
@@ -78,15 +84,16 @@ export default function NavAdmin({ onMenuClick }) {
               <NotificationsIcon />
             </Badge>
           </IconButton>
-          <Box onClick={handleMenuOpen} 
+          <Box
+            onClick={handleMenuOpen}
             sx={{
               justifyContent: "space-between",
               display: "flex",
               alignItems: "center",
-              p : 1
+              p: 1,
             }}
           >
-            <IconButton >
+            <IconButton>
               <Avatar alt={username} src="https://i.pravatar.cc/300" />
             </IconButton>
             <Typography variant="body2" sx={{ color: "#333" }}>
@@ -111,7 +118,6 @@ export default function NavAdmin({ onMenuClick }) {
                 },
               },
             }}
-            
           >
             <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
             <MenuItem onClick={handleMenuClose}>Settings</MenuItem>

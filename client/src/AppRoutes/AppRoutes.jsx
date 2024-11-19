@@ -3,11 +3,14 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Home from "../pages/Home";
 import SignIn from "../pages/SignIn";
 import SignUp from "../pages/SignUp";
+
 import LayoutMain from "../Layout/LayoutMain";
 import LayoutAdmin from "../Layout/LayoutAdmin";
 import LayoutStudent from "../Layout/LayoutStudent";
+
 import AdminHome from "../pages/adminPage/AdminHome";
 import StudentHome from "../pages/studentPage/StudentHome";
+
 import TeacherPage from "../pages/TeacherPage";
 import CheckProject from "../pages/adminPage/CheckProject";
 import ManageUser from "../pages/adminPage/ManageUser";
@@ -15,7 +18,10 @@ import ReleaseProject from "../pages/adminPage/ReleaseProject";
 import UploadDoc from "../pages/adminPage/UploadDoc";
 import TeacherInfo from "../pages/adminPage/TeacherInfo";
 
-import SideStudent from "../components/SideStudent";
+
+import Documentation from "../pages/studentPage/Documentation";
+import SendProject from "../pages/studentPage/SendProject";
+import ProjectRequest from "../pages/studentPage/ProjectRequest";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -44,7 +50,9 @@ const router = createBrowserRouter([
     element: <LayoutStudent />,
     children: [
       { index: true, element: <StudentHome /> },
-      { path: "SideStudent", element: <SideStudent /> },
+      { path: "Documentation", element: <Documentation /> },
+      { path: "projectRequest", element: <ProjectRequest /> },
+      { path: "SendProject", element: <SendProject /> },
     ],
   },
 ]);

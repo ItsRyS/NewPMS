@@ -40,7 +40,7 @@ const NavbarHome = () => {
         <Box sx={{ display: "flex", alignItems: "center" }}>
           <Link to="/" style={{ textDecoration: "none" }}>
             {" "}
-            {/* ลิงก์ไปยัง Home */}
+            
             <img
               src="/it_logo2.svg"
               alt="IT-PMS Logo"
