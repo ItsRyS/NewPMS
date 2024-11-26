@@ -13,7 +13,7 @@ exports.uploadDocument = (req, res) => {
   }
 
   const sql = `
-    INSERT INTO document (doc_title, doc_description, doc_path, uploaded_by, upload_date)
+    INSERT INTO document_forms (doc_title, doc_description, doc_path, uploaded_by, upload_date)
     VALUES (?, ?, ?, ?, ?)
   `;
   db.query(sql, [doc_title, doc_description, doc_path, uploaded_by, upload_date], (err, result) => {
@@ -27,7 +27,7 @@ exports.uploadDocument = (req, res) => {
 
 // ดึงข้อมูลเอกสารทั้งหมด
 exports.getDocuments = (req, res) => {
-  const sql = `SELECT * FROM document ORDER BY upload_date DESC`;
+  const sql = `SELECT * FROM document_forms ORDER BY upload_date DESC`;
   db.query(sql, (err, results) => {
     if (err) {
       console.error(err);
@@ -42,7 +42,7 @@ exports.deleteDocument = (req, res) => {
     const { id } = req.params; // id ที่ส่งมาใน URL
   
     // ดึงข้อมูลเพื่อหาที่อยู่ไฟล์ก่อนลบ
-    const selectSql = `SELECT doc_path FROM document WHERE doc_id = ?`;
+    const selectSql = `SELECT doc_path FROM document_forms WHERE doc_id = ?`;
     db.query(selectSql, [id], (err, results) => {
       if (err) {
         console.error(err);
@@ -63,7 +63,7 @@ exports.deleteDocument = (req, res) => {
         }
   
         // ลบเอกสารจากฐานข้อมูล
-        const deleteSql = `DELETE FROM document WHERE doc_id = ?`; // เปลี่ยนจาก id เป็น doc_id
+        const deleteSql = `DELETE FROM document_forms WHERE doc_id = ?`; // เปลี่ยนจาก id เป็น doc_id
         db.query(deleteSql, [id], (err, result) => {
           if (err) {
             console.error(err);

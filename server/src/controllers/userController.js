@@ -24,7 +24,7 @@ exports.createUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     db.query(
       'INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)',
-      [username, email, hashedPassword, role || 'user'],
+      [username, email, hashedPassword, role || 'student'],
       (err, result) => {
         if (err) {
           console.error('Failed to insert user:', err);

@@ -87,7 +87,7 @@ export default function SignIn(props) {
         localStorage.setItem("token", token);
         localStorage.setItem("username", username);
 
-        if (role === "admin") {
+        if (role === "teacher") {
           navigate("/adminHome");
         } else if (role === "student") {
           navigate("/studentHome");

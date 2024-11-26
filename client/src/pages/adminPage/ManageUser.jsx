@@ -268,7 +268,7 @@ const ManageUser = () => {
       onChange={(e) => setForm({ ...form, role: e.target.value })}
       label="Role"
     >
-      <MenuItem value="admin">Admin</MenuItem>
+      <MenuItem value="teacher">teacher</MenuItem>
       <MenuItem value="student">Student</MenuItem>
     </Select>
   </FormControl>
