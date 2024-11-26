@@ -84,7 +84,7 @@ export default function SideAdmin({ open, onClose, isMobile }) {
             <ListItemIcon>
               <PeopleIcon sx={{ color: "#9CA3AF" }} />
             </ListItemIcon>
-            <ListItemText primary="Manage Users" />
+            <ListItemText primary="จัดการผู้ใช้" />
           </ListItemButton>
         </ListItem>
         <ListItem disablePadding>
@@ -92,7 +92,7 @@ export default function SideAdmin({ open, onClose, isMobile }) {
             <ListItemIcon>
               <PeopleIcon sx={{ color: "#9CA3AF" }} />
             </ListItemIcon>
-            <ListItemText primary="Add TeacherInfo" />
+            <ListItemText primary="เพิ่มข้อมูลอาจารย์" />
           </ListItemButton>
         </ListItem>
 
@@ -103,7 +103,7 @@ export default function SideAdmin({ open, onClose, isMobile }) {
           <ListItemIcon>
             <AssignmentIcon sx={{ color: "#9CA3AF" }} />
           </ListItemIcon>
-          <ListItemText primary="Projects" />
+          <ListItemText primary="จัดการโครงงาน" />
           {openProjectManagement ? <ExpandLess /> : <ExpandMore />}
         </ListItemButton>
         <Collapse in={openProjectManagement} timeout="auto" unmountOnExit>
@@ -116,7 +116,17 @@ export default function SideAdmin({ open, onClose, isMobile }) {
               <ListItemIcon>
                 <CheckCircleIcon sx={{ color: "#9CA3AF" }} />
               </ListItemIcon>
-              <ListItemText primary="Check Project" />
+              <ListItemText primary="ตรวจสอบคำร้อง" />
+            </ListItemButton>
+            <ListItemButton
+              component={Link}
+              to="/adminHome/ProjectInfo"
+              sx={{ pl: 4 }}
+            >
+              <ListItemIcon>
+                <CheckCircleIcon sx={{ color: "#9CA3AF" }} />
+              </ListItemIcon>
+              <ListItemText primary="ตรวจสอบเอกสาร " />
             </ListItemButton>
             <ListItemButton
               component={Link}
@@ -126,8 +136,10 @@ export default function SideAdmin({ open, onClose, isMobile }) {
               <ListItemIcon>
                 <CheckCircleIcon sx={{ color: "#9CA3AF" }} />
               </ListItemIcon>
-              <ListItemText primary="Release Project" />
+              <ListItemText primary="เผยแพร่โครงงาน" />
             </ListItemButton>
+
+            
           </List>
         </Collapse>
 
@@ -139,7 +151,7 @@ export default function SideAdmin({ open, onClose, isMobile }) {
             <ListItemIcon>
               <CloudUploadIcon sx={{ color: "#9CA3AF" }} />
             </ListItemIcon>
-            <ListItemText primary="Upload Document" />
+            <ListItemText primary="เพิ่มแบบร่างเอกสาร" />
           </ListItemButton>
         </ListItem>
       </List>

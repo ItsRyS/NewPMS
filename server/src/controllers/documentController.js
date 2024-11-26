@@ -42,7 +42,7 @@ exports.deleteDocument = (req, res) => {
     const { id } = req.params; // id ที่ส่งมาใน URL
   
     // ดึงข้อมูลเพื่อหาที่อยู่ไฟล์ก่อนลบ
-    const selectSql = `SELECT doc_path FROM document WHERE doc_id = ?`; // เปลี่ยนจาก id เป็น doc_id
+    const selectSql = `SELECT doc_path FROM document WHERE doc_id = ?`;
     db.query(selectSql, [id], (err, results) => {
       if (err) {
         console.error(err);
