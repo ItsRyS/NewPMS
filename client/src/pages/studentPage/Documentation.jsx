@@ -13,13 +13,21 @@ import {
   Button,
   Dialog,
   DialogContent,
+  IconButton,
+  CircularProgress,
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import { useMediaQuery, useTheme } from "@mui/material";
 import api from "../../services/api"; // สำหรับการเชื่อมต่อ API
 
 const Documentation = () => {
   const [documents, setDocuments] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down("md")); // สำหรับหน้าจอขนาดเล็ก
 
   useEffect(() => {
     const fetchDocuments = async () => {
@@ -35,6 +43,7 @@ const Documentation = () => {
 
   const handleOpenDialog = (doc) => {
     setSelectedDocument(doc);
+    setLoading(true); // เริ่ม Loading
     setOpenDialog(true);
   };
 
@@ -98,19 +107,40 @@ const Documentation = () => {
       <Dialog
         open={openDialog}
         onClose={handleCloseDialog}
+        fullScreen={fullScreen} // ทำให้เต็มหน้าจอในมือถือ
         maxWidth="lg"
         sx={{
           "& .MuiDialog-paper": { width: "100%", height: "100%" },
         }}
       >
-        <DialogContent
-          sx={{ padding: 0, display: "flex", justifyContent: "center" }}
+        {/* ปุ่ม Close */}
+        <IconButton
+          onClick={handleCloseDialog}
+          sx={{ position: "absolute", top: 8, right: 8, zIndex: 1 }}
         >
+          <CloseIcon />
+        </IconButton>
+        <DialogContent
+          sx={{
+            padding: 0,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          {loading && <CircularProgress />} {/* แสดง Loading */}
           {selectedDocument && (
             <iframe
               src={`http://localhost:5000/${selectedDocument.doc_path}`}
               width="100%"
               height="100%"
+              onLoad={() => setLoading(false)} // หยุด Loading เมื่อ iframe โหลดเสร็จ
+              style={{
+                border: "none",
+                display: loading ? "none" : "block", // ซ่อน iframe จนกว่าจะโหลดเสร็จ
+              }}
+              sandbox="allow-scripts allow-same-origin" // เพิ่มความปลอดภัย
+              title={selectedDocument.doc_title}
             />
           )}
         </DialogContent>

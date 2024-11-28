@@ -8,10 +8,14 @@ import {
   TextField,
   Dialog,
   DialogContent,
+  IconButton,
   Snackbar,
   Alert,
+  CircularProgress,
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
+import { useMediaQuery, useTheme } from "@mui/material";
 
 const UploadDoc = () => {
   const [file, setFile] = useState(null);
@@ -21,6 +25,7 @@ const UploadDoc = () => {
   const [documents, setDocuments] = useState([]); // Default to an empty array
   const [pdfPath, setPdfPath] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // Snackbar state
   const [snackbar, setSnackbar] = useState({
@@ -28,6 +33,9 @@ const UploadDoc = () => {
     message: "",
     severity: "info",
   });
+
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down("md")); // Full screen for small devices
 
   // Handle Snackbar close
   const handleSnackbarClose = () => {
@@ -119,7 +127,7 @@ const UploadDoc = () => {
       console.error("Error uploading document:", error);
       setSnackbar({
         open: true,
-        message: "การอัปโหลดเอกสารล้มเหลว",
+        message: "การเพิ่มแบบฟอร์มเอกสารล้มเหลว",
         severity: "error",
       });
     }
@@ -130,25 +138,25 @@ const UploadDoc = () => {
     if (!docPath) {
       setSnackbar({
         open: true,
-        message: "Document not found",
+        message: "ไม่เจอแบบฟอร์มเอกสาร",
         severity: "error",
       });
       return;
     }
+    setLoading(true);
     setPdfPath(`http://localhost:5000/${docPath}`);
     setOpenDialog(true);
   };
 
   // Delete document
   const handleDeleteDocument = async (docId) => {
-    if (!window.confirm("Are you sure you want to delete this document?"))
-      return;
+    if (!window.confirm("คุณแน่ใจแล้ว ว่าจะลบเอกสารนี้?")) return;
 
     try {
       await axios.delete(`http://localhost:5000/api/document/${docId}`);
       setSnackbar({
         open: true,
-        message: "Document deleted successfully",
+        message: "ลบเอกสารสำเร็จ",
         severity: "success",
       });
       setDocuments((prev) => prev.filter((doc) => doc.doc_id !== docId));
@@ -156,7 +164,7 @@ const UploadDoc = () => {
       console.error("Error deleting document:", error);
       setSnackbar({
         open: true,
-        message: "Failed to delete document",
+        message: "ลบเอกสารไม่สำเร็จ",
         severity: "error",
       });
     }
@@ -170,7 +178,7 @@ const UploadDoc = () => {
           <Grid item xs={6} sx={{ borderRight: "1px solid #000" }}>
             <Box p={2}>
               <Typography variant="h6" align="center">
-                Add Document
+                เพิ่มแบบฟอร์มเอกสาร
               </Typography>
               <TextField
                 label="Document Title"
@@ -191,7 +199,7 @@ const UploadDoc = () => {
                 sx={{ mb: 2 }}
               />
               <Button variant="contained" component="label" sx={{ mb: 2 }}>
-                Choose File
+                เลือกไฟล์
                 <input
                   type="file"
                   hidden
@@ -214,7 +222,7 @@ const UploadDoc = () => {
                 fullWidth
                 onClick={handleUpload}
               >
-                Upload Document
+                เพิ่มแบบฟอร์มเอกสาร
               </Button>
             </Box>
           </Grid>
@@ -223,7 +231,7 @@ const UploadDoc = () => {
           <Grid item xs={6}>
             <Box p={2}>
               <Typography variant="h6" align="center">
-                Document History
+                ประวัติการเพิ่มแบบฟอร์มเอกสาร
               </Typography>
               {documents.length === 0 ? (
                 <Typography
@@ -237,32 +245,47 @@ const UploadDoc = () => {
                 documents.map(
                   (doc) =>
                     doc && ( // Safeguard for undefined or null doc
-                      <Box key={doc.doc_id} mb={2}>
-                        <Typography variant="body1">
-                          <strong>Title:</strong> {doc.doc_title}
-                        </Typography>
-                        <Typography variant="body2">
-                          <strong>Description:</strong> {doc.doc_description}
-                        </Typography>
-                        <Typography variant="body2">
-                          <strong>Date:</strong>{" "}
-                          {new Date(doc.upload_date).toLocaleString()}
-                        </Typography>
-                        <Button
-                          variant="outlined"
-                          color="primary"
-                          sx={{ mr: 1 }}
-                          onClick={() => handleViewDocument(doc.doc_path)}
-                        >
-                          View
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          color="secondary"
-                          onClick={() => handleDeleteDocument(doc.doc_id)}
-                        >
-                          Delete
-                        </Button>
+                      <Box
+                        key={doc.doc_id}
+                        mb={2}
+                        sx={{
+                          border: "1px solid #ccc",
+                          borderRadius: "5px",
+                          padding: "10px",
+                          justifyContent: "space-between",
+                          display: "flex",
+                        }}
+                      >
+                        <Box>
+                          <Typography variant="body1">
+                            <strong>ชื่อแบบฟอร์มเอกสาร : </strong>{" "}
+                            {doc.doc_title}
+                          </Typography>
+                          <Typography variant="body2">
+                            <strong>คำอธิบาย : </strong> {doc.doc_description}
+                          </Typography>
+                          <Typography variant="body2">
+                            <strong>วันที่เพิ่ม : </strong>{" "}
+                            {new Date(doc.upload_date).toLocaleString()}
+                          </Typography>
+                        </Box>
+                        <Box>
+                          <Typography
+                            variant="outlined"
+                            color="primary"
+                            sx={{ mr: 1 }}
+                            onClick={() => handleViewDocument(doc.doc_path)}
+                          >
+                            View
+                          </Typography>
+                          <Typography
+                            variant="outlined"
+                            color="secondary"
+                            onClick={() => handleDeleteDocument(doc.doc_id)}
+                          >
+                            Delete
+                          </Typography>
+                        </Box>
                       </Box>
                     )
                 )
@@ -276,20 +299,39 @@ const UploadDoc = () => {
       <Dialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}
+        fullScreen={fullScreen} // Full screen for mobile
         maxWidth="lg"
         sx={{
           "& .MuiDialog-paper": { width: "100%", height: "100%" },
         }}
       >
-        <DialogContent
-          sx={{ padding: 0, display: "flex", justifyContent: "center" }}
+        {/* Close Button */}
+        <IconButton
+          onClick={() => setOpenDialog(false)}
+          sx={{ position: "absolute", top: 8, right: 8, zIndex: 1 }}
         >
+          <CloseIcon />
+        </IconButton>
+        <DialogContent
+          sx={{
+            padding: 0,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          {loading && <CircularProgress />}
           {pdfPath && (
             <iframe
               src={pdfPath}
               width="100%"
               height="100%"
-              
+              onLoad={() => setLoading(false)} // Stop loading after iframe loads
+              style={{
+                border: "none",
+                display: loading ? "none" : "block",
+              }}
+              sandbox="allow-scripts allow-same-origin"
             />
           )}
         </DialogContent>
