@@ -86,13 +86,13 @@ const UploadDoc = () => {
       });
       return;
     }
-  
+
     const formData = new FormData();
     formData.append("file", file);
     formData.append("doc_title", docTitle);
     formData.append("doc_description", docDescription);
     formData.append("uploaded_by", 1);
-  
+
     try {
       const response = await axios.post(
         "http://localhost:5000/api/document/upload",
@@ -103,11 +103,13 @@ const UploadDoc = () => {
         message: response.data.message,
         severity: "success",
       });
-  
+
       // ดึงข้อมูลใหม่จากเซิร์ฟเวอร์หลังจากอัปโหลดสำเร็จ
-      const updatedDocuments = await axios.get("http://localhost:5000/api/document");
+      const updatedDocuments = await axios.get(
+        "http://localhost:5000/api/document"
+      );
       setDocuments(updatedDocuments.data);
-  
+
       // รีเซ็ตฟอร์ม
       setFile(null);
       setFileName("");
@@ -139,7 +141,8 @@ const UploadDoc = () => {
 
   // Delete document
   const handleDeleteDocument = async (docId) => {
-    if (!window.confirm("Are you sure you want to delete this document?")) return;
+    if (!window.confirm("Are you sure you want to delete this document?"))
+      return;
 
     try {
       await axios.delete(`http://localhost:5000/api/document/${docId}`);
@@ -189,14 +192,28 @@ const UploadDoc = () => {
               />
               <Button variant="contained" component="label" sx={{ mb: 2 }}>
                 Choose File
-                <input type="file" hidden accept=".pdf" onChange={handleFileChange} />
+                <input
+                  type="file"
+                  hidden
+                  accept=".pdf"
+                  onChange={handleFileChange}
+                />
               </Button>
               {fileName && (
-                <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+                <Typography
+                  variant="body2"
+                  color="textSecondary"
+                  sx={{ mb: 2 }}
+                >
                   Selected File: {fileName}
                 </Typography>
               )}
-              <Button variant="contained" color="primary" fullWidth onClick={handleUpload}>
+              <Button
+                variant="contained"
+                color="primary"
+                fullWidth
+                onClick={handleUpload}
+              >
                 Upload Document
               </Button>
             </Box>
@@ -209,7 +226,11 @@ const UploadDoc = () => {
                 Document History
               </Typography>
               {documents.length === 0 ? (
-                <Typography variant="body2" align="center" color="textSecondary">
+                <Typography
+                  variant="body2"
+                  align="center"
+                  color="textSecondary"
+                >
                   No documents found.
                 </Typography>
               ) : (
@@ -260,8 +281,17 @@ const UploadDoc = () => {
           "& .MuiDialog-paper": { width: "100%", height: "100%" },
         }}
       >
-        <DialogContent sx={{ padding: 0, display: "flex", justifyContent: "center" }}>
-          {pdfPath && <iframe src={pdfPath} width="100%" height="100%" title="PDF Viewer" />}
+        <DialogContent
+          sx={{ padding: 0, display: "flex", justifyContent: "center" }}
+        >
+          {pdfPath && (
+            <iframe
+              src={pdfPath}
+              width="100%"
+              height="100%"
+              
+            />
+          )}
         </DialogContent>
       </Dialog>
 
@@ -272,7 +302,11 @@ const UploadDoc = () => {
         onClose={handleSnackbarClose}
         anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
       >
-        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: "100%" }}>
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>
