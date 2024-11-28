@@ -3,7 +3,8 @@ const express = require("express");
 const path = require("path");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-
+const session = require("express-session");
+const MySQLStore = require("express-mysql-session")(session);
 // Import Routes
 const authRoutes = require("./src/routes/auth");
 const projectRoutes = require("./src/routes/projects");
@@ -21,7 +22,29 @@ app.use(
     credentials: true,
   })
 );
+// การตั้งค่า session store
+const sessionStore = new MySQLStore({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT,
+});
 
+app.use(
+  session({
+    key: "user_sid",
+    secret: "your-secret-key",
+    resave: false,
+    saveUninitialized: false,
+    store: sessionStore,
+    cookie: {
+      maxAge: 1000 * 60 * 60, // อายุ session (1 ชั่วโมง)
+      secure: false, // true ใน production ที่ใช้ HTTPS
+      httpOnly: true,
+    },
+  })
+);
 // Middleware
 app.use(express.json()); // Parse JSON requests
 app.use(bodyParser.json()); // Parse JSON bodies

@@ -69,24 +69,18 @@ export default function SignIn(props) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
+  
     if (!validateInputs()) return;
-
+  
     const data = new FormData(event.currentTarget);
     const email = data.get("email");
     const password = data.get("password");
-
+  
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/login",
-        { email, password }
-      );
-      const { token, role ,username} = response.data;
-
-      if (token) {
-        localStorage.setItem("token", token);
-        localStorage.setItem("username", username);
-
+      const response = await axios.post("http://localhost:5000/api/auth/login", { email, password }, { withCredentials: true });
+      const { role } = response.data;
+  
+      if (role) {
         if (role === "teacher") {
           navigate("/adminHome");
         } else if (role === "student") {
@@ -95,16 +89,14 @@ export default function SignIn(props) {
           setServerError("Unknown role, please contact support.");
         }
       } else {
-        setServerError("Login failed: Token not received.");
+        setServerError("Login failed: Role not received.");
       }
     } catch (error) {
       console.error("Sign-in error:", error);
-      setServerError(
-        error.response?.data?.error ||
-          "Sign-in failed. Please check your credentials."
-      );
+      setServerError(error.response?.data?.error || "Sign-in failed. Please check your credentials.");
     }
   };
+  
 
   const validateInputs = () => {
     const email = document.getElementById("email").value;

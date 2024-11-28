@@ -211,7 +211,7 @@ export default function SignUp(props) {
                 required
                 fullWidth
                 id="name"
-                placeholder="Jon Snow"
+                
                 error={nameError}
                 helperText={nameErrorMessage}
                 color={nameError ? "error" : "primary"}

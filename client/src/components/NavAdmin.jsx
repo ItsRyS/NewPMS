@@ -12,22 +12,32 @@ import MenuIcon from "@mui/icons-material/Menu";
 import { Box, useTheme, useMediaQuery } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
+import api from "../services/api";
 
 export default function NavAdmin({ onMenuClick }) {
   const [anchorEl, setAnchorEl] = useState(null);
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState("Loading...");
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   useEffect(() => {
-    const storedUsername = localStorage.getItem("username"); 
-    if (storedUsername) {
-      setUsername(storedUsername);
-    } else {
-      console.log("ไม่พบชื่อผู้ใช้ใน localStorage");
-    }
-  }, []);
+    const fetchUsername = async () => {
+      try {
+        const response = await api.get("/auth/check-session"); // API เรียกเพื่อดึงข้อมูล session
+        if (response.data.isAuthenticated) {
+          setUsername(response.data.user.username);
+        } else {
+          navigate("/SignIn"); // Redirect หาก session ไม่ถูกต้อง
+        }
+      } catch (error) {
+        console.error("Failed to fetch session info:", error);
+        navigate("/SignIn"); // Redirect ในกรณีเกิดข้อผิดพลาด
+      }
+    };
+
+    fetchUsername();
+  }, [navigate]);
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -37,11 +47,14 @@ export default function NavAdmin({ onMenuClick }) {
     setAnchorEl(null);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("username");
-    handleMenuClose();
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      await api.post("/auth/logout"); // เรียก API สำหรับ logout
+      handleMenuClose();
+      navigate("/SignIn");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   return (
@@ -51,7 +64,7 @@ export default function NavAdmin({ onMenuClick }) {
         backgroundColor: "#ffffff",
         boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
         color: "#333",
-        zIndex: (theme) => theme.zIndex.drawer + 1, // Ensure AppBar is above Drawer
+        zIndex: (theme) => theme.zIndex.drawer + 1,
         width: isMobile ? "100%" : "calc(100% - 240px)",
         ml: isMobile ? 0 : "240px",
       }}
@@ -97,7 +110,7 @@ export default function NavAdmin({ onMenuClick }) {
               <Avatar alt={username} src="https://i.pravatar.cc/300" />
             </IconButton>
             <Typography variant="body2" sx={{ color: "#333" }}>
-              {username || "User not found"}
+              {username}
             </Typography>
           </Box>
 

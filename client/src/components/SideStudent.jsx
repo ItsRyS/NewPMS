@@ -9,16 +9,20 @@ import {
 } from "@mui/material";
 import { Home, School, Assignment, Logout } from "@mui/icons-material";
 import { NavLink, useNavigate } from "react-router-dom"; // Import useNavigate
-
+import api from "../services/api";
 const drawerWidth = 240;
 
 const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
   const navigate = useNavigate(); // ใช้ useNavigate สำหรับนำทาง
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("username");
-    navigate("/"); // นำทางกลับไปยังหน้าหลัก
+  const handleLogout = async () => {
+    try {
+      await api.post("/auth/logout"); // เรียก API สำหรับ logout
+     
+      navigate("/SignIn");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   const drawerContent = (
