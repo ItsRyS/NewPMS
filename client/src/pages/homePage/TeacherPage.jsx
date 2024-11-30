@@ -16,8 +16,8 @@ import {
   InputLabel,
 } from "@mui/material";
 import axios from "axios";
-import NavbarHome from "../components/NavHome";
-import FooterHome from "../components/FooterHome";
+import NavbarHome from "../../components/NavHome";
+import FooterHome from "../../components/FooterHome";
 
 const TeacherPage = () => {
   const [teachers, setTeachers] = useState([]); // All teachers data
@@ -151,7 +151,9 @@ const TeacherPage = () => {
                       alt={teacher.teacher_name || "No Image"}
                     />
                     <CardContent>
-                      <Typography variant="h6">{teacher.teacher_name}</Typography>
+                      <Typography variant="h6">
+                        {teacher.teacher_name}
+                      </Typography>
                       <Typography variant="body2" color="textSecondary">
                         ความชำนาญ: {teacher.teacher_expert}
                       </Typography>
@@ -192,13 +194,15 @@ const TeacherPage = () => {
                       {selectedTeacher.teacher_name}
                     </Typography>
                     <Typography variant="body1">
-                      <strong>เบอร์โทรศัพท์:</strong> {selectedTeacher.teacher_phone}
+                      <strong>เบอร์โทรศัพท์:</strong>{" "}
+                      {selectedTeacher.teacher_phone}
                     </Typography>
                     <Typography variant="body1">
                       <strong>อีเมล์:</strong> {selectedTeacher.teacher_email}
                     </Typography>
                     <Typography variant="body1">
-                      <strong>ความชำนาญ:</strong> {selectedTeacher.teacher_expert}
+                      <strong>ความชำนาญ:</strong>{" "}
+                      {selectedTeacher.teacher_expert}
                     </Typography>
                     <Typography variant="body1">
                       <strong>ข้อมูลเพิ่มเติม:</strong>{" "}

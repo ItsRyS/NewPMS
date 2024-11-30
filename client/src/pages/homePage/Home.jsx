@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
-import NavbarHome from "../components/NavHome";
-import FooterHome from "../components/FooterHome";
+import NavbarHome from "../../components/NavHome";
+import FooterHome from "../../components/FooterHome";
 import { DataGrid } from "@mui/x-data-grid";
 import { TextField, MenuItem, Button, Modal } from "@mui/material";
 import { Worker, Viewer } from "@react-pdf-viewer/core";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/default-layout/lib/styles/index.css";
 import moment from "moment"; // Ensure moment is installed
-import api from "../services/api"; // Axios instance
+import api from "../../services/api"; // Axios instance
 import { Outlet } from "react-router-dom";
 
 const Home = () => {

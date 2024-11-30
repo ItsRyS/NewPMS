@@ -12,9 +12,9 @@ import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import MuiCard from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
-import AppTheme from "../utils/shared-theme/AppTheme";
+import AppTheme from "../../utils/shared-theme/AppTheme";
 
-import ColorModeSelect from "../utils/shared-theme/ColorModeSelect";
+import ColorModeSelect from "../../utils/shared-theme/ColorModeSelect";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -211,7 +211,6 @@ export default function SignUp(props) {
                 required
                 fullWidth
                 id="name"
-                
                 error={nameError}
                 helperText={nameErrorMessage}
                 color={nameError ? "error" : "primary"}

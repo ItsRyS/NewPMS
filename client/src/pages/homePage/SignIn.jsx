@@ -14,8 +14,8 @@ import { styled } from "@mui/material/styles";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Link from "@mui/material/Link"; // ต้องเพิ่ม
-import AppTheme from "../utils/shared-theme/AppTheme";
-import ColorModeSelect from "../utils/shared-theme/ColorModeSelect";
+import AppTheme from "../../utils/shared-theme/AppTheme";
+import ColorModeSelect from "../../utils/shared-theme/ColorModeSelect";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -69,17 +69,21 @@ export default function SignIn(props) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-  
+
     if (!validateInputs()) return;
-  
+
     const data = new FormData(event.currentTarget);
     const email = data.get("email");
     const password = data.get("password");
-  
+
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/login", { email, password }, { withCredentials: true });
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/login",
+        { email, password },
+        { withCredentials: true }
+      );
       const { role } = response.data;
-  
+
       if (role) {
         if (role === "teacher") {
           navigate("/adminHome");
@@ -93,10 +97,12 @@ export default function SignIn(props) {
       }
     } catch (error) {
       console.error("Sign-in error:", error);
-      setServerError(error.response?.data?.error || "Sign-in failed. Please check your credentials.");
+      setServerError(
+        error.response?.data?.error ||
+          "Sign-in failed. Please check your credentials."
+      );
     }
   };
-  
 
   const validateInputs = () => {
     const email = document.getElementById("email").value;
