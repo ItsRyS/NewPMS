@@ -1,8 +1,9 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
-import Home from "../pages/Home";
-import SignIn from "../pages/SignIn";
-import SignUp from "../pages/SignUp";
+import Home from "../pages/homePage/Home";
+import SignIn from "../pages/homePage/SignIn";
+import SignUp from "../pages/homePage/SignUp";
+import TeacherPage from "../pages/homePage/TeacherPage";
 
 import LayoutMain from "../Layout/LayoutMain";
 import LayoutAdmin from "../Layout/LayoutAdmin";
@@ -11,7 +12,7 @@ import LayoutStudent from "../Layout/LayoutStudent";
 import AdminHome from "../pages/adminPage/AdminHome";
 import StudentHome from "../pages/studentPage/StudentHome";
 
-import TeacherPage from "../pages/TeacherPage";
+
 import CheckProject from "../pages/adminPage/CheckProject";
 import ManageUser from "../pages/adminPage/ManageUser";
 import ReleaseProject from "../pages/adminPage/ReleaseProject";
