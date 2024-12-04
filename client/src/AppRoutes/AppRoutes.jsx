@@ -1,69 +1,186 @@
+import  { lazy, Suspense } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
-import Home from "../pages/homePage/Home";
-import SignIn from "../pages/homePage/SignIn";
-import SignUp from "../pages/homePage/SignUp";
-import TeacherPage from "../pages/homePage/TeacherPage";
+// ใช้ React.lazy สำหรับ Dynamic Import
+const Home = lazy(() => import("../pages/homePage/Home"));
+const SignIn = lazy(() => import("../pages/homePage/SignIn"));
+const SignUp = lazy(() => import("../pages/homePage/SignUp"));
+const TeacherPage = lazy(() => import("../pages/homePage/TeacherPage"));
+const NotFound = lazy(() => import("../components/NotFound"));
 
-import LayoutMain from "../Layout/LayoutMain";
-import LayoutAdmin from "../Layout/LayoutAdmin";
-import LayoutStudent from "../Layout/LayoutStudent";
+const LayoutMain = lazy(() => import("../Layout/LayoutMain"));
+const LayoutAdmin = lazy(() => import("../Layout/LayoutAdmin"));
+const LayoutStudent = lazy(() => import("../Layout/LayoutStudent"));
 
-import AdminHome from "../pages/adminPage/AdminHome";
-import StudentHome from "../pages/studentPage/StudentHome";
+const AdminHome = lazy(() => import("../pages/adminPage/AdminHome"));
+const StudentHome = lazy(() => import("../pages/studentPage/StudentHome"));
 
+const CheckProject = lazy(() => import("../pages/adminPage/CheckProject"));
+const ManageUser = lazy(() => import("../pages/adminPage/ManageUser"));
+const ReleaseProject = lazy(() => import("../pages/adminPage/ReleaseProject"));
+const UploadDoc = lazy(() => import("../pages/adminPage/UploadDoc"));
+const TeacherInfo = lazy(() => import("../pages/adminPage/TeacherInfo"));
 
-import CheckProject from "../pages/adminPage/CheckProject";
-import ManageUser from "../pages/adminPage/ManageUser";
-import ReleaseProject from "../pages/adminPage/ReleaseProject";
-import UploadDoc from "../pages/adminPage/UploadDoc";
-import TeacherInfo from "../pages/adminPage/TeacherInfo";
+const Documentation = lazy(() => import("../pages/studentPage/Documentation"));
+const SendProject = lazy(() => import("../pages/studentPage/SendProject"));
+const ProjectRequest = lazy(() => import("../pages/studentPage/ProjectRequest"));
 
-
-import Documentation from "../pages/studentPage/Documentation";
-import SendProject from "../pages/studentPage/SendProject";
-import ProjectRequest from "../pages/studentPage/ProjectRequest";
+// สร้าง Router โดยใช้ Lazy Components
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <LayoutMain />,
+    element: (
+      <Suspense fallback={<div>Loading...</div>}>
+        <LayoutMain />
+      </Suspense>
+    ),
     children: [
-      { index: true, element: <Home /> },
-      { path: "SignIn", element: <SignIn /> },
-      { path: "SignUp", element: <SignUp /> },
-      { path: "TeacherPage", element: <TeacherPage /> },
+      {
+        index: true,
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <Home />
+          </Suspense>
+        ),
+      },
+      {
+        path: "SignIn",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <SignIn />
+          </Suspense>
+        ),
+      },
+      {
+        path: "SignUp",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <SignUp />
+          </Suspense>
+        ),
+      },
+      {
+        path: "TeacherPage",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <TeacherPage />
+          </Suspense>
+        ),
+      },
     ],
   },
   {
     path: "/adminHome",
-    element: <LayoutAdmin />,
+    element: (
+      <Suspense fallback={<div>Loading...</div>}>
+        <LayoutAdmin />
+      </Suspense>
+    ),
     children: [
-      { index: true, element: <AdminHome /> },
-      { path: "CheckProject", element: <CheckProject /> },
-      { path: "manage-user", element: <ManageUser /> },
-      { path: "release-project", element: <ReleaseProject /> },
-      { path: "upload-doc", element: <UploadDoc /> },
-      { path: "TeacherInfo", element: <TeacherInfo /> },
+      {
+        index: true,
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <AdminHome />
+          </Suspense>
+        ),
+      },
+      {
+        path: "CheckProject",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <CheckProject />
+          </Suspense>
+        ),
+      },
+      {
+        path: "manage-user",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <ManageUser />
+          </Suspense>
+        ),
+      },
+      {
+        path: "release-project",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <ReleaseProject />
+          </Suspense>
+        ),
+      },
+      {
+        path: "upload-doc",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <UploadDoc />
+          </Suspense>
+        ),
+      },
+      {
+        path: "TeacherInfo",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <TeacherInfo />
+          </Suspense>
+        ),
+      },
     ],
   },
   {
     path: "/studentHome",
-    element: <LayoutStudent />,
+    element: (
+      <Suspense fallback={<div>Loading...</div>}>
+        <LayoutStudent />
+      </Suspense>
+    ),
     children: [
-      { index: true, element: <StudentHome /> },
-      { path: "Documentation", element: <Documentation /> },
-      { path: "projectRequest", element: <ProjectRequest /> },
-      { path: "SendProject", element: <SendProject /> },
+      {
+        index: true,
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <StudentHome />
+          </Suspense>
+        ),
+      },
+      {
+        path: "Documentation",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <Documentation />
+          </Suspense>
+        ),
+      },
+      {
+        path: "projectRequest",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <ProjectRequest />
+          </Suspense>
+        ),
+      },
+      {
+        path: "SendProject",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <SendProject />
+          </Suspense>
+        ),
+      },
     ],
+  },
+  {
+    path: "*",
+    element: (
+      <Suspense fallback={<div>Loading...</div>}>
+        <NotFound />
+      </Suspense>
+    ),
   },
 ]);
 
 const AppRoutes = () => {
-  return (
-    <>
-      <RouterProvider router={router} />
-    </>
-  );
+  return <RouterProvider router={router} />;
 };
 
 export default AppRoutes;

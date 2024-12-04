@@ -318,7 +318,7 @@ export const colorSchemes = {
 };
 
 export const typography = {
-  fontFamily: ['"Inter", "sans-serif"'].join(','),
+  fontFamily: ['"Prompt", "sans-serif"'].join(','),
   h1: {
     fontSize: defaultTheme.typography.pxToRem(48),
     fontWeight: 600,

@@ -7,7 +7,7 @@ import { dataDisplayCustomizations } from './customizations/dataDisplay';
 import { feedbackCustomizations } from './customizations/feedback';
 import { navigationCustomizations } from './customizations/navigation';
 import { surfacesCustomizations } from './customizations/surfaces';
-import { colorSchemes, typography, shadows, shape } from './themePrimitives';
+import { colorSchemes, shadows, shape } from './themePrimitives';
 
 function AppTheme({ children, disableCustomTheme, themeComponents }) {
   const theme = React.useMemo(() => {
@@ -20,7 +20,10 @@ function AppTheme({ children, disableCustomTheme, themeComponents }) {
             cssVarPrefix: 'template',
           },
           colorSchemes, // Recently added in v6 for building light & dark mode app, see https://mui.com/material-ui/customization/palette/#color-schemes
-          typography,
+          
+          typography:{
+            fontFamily: 'Prompt, sans-serif',
+          },
           shadows,
           shape,
           components: {
@@ -31,6 +34,7 @@ function AppTheme({ children, disableCustomTheme, themeComponents }) {
             ...surfacesCustomizations,
             ...themeComponents,
           },
+          
         });
   }, [disableCustomTheme, themeComponents]);
   if (disableCustomTheme) {
