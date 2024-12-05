@@ -23,7 +23,7 @@ const TeacherInfo = () => {
     teacher_name: "",
     teacher_phone: "",
     teacher_email: "",
-    teacher_bio: "",
+    teacher_position: "",
     teacher_expert: "",
     teacher_image: null, // เก็บไฟล์
   });
@@ -75,7 +75,7 @@ const TeacherInfo = () => {
       teacher_name: teacher.teacher_name,
       teacher_phone: teacher.teacher_phone,
       teacher_email: teacher.teacher_email,
-      teacher_bio: teacher.teacher_bio,
+      teacher_position: teacher.teacher_position,
       teacher_expert: teacher.teacher_expert,
       teacher_image: teacher.teacher_image || null, // คงค่ารูปภาพปัจจุบัน
     });
@@ -98,7 +98,7 @@ const TeacherInfo = () => {
       teacher_name: "",
       teacher_phone: "",
       teacher_email: "",
-      teacher_bio: "",
+      teacher_position: "",
       teacher_expert: "",
       teacher_image: null,
     });
@@ -126,7 +126,7 @@ const TeacherInfo = () => {
     formData.append("teacher_name", form.teacher_name || "");
     formData.append("teacher_phone", form.teacher_phone || "");
     formData.append("teacher_email", form.teacher_email || "");
-    formData.append("teacher_bio", form.teacher_bio || "");
+    formData.append("teacher_position", form.teacher_position || "");
     formData.append("teacher_expert", form.teacher_expert || "");
 
     if (form.teacher_image instanceof File) {
@@ -283,13 +283,13 @@ const TeacherInfo = () => {
             />
             <TextField
               margin="dense"
-              label="Bio"
+              label="position"
               fullWidth
               multiline
               rows={3}
-              value={form.teacher_bio}
+              value={form.teacher_position}
               onChange={(e) =>
-                setForm({ ...form, teacher_bio: e.target.value })
+                setForm({ ...form, teacher_position: e.target.value })
               }
             />
             <TextField

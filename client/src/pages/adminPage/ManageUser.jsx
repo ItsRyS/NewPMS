@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
 import {
   Button,
@@ -35,6 +35,7 @@ const ManageUser = () => {
   const [searchField, setSearchField] = useState("username");
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Fetch users on component mount
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -43,13 +44,15 @@ const ManageUser = () => {
     try {
       const response = await api.get("/users");
       setUsers(response.data);
+      setFilteredUsers(response.data);
       setLoading(false);
     } catch (error) {
       console.error("Failed to fetch users", error);
     }
   };
 
-  const filterUsers = useCallback(() => {
+  // Filter users when search query or field changes
+  useEffect(() => {
     const filtered = users.filter((user) =>
       user[searchField]
         .toString()
@@ -59,12 +62,8 @@ const ManageUser = () => {
     setFilteredUsers(filtered);
   }, [users, searchField, searchQuery]);
 
-  useEffect(() => {
-    filterUsers();
-  }, [filterUsers]);
-
   const validateForm = () => {
-    let newErrors = {};
+    const newErrors = {};
     if (!form.username) newErrors.username = "Username is required";
     if (!form.email) newErrors.email = "Email is required";
     return newErrors;
@@ -118,7 +117,7 @@ const ManageUser = () => {
     { field: "user_id", headerName: "ID", flex: 0.2 },
     { field: "username", headerName: "Username", flex: 1 },
     { field: "email", headerName: "Email", flex: 1 },
-    { field: "role", headerName: "Role", flex: 0.4 },
+    { field: "role", headerName: "Role", flex: 0.5 },
     {
       field: "actions",
       type: "actions",
@@ -131,14 +130,12 @@ const ManageUser = () => {
           icon={<EditIcon />}
           label="Edit"
           onClick={() => handleOpen(params.row)}
-          showInMenu={false}
         />,
         <GridActionsCellItem
           key={`delete-${params.id}`}
           icon={<DeleteForeverIcon />}
           label="Delete"
           onClick={() => deleteUser(params.id)}
-          showInMenu={false}
         />,
       ],
     },
@@ -157,7 +154,7 @@ const ManageUser = () => {
     >
       <Box
         sx={{
-          backgroundColor: "#ffffff",
+          backgroundColor: "#fff",
           boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
           borderRadius: "8px",
           padding: "20px",
@@ -178,7 +175,6 @@ const ManageUser = () => {
           <Button
             variant="contained"
             color="primary"
-            size="small"
             onClick={() => handleOpen()}
           >
             Add User
@@ -189,7 +185,7 @@ const ManageUser = () => {
           <FormControl
             variant="outlined"
             size="small"
-            sx={{ minWidth: { xs: "100%", sm: 150 } }}
+            sx={{ minWidth: 150 }}
           >
             <InputLabel>Search By</InputLabel>
             <Select
@@ -212,14 +208,9 @@ const ManageUser = () => {
           />
         </Box>
 
-        <Box
-          sx={{
-            height: 400,
-            width: "100%",
-          }}
-        >
+        <Box sx={{ height: 400, width: "100%" }}>
           <DataGrid
-            autoWidth
+            autoHeight
             rows={filteredUsers}
             columns={columns}
             getRowId={(row) => row.user_id}
@@ -232,47 +223,45 @@ const ManageUser = () => {
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>{editUser ? "Edit User" : "Add User"}</DialogTitle>
         <DialogContent>
-  <TextField
-    autoFocus
-    margin="dense"
-    label="Username"
-    fullWidth
-    value={form.username}
-    onChange={(e) => setForm({ ...form, username: e.target.value })}
-    error={!!errors.username}
-    helperText={errors.username}
-  />
-  <TextField
-    margin="dense"
-    label="Email"
-    fullWidth
-    value={form.email}
-    onChange={(e) => setForm({ ...form, email: e.target.value })}
-    error={!!errors.email}
-    helperText={errors.email}
-  />
-  <TextField
-    margin="dense"
-    label="Password"
-    type="password"
-    fullWidth
-    value={form.password}
-    onChange={(e) => setForm({ ...form, password: e.target.value })}
-  />
-  
-  {/* เปลี่ยนจาก TextField เป็น Select สำหรับ Role */}
-  <FormControl fullWidth margin="dense">
-    <InputLabel>Role</InputLabel>
-    <Select
-      value={form.role}
-      onChange={(e) => setForm({ ...form, role: e.target.value })}
-      label="Role"
-    >
-      <MenuItem value="teacher">teacher</MenuItem>
-      <MenuItem value="student">Student</MenuItem>
-    </Select>
-  </FormControl>
-</DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Username"
+            fullWidth
+            value={form.username}
+            onChange={(e) => setForm({ ...form, username: e.target.value })}
+            error={!!errors.username}
+            helperText={errors.username}
+          />
+          <TextField
+            margin="dense"
+            label="Email"
+            fullWidth
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            error={!!errors.email}
+            helperText={errors.email}
+          />
+          <TextField
+            margin="dense"
+            label="Password"
+            type="password"
+            fullWidth
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+          />
+          <FormControl fullWidth margin="dense">
+            <InputLabel>Role</InputLabel>
+            <Select
+              value={form.role}
+              onChange={(e) => setForm({ ...form, role: e.target.value })}
+              label="Role"
+            >
+              <MenuItem value="teacher">Teacher</MenuItem>
+              <MenuItem value="student">Student</MenuItem>
+            </Select>
+          </FormControl>
+        </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
           <Button onClick={handleSubmit} variant="contained" color="primary">

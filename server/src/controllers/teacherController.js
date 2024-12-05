@@ -37,7 +37,7 @@ exports.getTeacherById = (req, res) => {
 
 // สร้างข้อมูลอาจารย์ใหม่
 exports.createTeacher = (req, res) => {
-  const { teacher_name, teacher_phone, teacher_email, teacher_bio, teacher_expert } = req.body;
+  const { teacher_name, teacher_phone, teacher_email, teacher_position, teacher_expert } = req.body;
   const teacher_image = req.file ? req.file.filename : null;
 
   if (!teacher_name || !teacher_email) {
@@ -45,11 +45,11 @@ exports.createTeacher = (req, res) => {
   }
 
   const sql = `
-    INSERT INTO teacher_info (teacher_name, teacher_phone, teacher_email, teacher_bio, teacher_expert, teacher_image)
+    INSERT INTO teacher_info (teacher_name, teacher_phone, teacher_email, teacher_position, teacher_expert, teacher_image)
     VALUES (?, ?, ?, ?, ?, ?)
   `;
 
-  db.query(sql, [teacher_name, teacher_phone, teacher_email, teacher_bio, teacher_expert, teacher_image], (err, result) => {
+  db.query(sql, [teacher_name, teacher_phone, teacher_email, teacher_position, teacher_expert, teacher_image], (err, result) => {
     if (err) return res.status(500).json({ error: "Database insert failed" });
     res.status(201).json({ message: "Teacher created", teacherId: result.insertId });
   });
@@ -58,7 +58,7 @@ exports.createTeacher = (req, res) => {
 // อัปเดตข้อมูลอาจารย์
 exports.updateTeacher = (req, res) => {
   const { id } = req.params;
-  const { teacher_name, teacher_phone, teacher_email, teacher_bio, teacher_expert } = req.body;
+  const { teacher_name, teacher_phone, teacher_email, teacher_position, teacher_expert } = req.body;
   let teacher_image = req.file ? req.file.filename : req.body.teacher_image;
 
   if (!teacher_name || !teacher_email) {
@@ -72,11 +72,11 @@ exports.updateTeacher = (req, res) => {
 
   const sql = `
     UPDATE teacher_info 
-    SET teacher_name = ?, teacher_phone = ?, teacher_email = ?, teacher_bio = ?, teacher_expert = ?, teacher_image = ?
+    SET teacher_name = ?, teacher_phone = ?, teacher_email = ?, teacher_position = ?, teacher_expert = ?, teacher_image = ?
     WHERE teacher_id = ?
   `;
 
-  db.query(sql, [teacher_name, teacher_phone, teacher_email, teacher_bio, teacher_expert, teacher_image, id], (err, result) => {
+  db.query(sql, [teacher_name, teacher_phone, teacher_email, teacher_position, teacher_expert, teacher_image, id], (err, result) => {
     if (err) {
       console.error("Database update error:", err);
       return res.status(500).json({ error: "Database update failed" });

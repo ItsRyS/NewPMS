@@ -206,7 +206,7 @@ const TeacherPage = () => {
                     </Typography>
                     <Typography variant="body1">
                       <strong>ข้อมูลเพิ่มเติม:</strong>{" "}
-                      {selectedTeacher.teacher_bio}
+                      {selectedTeacher.teacher_position}
                     </Typography>
                     <Button
                       onClick={handleClose}

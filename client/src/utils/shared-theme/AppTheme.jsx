@@ -1,40 +1,31 @@
 import * as React from "react";
 import PropTypes from "prop-types";
 import { ThemeProvider, createTheme, responsiveFontSizes } from "@mui/material/styles";
+import { useMediaQuery } from "@mui/material";
 
-// Import customizations
-import { inputsCustomizations } from "./customizations/inputs";
-import { dataDisplayCustomizations } from "./customizations/dataDisplay";
-import { feedbackCustomizations } from "./customizations/feedback";
-import { navigationCustomizations } from "./customizations/navigation";
-import { surfacesCustomizations } from "./customizations/surfaces";
-import { colorSchemes, shadows, shape } from "./themePrimitives";
+// แก้ไขตำแหน่ง import colorSchemes
+import { colorSchemes } from "/src/utils/shared-theme/themePrimitives";
 
 function AppTheme({ children, disableCustomTheme, themeComponents }) {
+  const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
+
   const theme = React.useMemo(() => {
     if (disableCustomTheme) return {};
 
-    // Create base theme
+    const selectedColorScheme = prefersDarkMode
+      ? colorSchemes.dark.palette
+      : colorSchemes.light.palette;
+
     let baseTheme = createTheme({
-      // CSS Variables configuration
-      cssVariables: {
-        colorSchemeSelector: "data-mui-color-scheme",
-        cssVarPrefix: "template",
-      },
-      // Light & Dark mode support
-      colorSchemes,
-      // Typography settings
+      palette: selectedColorScheme,
       typography: {
         fontFamily: "Prompt, sans-serif",
-        h1: { fontSize: "2.5rem" }, // Example for headings
+        h1: { fontSize: "2.5rem" },
         h2: { fontSize: "2rem" },
         h3: { fontSize: "1.75rem" },
-        body1: { fontSize: "1rem" }, // Example for body text
+        body1: { fontSize: "1rem" },
         body2: { fontSize: "0.875rem" },
       },
-      shadows,
-      shape,
-      // Breakpoints for responsive design
       breakpoints: {
         values: {
           xs: 0,
@@ -45,41 +36,25 @@ function AppTheme({ children, disableCustomTheme, themeComponents }) {
         },
       },
       components: {
-        ...inputsCustomizations,
-        ...dataDisplayCustomizations,
-        ...feedbackCustomizations,
-        ...navigationCustomizations,
-        ...surfacesCustomizations,
         ...themeComponents,
       },
     });
 
-    // Apply responsive font sizes
     baseTheme = responsiveFontSizes(baseTheme);
 
     return baseTheme;
-  }, [disableCustomTheme, themeComponents]);
+  }, [prefersDarkMode, disableCustomTheme, themeComponents]);
 
   if (disableCustomTheme) {
     return <React.Fragment>{children}</React.Fragment>;
   }
 
-  return (
-    <ThemeProvider theme={theme} disableTransitionOnChange>
-      {children}
-    </ThemeProvider>
-  );
+  return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
 }
 
 AppTheme.propTypes = {
   children: PropTypes.node,
-  /**
-   * Disable the custom theme for specific cases (used mainly for debugging or testing).
-   */
   disableCustomTheme: PropTypes.bool,
-  /**
-   * Additional theme components can be passed dynamically.
-   */
   themeComponents: PropTypes.object,
 };
 
