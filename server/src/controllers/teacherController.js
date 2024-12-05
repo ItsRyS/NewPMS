@@ -37,7 +37,7 @@ exports.getTeacherById = (req, res) => {
 
 // สร้างข้อมูลอาจารย์ใหม่
 exports.createTeacher = (req, res) => {
-  const { teacher_name, teacher_phone, teacher_email, teacher_position, teacher_expert } = req.body;
+  const { teacher_name, teacher_phone, teacher_email, teacher_expert, teacher_position } = req.body;
   const teacher_image = req.file ? req.file.filename : null;
 
   if (!teacher_name || !teacher_email) {

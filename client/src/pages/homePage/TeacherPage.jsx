@@ -26,8 +26,8 @@ const TeacherPage = () => {
   const [open, setOpen] = useState(false); // Modal open state
   const [error, setError] = useState(null); // Error handling
   const [searchTerm, setSearchTerm] = useState(""); // Name search term
-  const [expertiseFilter, setExpertiseFilter] = useState(""); // Expertise filter
-  const [expertiseOptions, setExpertiseOptions] = useState([]); // Dropdown options
+  const [positionFilter, setPositionFilter] = useState(""); // Position filter
+  const [positionOptions, setPositionOptions] = useState([]); // Dropdown options
 
   const placeholderImage = "https://via.placeholder.com/140x100?text=No+Image"; // Placeholder URL
 
@@ -50,10 +50,10 @@ const TeacherPage = () => {
         setFilteredTeachers(response.data);
 
         // Extract unique expertise options
-        const uniqueExpertise = [
-          ...new Set(response.data.map((teacher) => teacher.teacher_expert)),
+        const uniquePosition = [
+          ...new Set(response.data.map((teacher) => teacher.teacher_position)),
         ];
-        setExpertiseOptions(uniqueExpertise);
+        setPositionOptions(uniquePosition);
       })
       .catch((err) => {
         console.error("Error fetching data:", err);
@@ -68,12 +68,12 @@ const TeacherPage = () => {
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
       const matchesExpertise =
-        expertiseFilter === "" || teacher.teacher_expert === expertiseFilter;
+        positionFilter === "" || teacher.teacher_position === positionFilter;
 
       return matchesName && matchesExpertise;
     });
     setFilteredTeachers(filtered);
-  }, [searchTerm, expertiseFilter, teachers]);
+  }, [searchTerm, positionFilter, teachers]);
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
@@ -116,15 +116,15 @@ const TeacherPage = () => {
               </Grid>
               <Grid item xs={12} sm={4}>
                 <FormControl fullWidth>
-                  <InputLabel>กรองตามความชำนาญ</InputLabel>
+                  <InputLabel>ค้นหาตามตำแหน่ง</InputLabel>
                   <Select
-                    value={expertiseFilter}
-                    onChange={(e) => setExpertiseFilter(e.target.value)}
+                    value={positionFilter}
+                    onChange={(e) => setPositionFilter(e.target.value)}
                   >
                     <MenuItem value="">แสดงทั้งหมด</MenuItem>
-                    {expertiseOptions.map((expertise, index) => (
-                      <MenuItem key={index} value={expertise}>
-                        {expertise}
+                    {positionOptions.map((position, index) => (
+                      <MenuItem key={index} value={position}>
+                        {position}
                       </MenuItem>
                     ))}
                   </Select>
@@ -142,7 +142,13 @@ const TeacherPage = () => {
                   >
                     <CardMedia
                       component="img"
-                      height="140"
+                      sx={{
+                        height: 300, // ปรับความสูงให้เล็กลง
+                        width: "auto", // ปรับความกว้างอัตโนมัติให้สัมพันธ์กับความสูง
+                        objectFit: "contain", // ทำให้ภาพพอดีกับกรอบโดยคงสัดส่วน
+                        margin: "auto", // จัดภาพให้อยู่ตรงกลาง
+                        padding: "10px",
+                      }}
                       image={
                         teacher.teacher_image
                           ? `http://localhost:5000/upload/pic/${teacher.teacher_image}`
@@ -150,12 +156,13 @@ const TeacherPage = () => {
                       }
                       alt={teacher.teacher_name || "No Image"}
                     />
-                    <CardContent>
+
+                    <CardContent sx={{ textAlign: "center" }}>
                       <Typography variant="h6">
                         {teacher.teacher_name}
                       </Typography>
                       <Typography variant="body2" color="textSecondary">
-                        ความชำนาญ: {teacher.teacher_expert}
+                        ตำแหน่ง: {teacher.teacher_position}
                       </Typography>
                     </CardContent>
                   </Card>
@@ -171,18 +178,25 @@ const TeacherPage = () => {
                   top: "50%",
                   left: "50%",
                   transform: "translate(-50%, -50%)",
-                  width: 400,
+                  maxWidth: "90vw",
+                  maxHeight: "90vh",
+                  overflow: "auto", // เพิ่ม scroll หากเนื้อหาเกิน
                   bgcolor: "background.paper",
                   border: "2px solid #000",
                   boxShadow: 24,
-                  p: 4,
+                  p: 2,
                 }}
               >
                 {selectedTeacher && (
                   <>
                     <CardMedia
                       component="img"
-                      height="200"
+                      sx={{
+                        maxWidth: "100%",
+                        maxHeight: "50vh", // จำกัดความสูงของรูปให้ไม่เกิน 60% ของหน้าจอ
+                        objectFit: "contain", // คงสัดส่วนรูปภาพ
+                        marginBottom: "24px",
+                      }}
                       image={
                         selectedTeacher.teacher_image
                           ? `http://localhost:5000/upload/pic/${selectedTeacher.teacher_image}`
@@ -190,9 +204,14 @@ const TeacherPage = () => {
                       }
                       alt={selectedTeacher.teacher_name || "No Image"}
                     />
-                    <Typography variant="h5" gutterBottom>
+                    <Typography
+                      variant="h5"
+                      gutterBottom
+                      sx={{ textAlign: "center" }}
+                    >
                       {selectedTeacher.teacher_name}
                     </Typography>
+
                     <Typography variant="body1">
                       <strong>เบอร์โทรศัพท์:</strong>{" "}
                       {selectedTeacher.teacher_phone}

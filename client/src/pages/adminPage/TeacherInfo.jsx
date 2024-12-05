@@ -14,6 +14,10 @@ import {
   DialogActions,
   TextField,
   Typography,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import api from "../../services/api"; // Axios instance
 
@@ -25,15 +29,15 @@ const TeacherInfo = () => {
     teacher_email: "",
     teacher_position: "",
     teacher_expert: "",
-    teacher_image: null, // เก็บไฟล์
+    teacher_image: null,
   });
-  const [selectedFileName, setSelectedFileName] = useState(""); // ชื่อไฟล์ที่เลือก
+  const [selectedFileName, setSelectedFileName] = useState("");
   const [isEdit, setIsEdit] = useState(false);
   const [editId, setEditId] = useState(null);
   const [viewTeacher, setViewTeacher] = useState(null);
   const [openForm, setOpenForm] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [teacherToDelete, setTeacherToDelete] = useState(null); // ติดตามข้อมูลอาจารย์ที่จะลบ
+  const [teacherToDelete, setTeacherToDelete] = useState(null);
 
   useEffect(() => {
     fetchTeachers();
@@ -77,9 +81,9 @@ const TeacherInfo = () => {
       teacher_email: teacher.teacher_email,
       teacher_position: teacher.teacher_position,
       teacher_expert: teacher.teacher_expert,
-      teacher_image: teacher.teacher_image || null, // คงค่ารูปภาพปัจจุบัน
+      teacher_image: teacher.teacher_image || null,
     });
-    setSelectedFileName(teacher.teacher_image ? teacher.teacher_image : ""); // ชื่อรูปเดิม
+    setSelectedFileName(teacher.teacher_image ? teacher.teacher_image : "");
     setIsEdit(true);
     setEditId(teacher.teacher_id);
     setOpenForm(true);
@@ -167,6 +171,7 @@ const TeacherInfo = () => {
               <TableCell>Name</TableCell>
               <TableCell>Phone</TableCell>
               <TableCell>Email</TableCell>
+              <TableCell>Position</TableCell>
               <TableCell>Expertise</TableCell>
               <TableCell>Image</TableCell>
               <TableCell>Actions</TableCell>
@@ -179,6 +184,7 @@ const TeacherInfo = () => {
                 <TableCell>{teacher.teacher_name}</TableCell>
                 <TableCell>{teacher.teacher_phone}</TableCell>
                 <TableCell>{teacher.teacher_email}</TableCell>
+                <TableCell>{teacher.teacher_position}</TableCell>
                 <TableCell>{teacher.teacher_expert}</TableCell>
                 <TableCell>
                   {teacher.teacher_image ? (
@@ -234,6 +240,7 @@ const TeacherInfo = () => {
             <p><strong>Name:</strong> {viewTeacher.teacher_name}</p>
             <p><strong>Phone:</strong> {viewTeacher.teacher_phone}</p>
             <p><strong>Email:</strong> {viewTeacher.teacher_email}</p>
+            <p><strong>Position:</strong> {viewTeacher.teacher_position}</p>
             <p><strong>Expertise:</strong> {viewTeacher.teacher_expert}</p>
             {viewTeacher.teacher_image && (
               <img
@@ -281,17 +288,23 @@ const TeacherInfo = () => {
                 setForm({ ...form, teacher_email: e.target.value })
               }
             />
-            <TextField
-              margin="dense"
-              label="position"
-              fullWidth
-              multiline
-              rows={3}
-              value={form.teacher_position}
-              onChange={(e) =>
-                setForm({ ...form, teacher_position: e.target.value })
-              }
-            />
+            <FormControl fullWidth margin="dense">
+              <InputLabel id="teacher-position-label">Position</InputLabel>
+              <Select
+                labelId="teacher-position-label"
+                value={form.teacher_position}
+                onChange={(e) =>
+                  setForm({ ...form, teacher_position: e.target.value })
+                }
+              >
+                <MenuItem value="ครูอัตราจ้าง">ครูอัตราจ้าง</MenuItem>
+                <MenuItem value="ครูผู้ช่วย">ครูผู้ช่วย</MenuItem>
+                <MenuItem value="ครู">ครู</MenuItem>
+                <MenuItem value="ครูชำนาญการ">ครูชำนาญการ</MenuItem>
+                <MenuItem value="ครูชำนาญการพิเศษ">ครูชำนาญการพิเศษ</MenuItem>
+                <MenuItem value="ครูเชี่ยวชาญ">ครูเชี่ยวชาญ</MenuItem>
+              </Select>
+            </FormControl>
             <TextField
               margin="dense"
               label="Expertise"
