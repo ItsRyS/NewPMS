@@ -75,8 +75,8 @@ const ProjectRequest = () => {
         flexDirection: { xs: "column", md: "row" },
         gap: 2,
         padding: 4,
-        bgcolor: "#f5f5f5",
-        height: "100vh",
+        bgcolor: "#ffffff",
+        height: "100",
       }}
     >
       {/* Left Section */}
@@ -85,8 +85,8 @@ const ProjectRequest = () => {
           flex: 1,
           bgcolor: "#e0e0e0",
           padding: 3,
-          borderRadius: 2,
-          boxShadow: 1,
+          borderRadius: 6,
+          boxShadow: 9,
         }}
       >
         <Typography
@@ -184,12 +184,12 @@ const ProjectRequest = () => {
           </Grid>
 
           {/* Submit Button */}
-          <Grid item xs={12}>
+          <Grid item xs={12} sx={{ display: "flex", justifyContent: "center" }}>
             <Button
               fullWidth
               variant="contained"
               color="primary"
-              sx={{ height: "50px", fontWeight: "bold" }}
+              sx={{ height: "50px",width: "35%", fontWeight: "bold" }}
               onClick={handleSubmit}
             >
               ยืนยันการส่ง
@@ -203,12 +203,12 @@ const ProjectRequest = () => {
         sx={{
           flex: 1,
           bgcolor: "#ffa726",
-          borderRadius: 2,
+          borderRadius: 6,
           padding: 3,
           display: "flex",
-          alignItems: "center",
+          alignItems: "top",
           justifyContent: "center",
-          boxShadow: 1,
+          boxShadow: 9,
         }}
       >
         <Typography
