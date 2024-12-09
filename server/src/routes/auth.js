@@ -42,6 +42,25 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" });
   }
 });
+router.post("/register", async (req, res) => {
+  const { username, email, password } = req.body;
+
+  if (!username || !email || !password) {
+    return res.status(400).json({ error: "กรุณากรอกข้อมูลให้ครบถ้วน" });
+  }
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await db.promise().query(
+      "INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)",
+      [username, email, hashedPassword, "student"]
+    );
+    res.status(201).json({ message: "User registered successfully" });
+  } catch (error) {
+    console.error("Failed to register user:", error);
+    res.status(500).json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" });
+  }
+});
 
 router.post("/logout", (req, res) => {
   req.session.destroy((err) => {

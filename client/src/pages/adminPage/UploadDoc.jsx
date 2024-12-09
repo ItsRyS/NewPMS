@@ -16,7 +16,7 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
 import { useMediaQuery, useTheme } from "@mui/material";
-
+ import api from "../../services/api";
 const UploadDoc = () => {
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState("");
@@ -26,7 +26,8 @@ const UploadDoc = () => {
   const [pdfPath, setPdfPath] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
   const [loading, setLoading] = useState(false);
-
+  const [username, setUsername] = useState("Loading...");
+ 
   // Snackbar state
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -64,6 +65,17 @@ const UploadDoc = () => {
         });
       }
     };
+    const fetchUsername = async () => {
+      try {
+        const response = await api.get("/auth/check-session");
+        if (response.data.isAuthenticated) {
+          setUsername(response.data.user.username);
+        }
+      } catch (error) {
+        console.error("Failed to fetch session info:", error);
+      }
+    };
+    fetchUsername();
     fetchDocuments();
   }, []);
 
@@ -99,7 +111,7 @@ const UploadDoc = () => {
     formData.append("file", file);
     formData.append("doc_title", docTitle);
     formData.append("doc_description", docDescription);
-    formData.append("uploaded_by", 1);
+    formData.append("uploaded_by", username);
 
     try {
       const response = await axios.post(
@@ -267,6 +279,10 @@ const UploadDoc = () => {
                           <Typography variant="body2">
                             <strong>วันที่เพิ่ม : </strong>{" "}
                             {new Date(doc.upload_date).toLocaleString()}
+                          </Typography>
+                          <Typography variant="body2">
+                            <strong>เพิ่มโดย : </strong>{" "}
+                            {doc.uploaded_by}
                           </Typography>
                         </Box>
                         <Box>
