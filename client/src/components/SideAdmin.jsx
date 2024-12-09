@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import {
   Drawer,
@@ -11,9 +11,11 @@ import {
   Typography,
   Divider,
   Collapse,
+  Avatar,
   Toolbar,
+  Button,
 } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PeopleIcon from "@mui/icons-material/People";
 import AssignmentIcon from "@mui/icons-material/Assignment";
@@ -21,9 +23,36 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
+import LogoutIcon from "@mui/icons-material/Logout";
+import api from "../services/api";
 
 export default function SideAdmin({ open, onClose, isMobile }) {
   const [openProjectManagement, setOpenProjectManagement] = useState(false);
+  const [username, setUsername] = useState("Loading...");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUsername = async () => {
+      try {
+        const response = await api.get("/auth/check-session");
+        if (response.data.isAuthenticated) {
+          setUsername(response.data.user.username);
+        }
+      } catch (error) {
+        console.error("Failed to fetch session info:", error);
+      }
+    };
+    fetchUsername();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await api.post("/auth/logout");
+      navigate("/SignIn");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   const toggleProjectManagement = () => {
     setOpenProjectManagement(!openProjectManagement);
@@ -48,9 +77,7 @@ export default function SideAdmin({ open, onClose, isMobile }) {
         keepMounted: true,
       }}
     >
-      {/* Toolbar เพื่อเว้นระยะห่างจาก AppBar */}
       <Toolbar />
-
       <Box
         sx={{
           padding: 2,
@@ -59,13 +86,12 @@ export default function SideAdmin({ open, onClose, isMobile }) {
           alignItems: "center",
         }}
       >
-        <Typography variant="h6" sx={{ fontWeight: "bold", color: "#ffffff" }}>
-          IT-PMS
+        <Avatar alt={username} src="https://i.pravatar.cc/300" />
+        <Typography variant="body1" sx={{ color: "#ffffff", marginTop: 1 }}>
+          {username}
         </Typography>
       </Box>
-
       <Divider sx={{ borderColor: "#374151" }} />
-
       <List>
         <ListItem disablePadding>
           <ListItemButton component={Link} to="/adminHome">
@@ -75,7 +101,6 @@ export default function SideAdmin({ open, onClose, isMobile }) {
             <ListItemText primary="Dashboard" />
           </ListItemButton>
         </ListItem>
-
         <Typography variant="body2" sx={{ padding: 2, color: "#9CA3AF" }}>
           User Management
         </Typography>
@@ -87,15 +112,6 @@ export default function SideAdmin({ open, onClose, isMobile }) {
             <ListItemText primary="จัดการผู้ใช้" />
           </ListItemButton>
         </ListItem>
-        <ListItem disablePadding>
-          <ListItemButton component={Link} to="/adminHome/TeacherInfo">
-            <ListItemIcon>
-              <PeopleIcon sx={{ color: "#9CA3AF" }} />
-            </ListItemIcon>
-            <ListItemText primary="เพิ่มข้อมูลอาจารย์" />
-          </ListItemButton>
-        </ListItem>
-
         <Typography variant="body2" sx={{ padding: 2, color: "#9CA3AF" }}>
           Project Management
         </Typography>
@@ -118,31 +134,8 @@ export default function SideAdmin({ open, onClose, isMobile }) {
               </ListItemIcon>
               <ListItemText primary="ตรวจสอบคำร้อง" />
             </ListItemButton>
-            <ListItemButton
-              component={Link}
-              to="/adminHome/ProjectInfo"
-              sx={{ pl: 4 }}
-            >
-              <ListItemIcon>
-                <CheckCircleIcon sx={{ color: "#9CA3AF" }} />
-              </ListItemIcon>
-              <ListItemText primary="ตรวจสอบเอกสาร " />
-            </ListItemButton>
-            <ListItemButton
-              component={Link}
-              to="/adminHome/release-project"
-              sx={{ pl: 4 }}
-            >
-              <ListItemIcon>
-                <CheckCircleIcon sx={{ color: "#9CA3AF" }} />
-              </ListItemIcon>
-              <ListItemText primary="เผยแพร่โครงงาน" />
-            </ListItemButton>
-
-            
           </List>
         </Collapse>
-
         <Typography variant="body2" sx={{ padding: 2, color: "#9CA3AF" }}>
           Document Management
         </Typography>
@@ -155,6 +148,18 @@ export default function SideAdmin({ open, onClose, isMobile }) {
           </ListItemButton>
         </ListItem>
       </List>
+      <Divider sx={{ borderColor: "#374151", mt: 2 }} />
+      <Box sx={{ padding: 2 }}>
+        <Button
+          variant="contained"
+          color="error"
+          startIcon={<LogoutIcon />}
+          fullWidth
+          onClick={handleLogout}
+        >
+          Logout
+        </Button>
+      </Box>
     </Drawer>
   );
 }

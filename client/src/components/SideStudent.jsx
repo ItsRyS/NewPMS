@@ -6,10 +6,14 @@ import {
   ListItemIcon,
   ListItemText,
   Toolbar,
+  Box,
+  Button,
+  Divider,
 } from "@mui/material";
-import { Home, School, Assignment, Logout } from "@mui/icons-material";
+import { Home, School, Assignment,  } from "@mui/icons-material";
 import { NavLink, useNavigate } from "react-router-dom"; // Import useNavigate
 import api from "../services/api";
+import LogoutIcon from "@mui/icons-material/Logout";
 const drawerWidth = 240;
 
 const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
@@ -73,12 +77,18 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
             <ListItemText primary="Send Project" />
           </ListItemButton>
         </NavLink>
-        <ListItemButton onClick={handleLogout}>
-          <ListItemIcon>
-            <Logout />
-          </ListItemIcon>
-          <ListItemText primary="Logout" />
-        </ListItemButton>
+        <Divider sx={{ borderColor: "#374151", mt: 2 }} />
+      <Box sx={{ padding: 2 }}>
+        <Button
+          variant="contained"
+          color="error"
+          startIcon={<LogoutIcon />}
+          fullWidth
+          onClick={handleLogout}
+        >
+          Logout
+        </Button>
+      </Box>
       </List>
     </>
   );
