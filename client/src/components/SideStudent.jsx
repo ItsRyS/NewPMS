@@ -21,13 +21,23 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
 
   const handleLogout = async () => {
     try {
-      await api.post("/auth/logout"); // เรียก API สำหรับ logout
-     
-      navigate("/SignIn");
+      const tabId = sessionStorage.getItem("tabId"); // ดึง tabId จาก sessionStorage
+      const response = await api.post("/auth/logout", { tabId }); // ส่ง tabId ไปกับ request
+  
+      if (response.data.success) {
+        console.log("Logout successful:", response.data.message);
+        sessionStorage.removeItem("tabId"); // ลบ tabId ในฝั่ง client
+        navigate("/SignIn");
+      } else {
+        console.error("Logout failed:", response.data.error);
+      }
     } catch (error) {
       console.error("Logout failed:", error);
     }
   };
+  
+  
+  
 
   const drawerContent = (
     <>

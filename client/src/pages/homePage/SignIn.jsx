@@ -13,7 +13,7 @@ import MuiCard from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import Link from "@mui/material/Link"; // ต้องเพิ่ม
+import Link from "@mui/material/Link";
 import AppTheme from "../../utils/shared-theme/AppTheme";
 import ColorModeSelect from "../../utils/shared-theme/ColorModeSelect";
 
@@ -67,6 +67,13 @@ export default function SignIn(props) {
   const [serverError, setServerError] = React.useState("");
   const navigate = useNavigate();
 
+  // สร้าง tabId เมื่อเปิดแอป
+  React.useEffect(() => {
+    if (!sessionStorage.getItem("tabId")) {
+      sessionStorage.setItem("tabId", `${Date.now()}-${Math.random()}`);
+    }
+  }, []);
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -75,11 +82,12 @@ export default function SignIn(props) {
     const data = new FormData(event.currentTarget);
     const email = data.get("email");
     const password = data.get("password");
+    const tabId = sessionStorage.getItem("tabId"); // ดึง tabId จาก sessionStorage
 
     try {
       const response = await axios.post(
         "http://localhost:5000/api/auth/login",
-        { email, password },
+        { email, password, tabId },
         { withCredentials: true }
       );
       const { role } = response.data;
@@ -140,8 +148,8 @@ export default function SignIn(props) {
         <Card variant="outlined">
           <Box
             sx={{
-              width: "200px", // Adjust width to 100px
-              height: "80px", // Adjust height to 20px
+              width: "200px",
+              height: "80px",
             }}
           >
             <img

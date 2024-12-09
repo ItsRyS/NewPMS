@@ -34,7 +34,7 @@ const sessionStore = new MySQLStore({
 app.use(
   session({
     key: "user_sid",
-    secret: "your-secret-key",
+    secret: "itpms2024",
     resave: false,
     saveUninitialized: false,
     store: sessionStore,

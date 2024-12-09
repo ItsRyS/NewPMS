@@ -8,7 +8,11 @@ function StudentHome() {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const response = await api.get("/auth/check-session"); // ตรวจสอบ session
+        const tabId = sessionStorage.getItem("tabId"); // ดึง tabId จาก sessionStorage
+        const response = await api.get("/auth/check-session", {
+          headers: { "x-tab-id": tabId }, // ส่ง tabId ใน Header
+        });
+
         if (!response.data.isAuthenticated) {
           navigate("/SignIn"); // ถ้า session หมดอายุหรือไม่ถูกต้องให้ redirect
         }
