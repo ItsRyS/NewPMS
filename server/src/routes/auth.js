@@ -26,13 +26,14 @@ router.post("/login", async (req, res) => {
 
     // เก็บข้อมูลใน session
     req.session.user = {
-      id: user.id,
+      user_id: user.user_id,
       role: user.role,
       username: user.username,
     };
 
     res.json({
       message: "Login successful",
+      user_id: user.user_id,
       role: user.role,
       username: user.username,
     });
