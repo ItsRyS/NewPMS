@@ -1,9 +1,9 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const db = require('../config/db'); // Import connection to MySQL
+const db = require("../config/db");
 
 // สร้างคำขอเปิดหัวข้อโครงงาน
-router.post('/create', async (req, res) => {
+router.post("/create", async (req, res) => {
   const { projectName, groupMembers, advisorId, studentId } = req.body;
 
   try {
@@ -15,32 +15,23 @@ router.post('/create', async (req, res) => {
     res.status(200).json({ success: true, requestId: result.insertId });
   } catch (error) {
     console.error("Database Error:", error.message);
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ success: false, error: "เกิดข้อผิดพลาดในการบันทึกข้อมูล" });
   }
 });
 
-
-
-
-// ดึงคำขอเปิดหัวข้อทั้งหมด (สำหรับอาจารย์)
-router.get('/all', async (req, res) => {
-  try {
-    const [requests] = await db.query(`SELECT * FROM project_requests`);
-    res.status(200).json(requests);
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// อนุมัติ/ปฏิเสธคำขอ
-router.post('/update-status', async (req, res) => {
-  const { requestId, status } = req.body;
+// ดึงสถานะของคำร้องขอ
+router.get("/status", async (req, res) => {
+  const { studentId } = req.query;
 
   try {
-    await db.query(`UPDATE project_requests SET status = ? WHERE request_id = ?`, [status, requestId]);
-    res.status(200).json({ success: true });
+    const [results] = await db.query(
+      `SELECT request_id, project_name, status FROM project_requests WHERE student_id = ?`,
+      [studentId]
+    );
+    res.status(200).json({ success: true, data: results });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error("Error fetching statuses:", error.message);
+    res.status(500).json({ success: false, error: "เกิดข้อผิดพลาดในการดึงข้อมูล" });
   }
 });
 

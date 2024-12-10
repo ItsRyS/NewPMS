@@ -31,7 +31,7 @@ router.post("/login", async (req, res) => {
       role: user.role,
       username: user.username,
     };
-
+    console.log("Session tabs after login:", req.session.tabs);
     res.status(200).json({
       message: "Login successful",
       user_id: user.user_id,
@@ -75,14 +75,26 @@ router.post("/register", async (req, res) => {
 router.post("/logout", (req, res) => {
   const { tabId } = req.body;
 
-  if (req.session && req.session.tabs && req.session.tabs[tabId]) {
-    delete req.session.tabs[tabId]; // ลบ session ของ tabId นั้น
+  console.log("Tab ID from request body:", tabId);
+  console.log("Current session tabs:", req.session?.tabs);
 
+  if (!tabId) {
+    console.error("Missing tabId in request");
+    return res.status(400).json({ error: "Missing tabId", success: false });
+  }
+
+  if (req.session && req.session.tabs && req.session.tabs[tabId]) {
+    delete req.session.tabs[tabId];
+    console.log("Tab session deleted for tabId:", tabId);
     res.status(200).json({ message: "Logout successful", success: true });
   } else {
+    console.error("Invalid tabId or session not found");
     res.status(400).json({ error: "Invalid tabId", success: false });
   }
 });
+
+
+
 
 // ตรวจสอบสถานะ Session
 router.get("/check-session", (req, res) => {

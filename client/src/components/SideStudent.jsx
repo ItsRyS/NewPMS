@@ -10,7 +10,7 @@ import {
   Button,
   Divider,
 } from "@mui/material";
-import { Home, School, Assignment,  } from "@mui/icons-material";
+import { Home, School, Assignment } from "@mui/icons-material";
 import { NavLink, useNavigate } from "react-router-dom"; // Import useNavigate
 import api from "../services/api";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -21,23 +21,26 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
 
   const handleLogout = async () => {
     try {
-      const tabId = sessionStorage.getItem("tabId"); // ดึง tabId จาก sessionStorage
-      const response = await api.post("/auth/logout", { tabId }); // ส่ง tabId ไปกับ request
-  
+      const tabId = sessionStorage.getItem("tabId");
+      console.log("Tab ID from sessionStorage:", tabId);
+
+      if (!tabId) {
+        console.error("No tabId found in sessionStorage");
+        return;
+      }
+
+      const response = await api.post("/auth/logout", { tabId });
       if (response.data.success) {
         console.log("Logout successful:", response.data.message);
-        sessionStorage.removeItem("tabId"); // ลบ tabId ในฝั่ง client
+        sessionStorage.removeItem("tabId");
         navigate("/SignIn");
       } else {
-        console.error("Logout failed:", response.data.error);
+        console.error("Logout failed:", response.data);
       }
     } catch (error) {
-      console.error("Logout failed:", error);
+      console.error("Logout failed:", error.response?.data || error.message);
     }
   };
-  
-  
-  
 
   const drawerContent = (
     <>
@@ -88,17 +91,17 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
           </ListItemButton>
         </NavLink>
         <Divider sx={{ borderColor: "#374151", mt: 2 }} />
-      <Box sx={{ padding: 2 }}>
-        <Button
-          variant="contained"
-          color="error"
-          startIcon={<LogoutIcon />}
-          fullWidth
-          onClick={handleLogout}
-        >
-          Logout
-        </Button>
-      </Box>
+        <Box sx={{ padding: 2 }}>
+          <Button
+            variant="contained"
+            color="error"
+            startIcon={<LogoutIcon />}
+            fullWidth
+            onClick={handleLogout}
+          >
+            Logout
+          </Button>
+        </Box>
       </List>
     </>
   );

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { TextField, Button, MenuItem, Typography, Grid } from "@mui/material";
-import api from "../../services/api"; // ใช้ instance ที่สร้างไว้
+import { Grid, Typography, Box, TextField, Button, MenuItem } from "@mui/material";
+import api from "../../services/api";
 
 const ProjectRequest = () => {
   const [projectName, setProjectName] = useState("");
@@ -8,48 +8,61 @@ const ProjectRequest = () => {
   const [advisors, setAdvisors] = useState([]);
   const [students, setStudents] = useState([]);
   const [selectedAdvisor, setSelectedAdvisor] = useState("");
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState("Pending");
+  const [projectStatus, setProjectStatus] = useState([]);
 
-  // ดึงข้อมูลอาจารย์
+  // Fetch advisors
   useEffect(() => {
-    api.get("/teacher")
-      .then((response) => {
-        console.log("API Response for Advisors:", response.data);
-        if (Array.isArray(response.data)) {
-          setAdvisors(response.data);
-        } else {
-          console.error("Unexpected response format:", response.data);
-          setAdvisors([]);
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching advisors:", error);
-        setAdvisors([]);
-      });
+    api
+      .get("/teacher")
+      .then((response) => setAdvisors(response.data))
+      .catch((error) => console.error("Error fetching advisors:", error));
   }, []);
 
-  // ดึงข้อมูลนักศึกษา
+  // Fetch students
   useEffect(() => {
-    api.get("/users")
+    api
+      .get("/users")
       .then((response) => {
-        console.log("API Response for Students:", response.data);
-        if (Array.isArray(response.data)) {
-          const studentUsers = response.data.filter((user) => user.role === "student");
-          setStudents(studentUsers);
-        } else {
-          console.error("Unexpected response format:", response.data);
-          setStudents([]);
-        }
+        const studentUsers = response.data.filter((user) => user.role === "student");
+        setStudents(studentUsers);
+      })
+      .catch((error) => console.error("Error fetching students:", error));
+  }, []);
+
+  // Fetch project statuses
+  useEffect(() => {
+    const abortController = new AbortController();
+
+    api
+      .get("/auth/check-session", { signal: abortController.signal })
+      .then((sessionResponse) => {
+        const { user_id } = sessionResponse.data.user;
+
+        api
+          .get("/project-requests/status", {
+            params: { studentId: user_id },
+            signal: abortController.signal,
+          })
+          .then((response) => setProjectStatus(response.data.data))
+          .catch((error) => {
+            if (error.name !== "AbortError") {
+              console.error("Error fetching project statuses:", error.response?.data || error.message);
+            }
+          });
       })
       .catch((error) => {
-        console.error("Error fetching students:", error);
-        setStudents([]);
+        if (error.name !== "AbortError") {
+          console.error("Session Error:", error.response?.data || error.message);
+        }
       });
+
+    return () => abortController.abort();
   }, []);
 
   const handleAddMember = () => {
     if (groupMembers.length < 3) {
-      setGroupMembers([...groupMembers, ""]); // เพิ่มช่องใหม่ใน Group Members
+      setGroupMembers([...groupMembers, ""]);
     }
   };
 
@@ -60,17 +73,18 @@ const ProjectRequest = () => {
   };
 
   const handleSubmit = () => {
-    // ดึงข้อมูล user จาก session (ตัวอย่างสมมติว่าคุณใช้ Context หรือดึงผ่าน API check-session)
-    api.get("/auth/check-session")
+    api
+      .get("/auth/check-session")
       .then((sessionResponse) => {
         const { user_id } = sessionResponse.data.user;
-  
-        api.post("/project-requests/create", {
-          projectName,
-          groupMembers, // ส่งเป็น Array เช่น [1, 2, 3]
-          advisorId: selectedAdvisor,
-          studentId: user_id, // ดึงค่า user_id จาก session
-        })
+
+        api
+          .post("/project-requests/create", {
+            projectName,
+            groupMembers,
+            advisorId: selectedAdvisor,
+            studentId: user_id,
+          })
           .then((response) => {
             console.log(response.data);
             setStatus("Pending");
@@ -83,52 +97,64 @@ const ProjectRequest = () => {
         console.error("Session Error:", error.response?.data || error.message);
       });
   };
-  
-  
 
   return (
     <Grid container spacing={2}>
-      <Grid item xs={12}>
-        <Typography variant="h5">Request a Project</Typography>
-      </Grid>
-      <Grid item xs={12}>
+      {/* Left section: Project request form */}
+      <Grid item xs={12} md={8}>
+        <Typography variant="h5" gutterBottom>
+          Request a Project
+        </Typography>
         <TextField
           fullWidth
           label="Project Name"
           value={projectName}
           onChange={(e) => setProjectName(e.target.value)}
+          sx={{ marginBottom: 2 }}
         />
-      </Grid>
-      {groupMembers.map((member, index) => (
-        <Grid item xs={12} key={index}>
-          <TextField
-            select
-            fullWidth
-            label={`Group Member ${index + 1}`}
-            value={groupMembers[index] || ""}
-            onChange={(e) => {
-              const updatedMembers = [...groupMembers];
-              updatedMembers[index] = e.target.value;
-              setGroupMembers(updatedMembers);
-            }}
+        {groupMembers.map((member, index) => (
+          <Grid container spacing={2} key={index}>
+            <Grid item xs={10}>
+              <TextField
+                select
+                fullWidth
+                label={`Group Member ${index + 1}`}
+                value={groupMembers[index] || ""}
+                onChange={(e) => {
+                  const updatedMembers = [...groupMembers];
+                  updatedMembers[index] = e.target.value;
+                  setGroupMembers(updatedMembers);
+                }}
+              >
+                {students.map((student) => (
+                  <MenuItem key={student.user_id} value={student.user_id}>
+                    {student.username}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+            <Grid item xs={2}>
+              {index > 0 && (
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={() => handleRemoveMember(index)}
+                >
+                  Remove
+                </Button>
+              )}
+            </Grid>
+          </Grid>
+        ))}
+        {groupMembers.length < 3 && (
+          <Button
+            variant="outlined"
+            onClick={handleAddMember}
+            sx={{ marginBottom: 2 }}
           >
-            {students.map((student) => (
-              <MenuItem key={student.user_id} value={student.user_id}>
-                {student.username}
-              </MenuItem>
-            ))}
-          </TextField>
-          {index > 0 && (
-            <Button onClick={() => handleRemoveMember(index)}>Remove</Button>
-          )}
-        </Grid>
-      ))}
-      {groupMembers.length < 3 && (
-        <Grid item xs={12}>
-          <Button onClick={handleAddMember}>Add Member</Button>
-        </Grid>
-      )}
-      <Grid item xs={12}>
+            Add Member
+          </Button>
+        )}
         <TextField
           select
           fullWidth
@@ -136,27 +162,53 @@ const ProjectRequest = () => {
           value={selectedAdvisor}
           onChange={(e) => setSelectedAdvisor(e.target.value)}
           disabled={advisors.length === 0}
+          sx={{ marginBottom: 2 }}
         >
-          {advisors.length > 0 ? (
-            advisors.map((advisor) => (
-              <MenuItem key={advisor.teacher_id} value={advisor.teacher_id}>
-                {advisor.teacher_name}
-              </MenuItem>
-            ))
-          ) : (
-            <MenuItem disabled>No advisors available</MenuItem>
-          )}
+          {advisors.map((advisor) => (
+            <MenuItem key={advisor.teacher_id} value={advisor.teacher_id}>
+              {advisor.teacher_name}
+            </MenuItem>
+          ))}
         </TextField>
-      </Grid>
-      <Grid item xs={12}>
-        <Button variant="contained" onClick={handleSubmit}>
+        <Button
+          variant="contained"
+          onClick={handleSubmit}
+          disabled={status === "Pending"}
+        >
           Submit Request
         </Button>
       </Grid>
-      <Grid item xs={12}>
-        <Typography variant="body1">
-          Status: {status || "Not Submitted"}
+
+      {/* Right section: Project status */}
+      <Grid item xs={12} md={4}>
+        <Typography variant="h6" gutterBottom>
+          Document Status
         </Typography>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          {projectStatus.map((status) => (
+            <Box
+              key={status.request_id}
+              sx={{
+                padding: 2,
+                borderRadius: 2,
+                backgroundColor:
+                  status.status === "pending"
+                    ? "#9e9e9e"
+                    : status.status === "approved"
+                    ? "#4caf50"
+                    : "#f44336",
+                color: "#fff",
+              }}
+            >
+              <Typography variant="body1">
+                <strong>{status.project_name}</strong>
+              </Typography>
+              <Typography variant="body2">
+                Status: {status.status.charAt(0).toUpperCase() + status.status.slice(1)}
+              </Typography>
+            </Box>
+          ))}
+        </Box>
       </Grid>
     </Grid>
   );

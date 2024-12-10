@@ -40,7 +40,7 @@ app.use(
     saveUninitialized: false,
     store: sessionStore,
     cookie: {
-      maxAge: 1000 * 60 * 60, // อายุ session (1 ชั่วโมง)
+      maxAge: 1000 * 60 * 60 * 24, // อายุ session (1 ชั่วโมง)
       secure: false, // true ใน production ที่ใช้ HTTPS
       httpOnly: true,
     },

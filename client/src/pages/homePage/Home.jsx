@@ -19,20 +19,23 @@ const Home = () => {
   const [open, setOpen] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState("");
 
+  // Fetch projects from API
   useEffect(() => {
-    api
-      .get("/projects")
-      .then((response) => {
-        // Format date using moment.js
+    const fetchProjects = async () => {
+      try {
+        const response = await api.get("/projects");
         const formattedProjects = response.data.map((project) => ({
           ...project,
           project_create_time: moment(project.project_create_time).format(
             "DD/MM/YYYY"
-          ), // Adjust date format as needed
+          ),
         }));
         setProjects(formattedProjects);
-      })
-      .catch((error) => console.error("Error fetching projects:", error));
+      } catch (error) {
+        console.error("Error fetching projects:", error.response?.data || error.message);
+      }
+    };
+    fetchProjects();
   }, []);
 
   const handleOpen = (documentPath) => {
@@ -74,13 +77,10 @@ const Home = () => {
         <Button
           variant="contained"
           color="primary"
-          onClick={
-            () =>
-              handleOpen(
-                `http://localhost:5000/upload/Document/${params.row.view_document}`
-              ) // Adjust URL as needed
+          onClick={() =>
+            handleOpen(`http://localhost:5000/upload/Document/${params.row.view_document}`)
           }
-          disabled={!params.row.view_document} // Disable button if document path is missing
+          disabled={!params.row.view_document}
         >
           ดูเอกสาร
         </Button>
@@ -100,7 +100,6 @@ const Home = () => {
       <NavbarHome />
       <Outlet />
       <Container
-        className="content-main"
         maxWidth={false}
         sx={{
           paddingTop: "auto",
