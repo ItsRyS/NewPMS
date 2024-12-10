@@ -11,6 +11,7 @@ const projectRoutes = require("./src/routes/projects");
 const teacherRoutes = require("./src/routes/teacher");
 const documentRoutes = require("./src/routes/document");
 const userRoutes = require("./src/routes/users");
+const projectRequestsRoutes = require("./src/routes/projectRequests");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -58,7 +59,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/teacher", teacherRoutes);
 app.use("/api/document", documentRoutes);
 app.use("/api/users", userRoutes);
-
+app.use("/api/project-requests", projectRequestsRoutes);
 // Test Endpoint
 app.get("/api/test", (req, res) => {
   res.json({ message: "API is working!" });
@@ -78,6 +79,13 @@ app.use((req, res) => {
 app.use((err, req, res, next) => {
   console.error("Error stack:", err.stack); // Log error stack for debugging
   res.status(500).json({ error: "An unexpected error occurred", details: err.message });
+});
+app.use((req, res, next) => {
+  const tabId = req.headers["x-tab-id"];
+  if (tabId) {
+    console.log("Tab ID:", tabId);
+  }
+  next();
 });
 
 // Start Server

@@ -18,115 +18,98 @@ const upload = multer({ storage: storage });
 exports.uploadMiddleware = upload.single('teacher_image');
 
 // ดึงข้อมูลอาจารย์ทั้งหมด
-exports.getAllTeachers = (req, res) => {
-  db.query("SELECT * FROM teacher_info", (err, results) => {
-    if (err) return res.status(500).json({ error: "Database query failed" });
-    res.json(results);
-  });
+exports.getAllTeachers = async (req, res) => {
+  try {
+    const [results] = await db.query("SELECT * FROM teacher_info");
+    res.status(200).json(results);
+  } catch (error) {
+    console.error("Error fetching teachers:", error.message);
+    res.status(500).json({ error: "Database query failed" });
+  }
 };
-
 // ดึงข้อมูลอาจารย์ตาม ID
-exports.getTeacherById = (req, res) => {
+exports.getTeacherById = async (req, res) => {
   const { id } = req.params;
-  db.query("SELECT * FROM teacher_info WHERE teacher_id = ?", [id], (err, result) => {
-    if (err) return res.status(500).json({ error: "Database query failed" });
-    if (result.length === 0) return res.status(404).json({ error: "Teacher not found" });
-    res.json(result[0]);
-  });
+
+  try {
+    const [results] = await db.query("SELECT * FROM teacher_info WHERE teacher_id = ?", [id]);
+    if (results.length === 0) {
+      return res.status(404).json({ error: "Teacher not found" });
+    }
+    res.status(200).json(results[0]);
+  } catch (error) {
+    console.error("Error fetching teacher:", error.message);
+    res.status(500).json({ error: "Database query failed" });
+  }
 };
 
 // สร้างข้อมูลอาจารย์ใหม่
-exports.createTeacher = (req, res) => {
-  const { teacher_name, teacher_phone, teacher_email, teacher_expert, teacher_position } = req.body;
+exports.createTeacher = async (req, res) => {
+  const { teacher_name, teacher_phone, teacher_email, teacher_position, teacher_expert } = req.body;
   const teacher_image = req.file ? req.file.filename : null;
 
   if (!teacher_name || !teacher_email) {
     return res.status(400).json({ error: "Missing required fields" });
   }
 
-  const sql = `
-    INSERT INTO teacher_info (teacher_name, teacher_phone, teacher_email, teacher_position, teacher_expert, teacher_image)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `;
-
-  db.query(sql, [teacher_name, teacher_phone, teacher_email, teacher_position, teacher_expert, teacher_image], (err, result) => {
-    if (err) return res.status(500).json({ error: "Database insert failed" });
-    res.status(201).json({ message: "Teacher created", teacherId: result.insertId });
-  });
+  try {
+    const [result] = await db.query(
+      `INSERT INTO teacher_info (teacher_name, teacher_phone, teacher_email, teacher_position, teacher_expert, teacher_image)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [teacher_name, teacher_phone, teacher_email, teacher_position, teacher_expert, teacher_image]
+    );
+    res.status(201).json({ message: "Teacher created successfully", teacherId: result.insertId });
+  } catch (error) {
+    console.error("Error creating teacher:", error.message);
+    res.status(500).json({ error: "Database insert failed" });
+  }
 };
 
+
 // อัปเดตข้อมูลอาจารย์
-exports.updateTeacher = (req, res) => {
+exports.updateTeacher = async (req, res) => {
   const { id } = req.params;
   const { teacher_name, teacher_phone, teacher_email, teacher_position, teacher_expert } = req.body;
-  let teacher_image = req.file ? req.file.filename : req.body.teacher_image;
+  const teacher_image = req.file ? req.file.filename : req.body.teacher_image;
 
-  if (!teacher_name || !teacher_email) {
-    return res.status(400).json({ error: "Missing required fields" });
-  }
-
-  // หากไม่มีการอัปโหลดรูปภาพและไม่มีค่าภายในฐานข้อมูล
-  if (!teacher_image) {
-    teacher_image = null; // ปล่อยให้เป็นค่า NULL ได้
-  }
-
-  const sql = `
-    UPDATE teacher_info 
-    SET teacher_name = ?, teacher_phone = ?, teacher_email = ?, teacher_position = ?, teacher_expert = ?, teacher_image = ?
-    WHERE teacher_id = ?
-  `;
-
-  db.query(sql, [teacher_name, teacher_phone, teacher_email, teacher_position, teacher_expert, teacher_image, id], (err, result) => {
-    if (err) {
-      console.error("Database update error:", err);
-      return res.status(500).json({ error: "Database update failed" });
-    }
+  try {
+    const [result] = await db.query(
+      `UPDATE teacher_info 
+       SET teacher_name = ?, teacher_phone = ?, teacher_email = ?, teacher_position = ?, teacher_expert = ?, teacher_image = ?
+       WHERE teacher_id = ?`,
+      [teacher_name, teacher_phone, teacher_email, teacher_position, teacher_expert, teacher_image, id]
+    );
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: "Teacher not found" });
     }
 
-    res.json({ message: "Teacher updated successfully" });
-  });
+    res.status(200).json({ message: "Teacher updated successfully" });
+  } catch (error) {
+    console.error("Error updating teacher:", error.message);
+    res.status(500).json({ error: "Database update failed" });
+  }
 };
 
 // ลบข้อมูลอาจารย์
-exports.deleteTeacher = (req, res) => {
+exports.deleteTeacher = async (req, res) => {
   const { id } = req.params;
 
-  // ค้นหาไฟล์รูปภาพในฐานข้อมูล
-  const findImageQuery = 'SELECT teacher_image FROM teacher_info WHERE teacher_id = ?';
-  db.query(findImageQuery, [id], (err, results) => {
-    if (err) {
-      return res.status(500).json({ error: 'Database query failed' });
+  try {
+    const [results] = await db.query(`SELECT teacher_image FROM teacher_info WHERE teacher_id = ?`, [id]);
+    if (results.length === 0) {
+      return res.status(404).json({ error: "Teacher not found" });
     }
 
-    if (results.length > 0 && results[0].teacher_image) {
-      // ชี้ไปที่ตำแหน่งไฟล์จริง
-      const imagePath = path.join(__dirname, '../../upload/pic', results[0].teacher_image);
-
-      // ตรวจสอบไฟล์ก่อนลบ
-      if (fs.existsSync(imagePath)) {
-        fs.unlink(imagePath, (unlinkErr) => {
-          if (unlinkErr) {
-            console.error('Failed to delete image:', unlinkErr);
-          } else {
-            console.log('Image deleted successfully:', imagePath);
-          }
-        });
-      } else {
-        console.warn('Image file not found, skipping deletion:', imagePath);
-      }
+    const imagePath = path.join(__dirname, "../../upload/pic", results[0].teacher_image);
+    if (fs.existsSync(imagePath)) {
+      fs.unlinkSync(imagePath);
     }
 
-    // ลบข้อมูลอาจารย์จากฐานข้อมูล
-    const deleteQuery = 'DELETE FROM teacher_info WHERE teacher_id = ?';
-    db.query(deleteQuery, [id], (deleteErr) => {
-      if (deleteErr) {
-        return res.status(500).json({ error: 'Failed to delete teacher' });
-      }
-
-      res.json({ message: 'Teacher deleted successfully' });
-    });
-  });
+    await db.query(`DELETE FROM teacher_info WHERE teacher_id = ?`, [id]);
+    res.status(200).json({ message: "Teacher deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting teacher:", error.message);
+    res.status(500).json({ error: "Database query failed" });
+  }
 };

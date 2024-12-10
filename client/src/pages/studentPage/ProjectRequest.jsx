@@ -1,240 +1,164 @@
 import { useState, useEffect } from "react";
-import {
-  Box,
-  TextField,
-  Typography,
-  Button,
-  Grid,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Snackbar,
-  Alert,
-} from "@mui/material";
-import axios from "axios";
+import { TextField, Button, MenuItem, Typography, Grid } from "@mui/material";
+import api from "../../services/api"; // ใช้ instance ที่สร้างไว้
 
 const ProjectRequest = () => {
-  const [teachers, setTeachers] = useState([]);
+  const [projectName, setProjectName] = useState("");
+  const [groupMembers, setGroupMembers] = useState([""]);
+  const [advisors, setAdvisors] = useState([]);
+  const [students, setStudents] = useState([]);
   const [selectedAdvisor, setSelectedAdvisor] = useState("");
-  const [projectNameThai, setProjectNameThai] = useState("");
-  const [projectNameEnglish, setProjectNameEnglish] = useState("");
-  const [groupMember1, setGroupMember1] = useState("");
-  const [groupMember2, setGroupMember2] = useState("");
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [status, setStatus] = useState("");
 
-  // Fetch teachers data from API
+  // ดึงข้อมูลอาจารย์
   useEffect(() => {
-    const fetchTeachers = async () => {
-      try {
-        const response = await axios.get("http://localhost:5000/api/teacher");
-        setTeachers(response.data);
-      } catch (error) {
-        console.error("Failed to fetch teachers:", error);
-      }
-    };
-
-    fetchTeachers();
+    api.get("/teacher")
+      .then((response) => {
+        console.log("API Response for Advisors:", response.data);
+        if (Array.isArray(response.data)) {
+          setAdvisors(response.data);
+        } else {
+          console.error("Unexpected response format:", response.data);
+          setAdvisors([]);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching advisors:", error);
+        setAdvisors([]);
+      });
   }, []);
 
-  const handleAdvisorChange = (event) => {
-    setSelectedAdvisor(event.target.value);
-  };
-
-  const handleSnackbarClose = () => {
-    setSnackbarOpen(false);
-  };
-
-  const handleSubmit = () => {
-    // Check if all fields are filled
-    if (
-      !projectNameThai ||
-      !projectNameEnglish ||
-      !groupMember1 ||
-      !groupMember2 ||
-      !selectedAdvisor
-    ) {
-      setSnackbarOpen(true); // Open snackbar if any field is missing
-    } else {
-      // Handle form submission logic
-      console.log("Form submitted successfully!");
-      console.log({
-        projectNameThai,
-        projectNameEnglish,
-        groupMember1,
-        groupMember2,
-        selectedAdvisor,
+  // ดึงข้อมูลนักศึกษา
+  useEffect(() => {
+    api.get("/users")
+      .then((response) => {
+        console.log("API Response for Students:", response.data);
+        if (Array.isArray(response.data)) {
+          const studentUsers = response.data.filter((user) => user.role === "student");
+          setStudents(studentUsers);
+        } else {
+          console.error("Unexpected response format:", response.data);
+          setStudents([]);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching students:", error);
+        setStudents([]);
       });
+  }, []);
+
+  const handleAddMember = () => {
+    if (groupMembers.length < 3) {
+      setGroupMembers([...groupMembers, ""]); // เพิ่มช่องใหม่ใน Group Members
     }
   };
 
+  const handleRemoveMember = (index) => {
+    const updatedMembers = [...groupMembers];
+    updatedMembers.splice(index, 1);
+    setGroupMembers(updatedMembers);
+  };
+
+  const handleSubmit = () => {
+    // ดึงข้อมูล user จาก session (ตัวอย่างสมมติว่าคุณใช้ Context หรือดึงผ่าน API check-session)
+    api.get("/auth/check-session")
+      .then((sessionResponse) => {
+        const { user_id } = sessionResponse.data.user;
+  
+        api.post("/project-requests/create", {
+          projectName,
+          groupMembers, // ส่งเป็น Array เช่น [1, 2, 3]
+          advisorId: selectedAdvisor,
+          studentId: user_id, // ดึงค่า user_id จาก session
+        })
+          .then((response) => {
+            console.log(response.data);
+            setStatus("Pending");
+          })
+          .catch((error) =>
+            console.error("Submission Error:", error.response?.data || error.message)
+          );
+      })
+      .catch((error) => {
+        console.error("Session Error:", error.response?.data || error.message);
+      });
+  };
+  
+  
+
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: { xs: "column", md: "row" },
-        gap: 2,
-        padding: 4,
-        bgcolor: "#ffffff",
-        height: "100",
-      }}
-    >
-      {/* Left Section */}
-      <Box
-        sx={{
-          flex: 1,
-          bgcolor: "#e0e0e0",
-          padding: 3,
-          borderRadius: 6,
-          boxShadow: 9,
-        }}
-      >
-        <Typography
-          variant="h6"
-          sx={{
-            marginBottom: 2,
-            fontWeight: "bold",
-            color: "#333",
-            textAlign: "center",
-          }}
-        >
-          กรอกข้อมูลขอเปิดโครงการ
-        </Typography>
-
-        <Grid container spacing={2} alignItems="center">
-          {/* Project Name in Thai */}
-          <Grid item xs={5}>
-            <Typography>ชื่อโครงการ (ภาษาไทย)</Typography>
-          </Grid>
-          <Grid item xs={7}>
-            <TextField
-              fullWidth
-              variant="outlined"
-              value={projectNameThai}
-              onChange={(e) => setProjectNameThai(e.target.value)}
-            />
-          </Grid>
-
-          {/* Project Name in English */}
-          <Grid item xs={5}>
-            <Typography>ชื่อโครงการ (ภาษาอังกฤษ)</Typography>
-          </Grid>
-          <Grid item xs={7}>
-            <TextField
-              fullWidth
-              variant="outlined"
-              value={projectNameEnglish}
-              onChange={(e) => setProjectNameEnglish(e.target.value)}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <Typography
-              variant="h6"
-              sx={{ marginBottom: 2, fontWeight: "bold", color: "#333" }}
-            >
-              สมาชิกกลุ่ม
-            </Typography>
-          </Grid>
-
-          {/* Group Members */}
-          <Grid item xs={5}>
-            <Typography>ชื่อ-นามสกุล (สมาชิกกลุ่ม)</Typography>
-          </Grid>
-          <Grid item xs={7}>
-            <TextField
-              fullWidth
-              variant="outlined"
-              value={groupMember1}
-              onChange={(e) => setGroupMember1(e.target.value)}
-            />
-          </Grid>
-
-          <Grid item xs={5}>
-            <Typography>ชื่อ-นามสกุล (สมาชิกกลุ่ม)</Typography>
-          </Grid>
-          <Grid item xs={7}>
-            <TextField
-              fullWidth
-              variant="outlined"
-              value={groupMember2}
-              onChange={(e) => setGroupMember2(e.target.value)}
-            />
-          </Grid>
-
-          {/* Advisor Name */}
-          <Grid item xs={5}>
-            <Typography>ชื่อ-นามสกุล (อาจารย์ที่ปรึกษา)</Typography>
-          </Grid>
-          <Grid item xs={7}>
-            <FormControl fullWidth>
-              <InputLabel>เลือกอาจารย์</InputLabel>
-              <Select
-                value={selectedAdvisor}
-                onChange={handleAdvisorChange}
-                variant="outlined"
-              >
-                {teachers.map((teacher) => (
-                  <MenuItem key={teacher.teacher_id} value={teacher.teacher_id}>
-                    {teacher.teacher_name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-
-          {/* Submit Button */}
-          <Grid item xs={12} sx={{ display: "flex", justifyContent: "center" }}>
-            <Button
-              fullWidth
-              variant="contained"
-              color="primary"
-              sx={{ height: "50px",width: "35%", fontWeight: "bold" }}
-              onClick={handleSubmit}
-            >
-              ยืนยันการส่ง
-            </Button>
-          </Grid>
+    <Grid container spacing={2}>
+      <Grid item xs={12}>
+        <Typography variant="h5">Request a Project</Typography>
+      </Grid>
+      <Grid item xs={12}>
+        <TextField
+          fullWidth
+          label="Project Name"
+          value={projectName}
+          onChange={(e) => setProjectName(e.target.value)}
+        />
+      </Grid>
+      {groupMembers.map((member, index) => (
+        <Grid item xs={12} key={index}>
+          <TextField
+            select
+            fullWidth
+            label={`Group Member ${index + 1}`}
+            value={groupMembers[index] || ""}
+            onChange={(e) => {
+              const updatedMembers = [...groupMembers];
+              updatedMembers[index] = e.target.value;
+              setGroupMembers(updatedMembers);
+            }}
+          >
+            {students.map((student) => (
+              <MenuItem key={student.user_id} value={student.user_id}>
+                {student.username}
+              </MenuItem>
+            ))}
+          </TextField>
+          {index > 0 && (
+            <Button onClick={() => handleRemoveMember(index)}>Remove</Button>
+          )}
         </Grid>
-      </Box>
-
-      {/* Right Section */}
-      <Box
-        sx={{
-          flex: 1,
-          bgcolor: "#ffa726",
-          borderRadius: 6,
-          padding: 3,
-          display: "flex",
-          alignItems: "top",
-          justifyContent: "center",
-          boxShadow: 9,
-        }}
-      >
-        <Typography
-          variant="h6"
-          sx={{ fontWeight: "bold", color: "#fff", textAlign: "center" }}
+      ))}
+      {groupMembers.length < 3 && (
+        <Grid item xs={12}>
+          <Button onClick={handleAddMember}>Add Member</Button>
+        </Grid>
+      )}
+      <Grid item xs={12}>
+        <TextField
+          select
+          fullWidth
+          label="Select Advisor"
+          value={selectedAdvisor}
+          onChange={(e) => setSelectedAdvisor(e.target.value)}
+          disabled={advisors.length === 0}
         >
-          สถานะการส่งคำร้องขอเปิดโครงการ
+          {advisors.length > 0 ? (
+            advisors.map((advisor) => (
+              <MenuItem key={advisor.teacher_id} value={advisor.teacher_id}>
+                {advisor.teacher_name}
+              </MenuItem>
+            ))
+          ) : (
+            <MenuItem disabled>No advisors available</MenuItem>
+          )}
+        </TextField>
+      </Grid>
+      <Grid item xs={12}>
+        <Button variant="contained" onClick={handleSubmit}>
+          Submit Request
+        </Button>
+      </Grid>
+      <Grid item xs={12}>
+        <Typography variant="body1">
+          Status: {status || "Not Submitted"}
         </Typography>
-      </Box>
-
-      {/* Snackbar */}
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={1000}
-        onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-      >
-        <Alert
-          onClose={handleSnackbarClose}
-          severity="warning"
-          sx={{ width: "500" }}
-        >
-          กรุณากรอกข้อมูลให้ครบถ้วน!
-        </Alert>
-      </Snackbar>
-    </Box>
+      </Grid>
+    </Grid>
   );
 };
 

@@ -100,6 +100,7 @@ export default function SideAdmin({ open, onClose, isMobile }) {
         <Avatar alt={username} src="https://i.pravatar.cc/300" />
         <Typography variant="body1" sx={{ color: "#ffffff", marginTop: 1 }}>
           {username}
+          <Divider sx={{ borderColor: "#ff0000" }} />
         </Typography>
       </Box>
       <Divider sx={{ borderColor: "#374151" }} />

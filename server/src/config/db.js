@@ -1,7 +1,7 @@
 require("dotenv").config();
-const mysql = require("mysql2");
+const mysql = require("mysql2/promise");
 
-const db = mysql.createConnection({
+const db = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
@@ -9,12 +9,6 @@ const db = mysql.createConnection({
   port: process.env.DB_PORT,
 });
 
-db.connect((err) => {
-  if (err) {
-    console.error("Database connection failed:", err.stack);
-    return;
-  }
-  console.log("Connected to the database.");
-});
+console.log("Connected to the database."); // ใช้ข้อความ Log ธรรมดาแทน callback
 
 module.exports = db;

@@ -1,91 +1,85 @@
 const bcrypt = require('bcrypt');
 const db = require('../config/db');
 
-// Get all users
-exports.getAllUsers = (req, res) => {
-  db.query('SELECT * FROM users', (err, results) => {
-    if (err) {
-      console.error('Failed to fetch users:', err);
-      return res.status(500).json({ error: 'Database query failed' });
-    }
-    res.json(results);
-  });
+// ดึงข้อมูลผู้ใช้ทั้งหมด
+exports.getAllUsers = async (req, res) => {
+  try {
+    const [results] = await db.query('SELECT * FROM users');
+    res.status(200).json(results);
+  } catch (error) {
+    console.error('Error fetching users:', error.message);
+    res.status(500).json({ error: 'Database query failed' });
+  }
 };
 
-// Create a new user
+// สร้างผู้ใช้ใหม่
 exports.createUser = async (req, res) => {
   const { username, email, password, role } = req.body;
 
-  if (!password) {
-    return res.status(400).json({ error: 'Password is required' });
+  if (!username || !email || !password) {
+    return res.status(400).json({ error: 'Missing required fields' });
   }
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    db.query(
-      'INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)',
-      [username, email, hashedPassword, role || 'student'],
-      (err, result) => {
-        if (err) {
-          console.error('Failed to insert user:', err);
-          return res.status(500).json({ error: 'Database error' });
-        }
-        res.status(201).json({ id: result.insertId });
-      }
+    const [result] = await db.query(
+      `INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)`,
+      [username, email, hashedPassword, role || 'student']
     );
+    res.status(201).json({ message: 'User created successfully', userId: result.insertId });
   } catch (error) {
-    console.error('Error hashing password:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Error creating user:', error.message);
+    res.status(500).json({ error: 'Database query failed' });
   }
 };
 
-// Update user
+// อัปเดตข้อมูลผู้ใช้
 exports.updateUser = async (req, res) => {
   const { id } = req.params;
   const { username, email, role, password } = req.body;
 
+  if (!username || !email || !role) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
   try {
     if (password) {
       const hashedPassword = await bcrypt.hash(password, 10);
-      db.query(
+      const [result] = await db.query(
         'UPDATE users SET username = ?, email = ?, role = ?, password = ? WHERE user_id = ?',
-        [username, email, role, hashedPassword, id],
-        (err) => {
-          if (err) {
-            console.error('Failed to update user:', err);
-            return res.status(500).json({ error: 'Failed to update user' });
-          }
-          res.json({ message: 'User updated successfully' });
-        }
+        [username, email, role, hashedPassword, id]
       );
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
     } else {
-      db.query(
+      const [result] = await db.query(
         'UPDATE users SET username = ?, email = ?, role = ? WHERE user_id = ?',
-        [username, email, role, id],
-        (err) => {
-          if (err) {
-            console.error('Failed to update user:', err);
-            return res.status(500).json({ error: 'Failed to update user' });
-          }
-          res.json({ message: 'User updated successfully' });
-        }
+        [username, email, role, id]
       );
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
     }
+    res.json({ message: 'User updated successfully' });
   } catch (error) {
-    console.error('Error updating user:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Error updating user:', error.message);
+    res.status(500).json({ error: 'Database query failed' });
   }
 };
 
-// Delete user
-exports.deleteUser = (req, res) => {
+// ลบข้อมูลผู้ใช้
+exports.deleteUser = async (req, res) => {
   const { id } = req.params;
 
-  db.query('DELETE FROM users WHERE user_id = ?', [id], (err) => {
-    if (err) {
-      console.error('Failed to delete user:', err);
-      return res.status(500).json({ error: 'Failed to delete user' });
+  try {
+    const [result] = await db.query('DELETE FROM users WHERE user_id = ?', [id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'User not found' });
     }
     res.json({ message: 'User deleted successfully' });
-  });
+  } catch (error) {
+    console.error('Error deleting user:', error.message);
+    res.status(500).json({ error: 'Database query failed' });
+  }
 };
