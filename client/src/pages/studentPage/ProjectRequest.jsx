@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Grid, Typography, Box, TextField, Button, MenuItem } from "@mui/material";
+import { useState, useEffect, useCallback } from "react";
+import { Grid, Typography, Box, TextField, Button, MenuItem, CircularProgress, Alert } from "@mui/material";
 import api from "../../services/api";
 
 const ProjectRequest = () => {
@@ -9,47 +9,48 @@ const ProjectRequest = () => {
   const [students, setStudents] = useState([]);
   const [selectedAdvisor, setSelectedAdvisor] = useState("");
   const [projectStatus, setProjectStatus] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [canSubmit, setCanSubmit] = useState(true);
+  const [latestStatus, setLatestStatus] = useState("");
 
-  // Fetch advisors
+  // ดึงข้อมูลทั้งหมด
   useEffect(() => {
-    api
-      .get("/teacher")
-      .then((response) => setAdvisors(response.data))
-      .catch((error) => console.error("Error fetching advisors:", error));
-  }, []);
-
-  // Fetch students
-  useEffect(() => {
-    api
-      .get("/users")
-      .then((response) => {
-        const studentUsers = response.data.filter((user) => user.role === "student");
-        setStudents(studentUsers);
-      })
-      .catch((error) => console.error("Error fetching students:", error));
-  }, []);
-
-  // Fetch project statuses
-  useEffect(() => {
-    const initializeData = async () => {
+    const fetchData = async () => {
       try {
-        const sessionResponse = await api.get("/auth/check-session");
-        const { user_id } = sessionResponse.data.user;
+        setLoading(true);
+        const [advisorResponse, studentResponse, sessionResponse] = await Promise.all([
+          api.get("/teacher"),
+          api.get("/users"),
+          api.get("/auth/check-session"),
+        ]);
 
-        const response = await api.get("/project-requests/status", {
+        const studentUsers = studentResponse.data.filter((user) => user.role === "student");
+        setAdvisors(advisorResponse.data);
+        setStudents(studentUsers);
+
+        const { user_id } = sessionResponse.data.user;
+        const statusResponse = await api.get("/project-requests/status", {
           params: { studentId: user_id },
         });
-        setProjectStatus(response.data.data);
+        const statuses = statusResponse.data.data;
+        setProjectStatus(statuses);
+
+        // ตรวจสอบสถานะล่าสุด
+        const latestRequest = statuses[statuses.length - 1]; // คำร้องล่าสุด
+        setLatestStatus(latestRequest?.status || "");
+        setCanSubmit(!(latestRequest?.status === "pending" || latestRequest?.status === "approved"));
       } catch (error) {
-        console.error("Error initializing data:", error.response?.data || error.message);
+        console.error("Error fetching data:", error.response?.data || error.message);
+      } finally {
+        setLoading(false);
       }
     };
 
-    initializeData();
+    fetchData();
   }, []);
 
-  // Submit request
-  const handleSubmit = async () => {
+  // ฟังก์ชันส่งคำขอ
+  const handleSubmit = useCallback(async () => {
     try {
       const sessionResponse = await api.get("/auth/check-session");
       const { user_id } = sessionResponse.data.user;
@@ -61,29 +62,40 @@ const ProjectRequest = () => {
         studentId: user_id,
       });
 
-      console.log("Request submitted successfully");
-
-      // Fetch updated project status
       const updatedStatus = await api.get("/project-requests/status", {
         params: { studentId: user_id },
       });
       setProjectStatus(updatedStatus.data.data);
+      setCanSubmit(false); // ปิดฟอร์มหลังส่งคำร้องสำเร็จ
     } catch (error) {
       console.error("Error submitting request:", error.response?.data || error.message);
     }
-  };
+  }, [projectName, groupMembers, selectedAdvisor]);
 
-  const handleAddMember = () => {
+  // เพิ่มสมาชิก
+  const handleAddMember = useCallback(() => {
     if (groupMembers.length < 3) {
       setGroupMembers([...groupMembers, ""]);
     }
-  };
+  }, [groupMembers]);
 
-  const handleRemoveMember = (index) => {
-    const updatedMembers = [...groupMembers];
-    updatedMembers.splice(index, 1);
-    setGroupMembers(updatedMembers);
-  };
+  // ลบสมาชิก
+  const handleRemoveMember = useCallback(
+    (index) => {
+      const updatedMembers = [...groupMembers];
+      updatedMembers.splice(index, 1);
+      setGroupMembers(updatedMembers);
+    },
+    [groupMembers]
+  );
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box
@@ -111,12 +123,24 @@ const ProjectRequest = () => {
         <Typography variant="h5" gutterBottom>
           Request a Project
         </Typography>
+        {!canSubmit && (
+          latestStatus === "approved" ? (
+            <Alert severity="success" sx={{ marginBottom: 2 }}>
+              Congratulations! Your project request has been approved.
+            </Alert>
+          ) : (
+            <Alert severity="info" sx={{ marginBottom: 2 }}>
+              You already have a pending project request. Please wait for approval or rejection before submitting a new request.
+            </Alert>
+          )
+        )}
         <TextField
           fullWidth
           label="Project Name"
           value={projectName}
           onChange={(e) => setProjectName(e.target.value)}
           sx={{ marginBottom: 2 }}
+          disabled={!canSubmit}
         />
         {groupMembers.map((member, index) => (
           <Grid container spacing={2} key={index}>
@@ -131,6 +155,7 @@ const ProjectRequest = () => {
                   updatedMembers[index] = e.target.value;
                   setGroupMembers(updatedMembers);
                 }}
+                disabled={!canSubmit}
               >
                 {students.map((student) => (
                   <MenuItem key={student.user_id} value={student.user_id}>
@@ -145,6 +170,7 @@ const ProjectRequest = () => {
                   variant="contained"
                   color="secondary"
                   onClick={() => handleRemoveMember(index)}
+                  disabled={!canSubmit}
                 >
                   Remove
                 </Button>
@@ -157,6 +183,7 @@ const ProjectRequest = () => {
             variant="outlined"
             onClick={handleAddMember}
             sx={{ marginBottom: 2 }}
+            disabled={!canSubmit}
           >
             Add Member
           </Button>
@@ -167,7 +194,7 @@ const ProjectRequest = () => {
           label="Select Advisor"
           value={selectedAdvisor}
           onChange={(e) => setSelectedAdvisor(e.target.value)}
-          disabled={advisors.length === 0}
+          disabled={advisors.length === 0 || !canSubmit}
           sx={{ marginBottom: 2 }}
         >
           {advisors.map((advisor) => (
@@ -176,7 +203,7 @@ const ProjectRequest = () => {
             </MenuItem>
           ))}
         </TextField>
-        <Button variant="contained" onClick={handleSubmit}>
+        <Button variant="contained" onClick={handleSubmit} disabled={!canSubmit}>
           Submit Request
         </Button>
       </Box>
