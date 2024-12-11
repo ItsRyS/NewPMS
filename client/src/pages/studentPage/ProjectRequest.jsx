@@ -8,7 +8,6 @@ const ProjectRequest = () => {
   const [advisors, setAdvisors] = useState([]);
   const [students, setStudents] = useState([]);
   const [selectedAdvisor, setSelectedAdvisor] = useState("");
-  const [status, setStatus] = useState("Pending");
   const [projectStatus, setProjectStatus] = useState([]);
 
   // Fetch advisors
@@ -32,33 +31,47 @@ const ProjectRequest = () => {
 
   // Fetch project statuses
   useEffect(() => {
-    const abortController = new AbortController();
-
-    api
-      .get("/auth/check-session", { signal: abortController.signal })
-      .then((sessionResponse) => {
+    const initializeData = async () => {
+      try {
+        const sessionResponse = await api.get("/auth/check-session");
         const { user_id } = sessionResponse.data.user;
 
-        api
-          .get("/project-requests/status", {
-            params: { studentId: user_id },
-            signal: abortController.signal,
-          })
-          .then((response) => setProjectStatus(response.data.data))
-          .catch((error) => {
-            if (error.name !== "AbortError") {
-              console.error("Error fetching project statuses:", error.response?.data || error.message);
-            }
-          });
-      })
-      .catch((error) => {
-        if (error.name !== "AbortError") {
-          console.error("Session Error:", error.response?.data || error.message);
-        }
+        const response = await api.get("/project-requests/status", {
+          params: { studentId: user_id },
+        });
+        setProjectStatus(response.data.data);
+      } catch (error) {
+        console.error("Error initializing data:", error.response?.data || error.message);
+      }
+    };
+
+    initializeData();
+  }, []);
+
+  // Submit request
+  const handleSubmit = async () => {
+    try {
+      const sessionResponse = await api.get("/auth/check-session");
+      const { user_id } = sessionResponse.data.user;
+
+      await api.post("/project-requests/create", {
+        projectName,
+        groupMembers,
+        advisorId: selectedAdvisor,
+        studentId: user_id,
       });
 
-    return () => abortController.abort();
-  }, []);
+      console.log("Request submitted successfully");
+
+      // Fetch updated project status
+      const updatedStatus = await api.get("/project-requests/status", {
+        params: { studentId: user_id },
+      });
+      setProjectStatus(updatedStatus.data.data);
+    } catch (error) {
+      console.error("Error submitting request:", error.response?.data || error.message);
+    }
+  };
 
   const handleAddMember = () => {
     if (groupMembers.length < 3) {
@@ -72,36 +85,29 @@ const ProjectRequest = () => {
     setGroupMembers(updatedMembers);
   };
 
-  const handleSubmit = () => {
-    api
-      .get("/auth/check-session")
-      .then((sessionResponse) => {
-        const { user_id } = sessionResponse.data.user;
-
-        api
-          .post("/project-requests/create", {
-            projectName,
-            groupMembers,
-            advisorId: selectedAdvisor,
-            studentId: user_id,
-          })
-          .then((response) => {
-            console.log(response.data);
-            setStatus("Pending");
-          })
-          .catch((error) =>
-            console.error("Submission Error:", error.response?.data || error.message)
-          );
-      })
-      .catch((error) => {
-        console.error("Session Error:", error.response?.data || error.message);
-      });
-  };
-
   return (
-    <Grid container spacing={2}>
-      {/* Left section: Project request form */}
-      <Grid item xs={12} md={8}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: { xs: "column", md: "row" },
+        gap: 4,
+        padding: 4,
+        backgroundColor: "#f5f5f5",
+        borderRadius: 2,
+        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+      }}
+    >
+      {/* Form Section */}
+      <Box
+        sx={{
+          flex: 1,
+          padding: 3,
+          backgroundColor: "#ffffff",
+          borderRadius: 2,
+          boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.1)",
+          width: { xs: "100%", md: "50%" },
+        }}
+      >
         <Typography variant="h5" gutterBottom>
           Request a Project
         </Typography>
@@ -170,17 +176,22 @@ const ProjectRequest = () => {
             </MenuItem>
           ))}
         </TextField>
-        <Button
-          variant="contained"
-          onClick={handleSubmit}
-          disabled={status === "Pending"}
-        >
+        <Button variant="contained" onClick={handleSubmit}>
           Submit Request
         </Button>
-      </Grid>
+      </Box>
 
-      {/* Right section: Project status */}
-      <Grid item xs={12} md={4}>
+      {/* Status Section */}
+      <Box
+        sx={{
+          flex: 1,
+          padding: 3,
+          backgroundColor: "#ffffff",
+          borderRadius: 2,
+          boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.1)",
+          width: { xs: "100%", md: "50%" },
+        }}
+      >
         <Typography variant="h6" gutterBottom>
           Document Status
         </Typography>
@@ -209,8 +220,8 @@ const ProjectRequest = () => {
             </Box>
           ))}
         </Box>
-      </Grid>
-    </Grid>
+      </Box>
+    </Box>
   );
 };
 
