@@ -1,16 +1,16 @@
 
-import AppBar from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
-import IconButton from "@mui/material/IconButton";
-import Badge from "@mui/material/Badge";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import Typography from "@mui/material/Typography";
-import MenuIcon from "@mui/icons-material/Menu";
-import { Box, useTheme, useMediaQuery } from "@mui/material";
-
 import PropTypes from "prop-types";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  IconButton,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
 
-export default function NavAdmin({ onMenuClick }) {
+const NavAdmin = ({ handleDrawerToggle, title }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
@@ -18,48 +18,35 @@ export default function NavAdmin({ onMenuClick }) {
     <AppBar
       position="fixed"
       sx={{
-        backgroundColor: "#ffffff",
-        boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
-        color: "#333",
         zIndex: (theme) => theme.zIndex.drawer + 1,
+        backgroundColor: "#01153e",
+        boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+        color: "#fff",
         width: isMobile ? "100%" : "calc(100% - 240px)",
         ml: isMobile ? 0 : "240px",
       }}
     >
-      <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-        {isMobile && (
-          <IconButton
-            edge="start"
-            color="inherit"
-            onClick={onMenuClick}
-            sx={{ mr: 2 }}
-          >
-            <MenuIcon />
-          </IconButton>
-        )}
-
-        <Typography variant="h6" sx={{ color: "#333", fontWeight: "bold" }}>
-          <Box>
-            <img
-              src="/it_logo2.svg"
-              alt="IT-PMS Logo"
-              style={{ height: "60px", width: "auto", marginRight: "8px" }}
-            />
-          </Box>
+      <Toolbar>
+        <IconButton
+          edge="start"
+          color="inherit"
+          aria-label="menu"
+          sx={{ mr: 2, display: { sm: "none" } }}
+          onClick={handleDrawerToggle}
+        >
+          <MenuIcon />
+        </IconButton>
+        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          {title}
         </Typography>
-
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <IconButton color="inherit">
-            <Badge badgeContent={4} color="error">
-              <NotificationsIcon />
-            </Badge>
-          </IconButton>
-        </Box>
       </Toolbar>
     </AppBar>
   );
-}
+};
 
 NavAdmin.propTypes = {
-  onMenuClick: PropTypes.func.isRequired,
+  handleDrawerToggle: PropTypes.func.isRequired,
+  title: PropTypes.string.isRequired,
 };
+
+export default NavAdmin;

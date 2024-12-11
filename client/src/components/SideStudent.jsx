@@ -1,41 +1,51 @@
-import PropTypes from "prop-types"; // Import PropTypes
+import { useEffect, useState } from "react";
+import PropTypes from "prop-types";
 import {
   Drawer,
   List,
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Toolbar,
   Box,
   Button,
   Divider,
+  Typography,
+  Avatar,
 } from "@mui/material";
 import { Home, School, Assignment } from "@mui/icons-material";
-import { NavLink, useNavigate } from "react-router-dom"; // Import useNavigate
-import api from "../services/api";
+import { NavLink, useNavigate } from "react-router-dom";
 import LogoutIcon from "@mui/icons-material/Logout";
+import api from "../services/api";
+
 const drawerWidth = 240;
 
 const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
-  const navigate = useNavigate(); // ใช้ useNavigate สำหรับนำทาง
+  const [username, setUsername] = useState("Loading...");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUsername = async () => {
+      try {
+        const response = await api.get("/auth/check-session");
+        if (response.data.isAuthenticated) {
+          setUsername(response.data.user.username);
+        }
+      } catch (error) {
+        console.error("Failed to fetch session info:", error);
+      }
+    };
+    fetchUsername();
+  }, []);
 
   const handleLogout = async () => {
     try {
       const tabId = sessionStorage.getItem("tabId");
-      console.log("Tab ID from sessionStorage:", tabId);
-
-      if (!tabId) {
-        console.error("No tabId found in sessionStorage");
-        return;
-      }
+      if (!tabId) return;
 
       const response = await api.post("/auth/logout", { tabId });
       if (response.data.success) {
-        console.log("Logout successful:", response.data.message);
         sessionStorage.removeItem("tabId");
         navigate("/SignIn");
-      } else {
-        console.error("Logout failed:", response.data);
       }
     } catch (error) {
       console.error("Logout failed:", error.response?.data || error.message);
@@ -44,7 +54,21 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
 
   const drawerContent = (
     <>
-      <Toolbar />
+      <Box
+        sx={{
+          padding: 2,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        <Avatar alt={username} src="https://i.pravatar.cc/300" />
+        <Typography variant="body1" sx={{ color: "#ffffff", marginTop: 1 }}>
+          {username}
+        </Typography>
+        <Divider sx={{ borderColor: "#ff0000", width: "100%", mt: 2 }} />
+      </Box>
+
       <List>
         <NavLink
           to="/studentHome"
@@ -52,57 +76,49 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
         >
           <ListItemButton onClick={() => setTitle("Dashboard")}>
             <ListItemIcon>
-              <Home />
+              <Home sx={{ color: "#9CA3AF" }} />
             </ListItemIcon>
             <ListItemText primary="Dashboard" />
           </ListItemButton>
         </NavLink>
+
         <NavLink
           to="/studentHome/Documentation"
           style={{ textDecoration: "none", color: "inherit" }}
         >
           <ListItemButton onClick={() => setTitle("Documentation")}>
             <ListItemIcon>
-              <School />
+              <School sx={{ color: "#9CA3AF" }} />
             </ListItemIcon>
             <ListItemText primary="Documentation" />
           </ListItemButton>
         </NavLink>
+
         <NavLink
           to="/studentHome/projectRequest"
           style={{ textDecoration: "none", color: "inherit" }}
         >
           <ListItemButton onClick={() => setTitle("Project Request")}>
             <ListItemIcon>
-              <Assignment />
+              <Assignment sx={{ color: "#9CA3AF" }} />
             </ListItemIcon>
             <ListItemText primary="Project Request" />
           </ListItemButton>
         </NavLink>
-        <NavLink
-          to="/studentHome/SendProject"
-          style={{ textDecoration: "none", color: "inherit" }}
-        >
-          <ListItemButton onClick={() => setTitle("Send Project")}>
-            <ListItemIcon>
-              <Assignment />
-            </ListItemIcon>
-            <ListItemText primary="Send Project" />
-          </ListItemButton>
-        </NavLink>
-        <Divider sx={{ borderColor: "#374151", mt: 2 }} />
-        <Box sx={{ padding: 2 }}>
-          <Button
-            variant="contained"
-            color="error"
-            startIcon={<LogoutIcon />}
-            fullWidth
-            onClick={handleLogout}
-          >
-            Logout
-          </Button>
-        </Box>
       </List>
+
+      <Divider sx={{ borderColor: "#374151", mt: 2 }} />
+      <Box sx={{ padding: 2 }}>
+        <Button
+          variant="contained"
+          color="error"
+          startIcon={<LogoutIcon />}
+          fullWidth
+          onClick={handleLogout}
+        >
+          Logout
+        </Button>
+      </Box>
     </>
   );
 
@@ -124,7 +140,12 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
         variant="permanent"
         sx={{
           display: { xs: "none", sm: "block" },
-          "& .MuiDrawer-paper": { width: drawerWidth, boxSizing: "border-box" },
+          "& .MuiDrawer-paper": {
+            width: drawerWidth,
+            boxSizing: "border-box",
+            backgroundColor: "#2d3a46",
+            color: "#ffffff",
+          },
         }}
         open
       >

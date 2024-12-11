@@ -4,36 +4,32 @@ import { Outlet } from "react-router-dom";
 import { Suspense } from "react";
 import SideAdmin from "../components/SideAdmin";
 import NavAdmin from "../components/NavAdmin";
-import { useTheme, useMediaQuery, Box, Toolbar } from "@mui/material";
+import { Box, Toolbar } from "@mui/material";
 
 const LayoutAdmin = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
+  const [title, setTitle] = useState("Dashboard");
 
   return (
-    <Box sx={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-      <SideAdmin open={isSidebarOpen} onClose={toggleSidebar} isMobile={isMobile} />
+    <Box sx={{ display: "flex" }}>
+      <NavAdmin handleDrawerToggle={() => {}} title={title} />
+      <SideAdmin
+        mobileOpen={false}
+        handleDrawerToggle={() => {}}
+        setTitle={setTitle}
+      />
       <Box
         component="main"
         sx={{
           flexGrow: 1,
           display: "flex",
           flexDirection: "column",
-          marginLeft: isMobile ? 0 : "240px",
+          marginLeft: { sm: "240px" },
         }}
       >
-        <NavAdmin onMenuClick={toggleSidebar} />
         <Toolbar />
-        <Box sx={{ flexGrow: 1, overflow: "auto", padding: 3 }}>
-          <Suspense fallback={<div>Loading...</div>}>
-            <Outlet />
-          </Suspense>
-        </Box>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Outlet />
+        </Suspense>
       </Box>
     </Box>
   );

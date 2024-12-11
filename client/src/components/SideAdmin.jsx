@@ -4,30 +4,27 @@ import {
   Drawer,
   Box,
   List,
-  ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
   Typography,
   Divider,
-  Collapse,
+
   Avatar,
-  Toolbar,
   Button,
 } from "@mui/material";
-import { Link, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PeopleIcon from "@mui/icons-material/People";
-import AssignmentIcon from "@mui/icons-material/Assignment";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import ExpandLess from "@mui/icons-material/ExpandLess";
-import ExpandMore from "@mui/icons-material/ExpandMore";
+
 import LogoutIcon from "@mui/icons-material/Logout";
 import api from "../services/api";
 
-export default function SideAdmin({ open, onClose, isMobile }) {
-  const [openProjectManagement, setOpenProjectManagement] = useState(false);
+const drawerWidth = 240;
+
+const SideAdmin = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
   const [username, setUsername] = useState("Loading...");
   const navigate = useNavigate();
 
@@ -47,48 +44,21 @@ export default function SideAdmin({ open, onClose, isMobile }) {
 
   const handleLogout = async () => {
     try {
-      const tabId = sessionStorage.getItem("tabId"); // ดึง tabId จาก sessionStorage
-      const response = await api.post("/auth/logout", { tabId }); // ส่ง tabId ไปกับ request
-  
+      const tabId = sessionStorage.getItem("tabId");
+      if (!tabId) return;
+
+      const response = await api.post("/auth/logout", { tabId });
       if (response.data.success) {
-        console.log("Logout successful:", response.data.message);
-        sessionStorage.removeItem("tabId"); // ลบ tabId ในฝั่ง client
+        sessionStorage.removeItem("tabId");
         navigate("/SignIn");
-      } else {
-        console.error("Logout failed:", response.data.error);
       }
     } catch (error) {
-      console.error("Logout failed:", error);
+      console.error("Logout failed:", error.response?.data || error.message);
     }
   };
-  
-  
-  
 
-  const toggleProjectManagement = () => {
-    setOpenProjectManagement(!openProjectManagement);
-  };
-
-  return (
-    <Drawer
-      variant={isMobile ? "temporary" : "permanent"}
-      open={open}
-      onClose={onClose}
-      sx={{
-        width: 240,
-        flexShrink: 0,
-        "& .MuiDrawer-paper": {
-          width: 240,
-          boxSizing: "border-box",
-          backgroundColor: "#2d3a46",
-          color: "#ffffff",
-        },
-      }}
-      ModalProps={{
-        keepMounted: true,
-      }}
-    >
-      <Toolbar />
+  const drawerContent = (
+    <>
       <Box
         sx={{
           padding: 2,
@@ -100,66 +70,59 @@ export default function SideAdmin({ open, onClose, isMobile }) {
         <Avatar alt={username} src="https://i.pravatar.cc/300" />
         <Typography variant="body1" sx={{ color: "#ffffff", marginTop: 1 }}>
           {username}
-          <Divider sx={{ borderColor: "#ff0000" }} />
         </Typography>
+        <Divider sx={{ borderColor: "#ff0000", width: "100%", mt: 2 }} />
       </Box>
-      <Divider sx={{ borderColor: "#374151" }} />
+
       <List>
-        <ListItem disablePadding>
-          <ListItemButton component={Link} to="/adminHome">
+        <NavLink
+          to="/adminHome"
+          style={{ textDecoration: "none", color: "inherit" }}
+        >
+          <ListItemButton onClick={() => setTitle("Dashboard")}>
             <ListItemIcon>
               <DashboardIcon sx={{ color: "#9CA3AF" }} />
             </ListItemIcon>
             <ListItemText primary="Dashboard" />
           </ListItemButton>
-        </ListItem>
-        <Typography variant="body2" sx={{ padding: 2, color: "#9CA3AF" }}>
-          User Management
-        </Typography>
-        <ListItem disablePadding>
-          <ListItemButton component={Link} to="/adminHome/manage-user">
+        </NavLink>
+
+        <NavLink
+          to="/adminHome/manage-user"
+          style={{ textDecoration: "none", color: "inherit" }}
+        >
+          <ListItemButton onClick={() => setTitle("Manage Users")}>
             <ListItemIcon>
               <PeopleIcon sx={{ color: "#9CA3AF" }} />
             </ListItemIcon>
-            <ListItemText primary="จัดการผู้ใช้" />
+            <ListItemText primary="Manage Users" />
           </ListItemButton>
-        </ListItem>
-        <Typography variant="body2" sx={{ padding: 2, color: "#9CA3AF" }}>
-          Project Management
-        </Typography>
-        <ListItemButton onClick={toggleProjectManagement}>
-          <ListItemIcon>
-            <AssignmentIcon sx={{ color: "#9CA3AF" }} />
-          </ListItemIcon>
-          <ListItemText primary="จัดการโครงงาน" />
-          {openProjectManagement ? <ExpandLess /> : <ExpandMore />}
-        </ListItemButton>
-        <Collapse in={openProjectManagement} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
-            <ListItemButton
-              component={Link}
-              to="/adminHome/CheckProject"
-              sx={{ pl: 4 }}
-            >
-              <ListItemIcon>
-                <CheckCircleIcon sx={{ color: "#9CA3AF" }} />
-              </ListItemIcon>
-              <ListItemText primary="ตรวจสอบคำร้อง" />
-            </ListItemButton>
-          </List>
-        </Collapse>
-        <Typography variant="body2" sx={{ padding: 2, color: "#9CA3AF" }}>
-          Document Management
-        </Typography>
-        <ListItem disablePadding>
-          <ListItemButton component={Link} to="/adminHome/upload-doc">
+        </NavLink>
+
+        <NavLink
+          to="/adminHome/CheckProject"
+          style={{ textDecoration: "none", color: "inherit" }}
+        >
+          <ListItemButton onClick={() => setTitle("Check Projects")}>
+            <ListItemIcon>
+              <CheckCircleIcon sx={{ color: "#9CA3AF" }} />
+            </ListItemIcon>
+            <ListItemText primary="Check Projects" />
+          </ListItemButton>
+        </NavLink>
+        <NavLink
+          to="/adminHome/upload-doc"
+          style={{ textDecoration: "none", color: "inherit" }}
+        >
+          <ListItemButton onClick={() => setTitle("Upload Documents")}>
             <ListItemIcon>
               <CloudUploadIcon sx={{ color: "#9CA3AF" }} />
             </ListItemIcon>
-            <ListItemText primary="เพิ่มแบบร่างเอกสาร" />
+            <ListItemText primary="Upload Documents" />
           </ListItemButton>
-        </ListItem>
+        </NavLink>
       </List>
+
       <Divider sx={{ borderColor: "#374151", mt: 2 }} />
       <Box sx={{ padding: 2 }}>
         <Button
@@ -172,12 +135,46 @@ export default function SideAdmin({ open, onClose, isMobile }) {
           Logout
         </Button>
       </Box>
-    </Drawer>
+    </>
   );
-}
+
+  return (
+    <>
+      <Drawer
+        variant="temporary"
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        ModalProps={{ keepMounted: true }}
+        sx={{
+          display: { xs: "block", sm: "none" },
+          "& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
+        }}
+      >
+        {drawerContent}
+      </Drawer>
+      <Drawer
+        variant="permanent"
+        sx={{
+          display: { xs: "none", sm: "block" },
+          "& .MuiDrawer-paper": {
+            width: drawerWidth,
+            boxSizing: "border-box",
+            backgroundColor: "#2d3a46",
+            color: "#ffffff",
+          },
+        }}
+        open
+      >
+        {drawerContent}
+      </Drawer>
+    </>
+  );
+};
 
 SideAdmin.propTypes = {
-  open: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  isMobile: PropTypes.bool.isRequired,
+  mobileOpen: PropTypes.bool.isRequired,
+  handleDrawerToggle: PropTypes.func.isRequired,
+  setTitle: PropTypes.func.isRequired,
 };
+
+export default SideAdmin;

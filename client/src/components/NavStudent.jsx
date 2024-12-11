@@ -1,10 +1,31 @@
-import PropTypes from "prop-types"; // Import PropTypes
-import { AppBar, Toolbar, Typography, IconButton } from "@mui/material";
+
+import PropTypes from "prop-types";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  IconButton,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 
-const NavStudent = ({ handleDrawerToggle, title = "Dashboard" }) => {
+const NavStudent = ({ handleDrawerToggle, title }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
   return (
-    <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+    <AppBar
+      position="fixed"
+      sx={{
+        zIndex: (theme) => theme.zIndex.drawer + 1,
+        backgroundColor: "#01153e",
+        boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+        color: "#fff",
+        width: isMobile ? "100%" : "calc(100% - 240px)",
+        ml: isMobile ? 0 : "240px",
+      }}
+    >
       <Toolbar>
         <IconButton
           edge="start"
@@ -24,8 +45,8 @@ const NavStudent = ({ handleDrawerToggle, title = "Dashboard" }) => {
 };
 
 NavStudent.propTypes = {
-  handleDrawerToggle: PropTypes.func.isRequired, // handleDrawerToggle ต้องเป็นฟังก์ชัน
-  title: PropTypes.string, // รับ title เป็น props (ไม่จำเป็น)
+  handleDrawerToggle: PropTypes.func.isRequired,
+  title: PropTypes.string.isRequired,
 };
 
 export default NavStudent;
