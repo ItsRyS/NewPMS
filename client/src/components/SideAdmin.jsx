@@ -79,11 +79,11 @@ const SideAdmin = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
           to="/adminHome"
           style={{ textDecoration: "none", color: "inherit" }}
         >
-          <ListItemButton onClick={() => setTitle("Dashboard")}>
+          <ListItemButton onClick={() => setTitle("หน้าหลัก")}>
             <ListItemIcon>
               <DashboardIcon sx={{ color: "#9CA3AF" }} />
             </ListItemIcon>
-            <ListItemText primary="Dashboard" />
+            <ListItemText primary="หน้าหลัก" />
           </ListItemButton>
         </NavLink>
 
@@ -91,11 +91,11 @@ const SideAdmin = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
           to="/adminHome/manage-user"
           style={{ textDecoration: "none", color: "inherit" }}
         >
-          <ListItemButton onClick={() => setTitle("Manage Users")}>
+          <ListItemButton onClick={() => setTitle("จัดการผู้ใช้")}>
             <ListItemIcon>
               <PeopleIcon sx={{ color: "#9CA3AF" }} />
             </ListItemIcon>
-            <ListItemText primary="Manage Users" />
+            <ListItemText primary="จัดการผู้ใช้" />
           </ListItemButton>
         </NavLink>
 
@@ -103,22 +103,22 @@ const SideAdmin = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
           to="/adminHome/CheckProject"
           style={{ textDecoration: "none", color: "inherit" }}
         >
-          <ListItemButton onClick={() => setTitle("Check Projects")}>
+          <ListItemButton onClick={() => setTitle("อนุมัติโครงการ")}>
             <ListItemIcon>
               <CheckCircleIcon sx={{ color: "#9CA3AF" }} />
             </ListItemIcon>
-            <ListItemText primary="Check Projects" />
+            <ListItemText primary="อนุมัติโครงการ" />
           </ListItemButton>
         </NavLink>
         <NavLink
           to="/adminHome/upload-doc"
           style={{ textDecoration: "none", color: "inherit" }}
         >
-          <ListItemButton onClick={() => setTitle("Upload Documents")}>
+          <ListItemButton onClick={() => setTitle("แบบร่างเอกสาร")}>
             <ListItemIcon>
               <CloudUploadIcon sx={{ color: "#9CA3AF" }} />
             </ListItemIcon>
-            <ListItemText primary="Upload Documents" />
+            <ListItemText primary="แบบร่างเอกสาร" />
           </ListItemButton>
         </NavLink>
       </List>
@@ -132,7 +132,7 @@ const SideAdmin = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
           fullWidth
           onClick={handleLogout}
         >
-          Logout
+          ออกจากระบบ
         </Button>
       </Box>
     </>

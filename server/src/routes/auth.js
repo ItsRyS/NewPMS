@@ -31,7 +31,7 @@ router.post("/login", async (req, res) => {
       role: user.role,
       username: user.username,
     };
-    console.log("Session tabs after login:", req.session.tabs);
+    //console.log("Session tabs after login:", req.session.tabs);
     res.status(200).json({
       message: "Login successful",
       user_id: user.user_id,

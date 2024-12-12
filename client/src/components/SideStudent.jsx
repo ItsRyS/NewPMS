@@ -74,11 +74,11 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
           to="/studentHome"
           style={{ textDecoration: "none", color: "inherit" }}
         >
-          <ListItemButton onClick={() => setTitle("Dashboard")}>
+          <ListItemButton onClick={() => setTitle("หนักหลัก")}>
             <ListItemIcon>
               <Home sx={{ color: "#9CA3AF" }} />
             </ListItemIcon>
-            <ListItemText primary="Dashboard" />
+            <ListItemText primary="หนักหลัก" />
           </ListItemButton>
         </NavLink>
 
@@ -86,11 +86,11 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
           to="/studentHome/Documentation"
           style={{ textDecoration: "none", color: "inherit" }}
         >
-          <ListItemButton onClick={() => setTitle("Documentation")}>
+          <ListItemButton onClick={() => setTitle("แบบร่างเอกสาร")}>
             <ListItemIcon>
               <School sx={{ color: "#9CA3AF" }} />
             </ListItemIcon>
-            <ListItemText primary="Documentation" />
+            <ListItemText primary="แบบร่างเอกสาร" />
           </ListItemButton>
         </NavLink>
 
@@ -98,11 +98,11 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
           to="/studentHome/projectRequest"
           style={{ textDecoration: "none", color: "inherit" }}
         >
-          <ListItemButton onClick={() => setTitle("Project Request")}>
+          <ListItemButton onClick={() => setTitle("คำร้องโครงการ")}>
             <ListItemIcon>
               <Assignment sx={{ color: "#9CA3AF" }} />
             </ListItemIcon>
-            <ListItemText primary="Project Request" />
+            <ListItemText primary="คำร้องโครงการ" />
           </ListItemButton>
         </NavLink>
       </List>
@@ -116,7 +116,7 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
           fullWidth
           onClick={handleLogout}
         >
-          Logout
+          ออกจากระบบ
         </Button>
       </Box>
     </>

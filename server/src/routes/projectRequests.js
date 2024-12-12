@@ -53,5 +53,38 @@ router.get("/status", async (req, res) => {
     res.status(500).json({ success: false, error: "เกิดข้อผิดพลาดในการดึงข้อมูล" });
   }
 });
+// ดึงคำร้องทั้งหมด
+router.get("/all", async (req, res) => {
+  try {
+    const [results] = await db.query(
+      `SELECT request_id, project_name, advisor_id, status FROM project_requests`
+    );
+    res.status(200).json(results);
+  } catch (error) {
+    console.error("Error fetching project requests:", error.message);
+    res.status(500).json({ success: false, error: "เกิดข้อผิดพลาดในการดึงข้อมูล" });
+  }
+});
+
+// อัปเดตสถานะของคำร้อง
+router.post("/update-status", async (req, res) => {
+  const { requestId, status } = req.body;
+
+  try {
+    const [result] = await db.query(
+      `UPDATE project_requests SET status = ? WHERE request_id = ?`,
+      [status, requestId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, error: "Request not found" });
+    }
+
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("Error updating status:", error.message);
+    res.status(500).json({ success: false, error: "เกิดข้อผิดพลาดในการอัปเดตสถานะ" });
+  }
+});
 
 module.exports = router;
