@@ -14,9 +14,9 @@ import {
   CircularProgress,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import axios from "axios";
+
 import { useMediaQuery, useTheme } from "@mui/material";
- import api from "../../services/api";
+import api from "../../services/api";
 const UploadDoc = () => {
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState("");
@@ -27,7 +27,7 @@ const UploadDoc = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState("Loading...");
- 
+
   // Snackbar state
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -47,7 +47,7 @@ const UploadDoc = () => {
   useEffect(() => {
     const fetchDocuments = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/document");
+        const response = await api.get("/document");
 
         // Validate response data
         if (Array.isArray(response.data)) {
@@ -85,7 +85,7 @@ const UploadDoc = () => {
     if (selectedFile?.type !== "application/pdf") {
       setSnackbar({
         open: true,
-        message: "Please upload a PDF file only",
+        message: "Please upload only PDF files.",
         severity: "error",
       });
       setFile(null);
@@ -114,10 +114,7 @@ const UploadDoc = () => {
     formData.append("uploaded_by", username);
 
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/document/upload",
-        formData
-      );
+      const response = await api.post("/document/upload", formData);
       setSnackbar({
         open: true,
         message: response.data.message,
@@ -125,9 +122,7 @@ const UploadDoc = () => {
       });
 
       // ดึงข้อมูลใหม่จากเซิร์ฟเวอร์หลังจากอัปโหลดสำเร็จ
-      const updatedDocuments = await axios.get(
-        "http://localhost:5000/api/document"
-      );
+      const updatedDocuments = await api.get("/document");
       setDocuments(updatedDocuments.data);
 
       // รีเซ็ตฟอร์ม
@@ -165,7 +160,7 @@ const UploadDoc = () => {
     if (!window.confirm("คุณแน่ใจแล้ว ว่าจะลบเอกสารนี้?")) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/document/${docId}`);
+      await api.delete(`/document/${docId}`);
       setSnackbar({
         open: true,
         message: "ลบเอกสารสำเร็จ",
@@ -281,8 +276,7 @@ const UploadDoc = () => {
                             {new Date(doc.upload_date).toLocaleString()}
                           </Typography>
                           <Typography variant="body2">
-                            <strong>เพิ่มโดย : </strong>{" "}
-                            {doc.uploaded_by}
+                            <strong>เพิ่มโดย : </strong> {doc.uploaded_by}
                           </Typography>
                         </Box>
                         <Box>
@@ -342,12 +336,11 @@ const UploadDoc = () => {
               src={pdfPath}
               width="100%"
               height="100%"
-              onLoad={() => setLoading(false)} // Stop loading after iframe loads
+              onLoad={() => setLoading(false)}
               style={{
                 border: "none",
                 display: loading ? "none" : "block",
               }}
-              sandbox="allow-scripts allow-same-origin"
             />
           )}
         </DialogContent>
