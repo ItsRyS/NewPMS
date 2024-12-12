@@ -10,7 +10,9 @@ const storage = multer.diskStorage({
     cb(null, "upload/Document");
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
+    const uniqueSuffix = Date.now();
+    const originalName = file.originalname.replace(/\s+/g, "_"); // ลบช่องว่างจากชื่อไฟล์
+    cb(null, `${uniqueSuffix}_${originalName}`);
   },
 });
 const upload = multer({ storage: storage });

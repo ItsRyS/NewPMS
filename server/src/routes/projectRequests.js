@@ -2,23 +2,23 @@ const express = require("express");
 const router = express.Router();
 const db = require("../config/db");
 
-// สร้างคำขอเปิดหัวข้อโครงงาน
+// Create a new project request
 router.post("/create", async (req, res) => {
   const { projectName, groupMembers, advisorId, studentId } = req.body;
 
-  const connection = await db.getConnection(); // สร้าง connection
+  const connection = await db.getConnection(); // Create connection
   try {
-    await connection.beginTransaction(); // เริ่ม Transaction
+    await connection.beginTransaction(); // Begin Transaction
 
-    // บันทึกใน project_requests
+    // Insert into project_requests
     const [result] = await connection.query(
-      `INSERT INTO project_requests (project_name, group_members, advisor_id, student_id, status)
-       VALUES (?, ?, ?, ?, 'pending')`,
-      [projectName, JSON.stringify(groupMembers), advisorId, studentId]
+      `INSERT INTO project_requests (project_name, advisor_id, student_id, status, created_at, updated_at)
+       VALUES (?, ?, ?, 'pending', NOW(), NOW())`,
+      [projectName, advisorId, studentId]
     );
     const requestId = result.insertId;
 
-    // บันทึกใน students_projects
+    // Insert into students_projects
     for (const memberId of groupMembers) {
       await connection.query(
         `INSERT INTO students_projects (request_id, student_id)
@@ -27,57 +27,56 @@ router.post("/create", async (req, res) => {
       );
     }
 
-    await connection.commit(); // ยืนยันการเปลี่ยนแปลง
+    await connection.commit(); // Commit changes
     res.status(200).json({ success: true, requestId });
   } catch (error) {
-    await connection.rollback(); // ย้อนกลับการเปลี่ยนแปลงหากเกิดข้อผิดพลาด
+    await connection.rollback(); // Rollback on error
     console.error("Database Error:", error.message);
-    res
-      .status(500)
-      .json({ success: false, error: "เกิดข้อผิดพลาดในการบันทึกข้อมูล" });
+    res.status(500).json({ success: false, error: "Failed to save data" });
   } finally {
-    connection.release(); // ปล่อย connection
+    connection.release(); // Release connection
   }
 });
 
-// ดึงสถานะของคำร้องขอ
+// Get the status of project requests for a specific student
 router.get("/status", async (req, res) => {
   const { studentId } = req.query;
 
   try {
     const [results] = await db.query(
-      `SELECT request_id, project_name, status FROM project_requests WHERE student_id = ?`,
+      `SELECT request_id, project_name, status, created_at 
+       FROM project_requests 
+       WHERE student_id = ? 
+       ORDER BY created_at DESC`,
       [studentId]
     );
     res.status(200).json({ success: true, data: results });
   } catch (error) {
     console.error("Error fetching statuses:", error.message);
-    res
-      .status(500)
-      .json({ success: false, error: "เกิดข้อผิดพลาดในการดึงข้อมูล" });
+    res.status(500).json({ success: false, error: "Failed to fetch data" });
   }
 });
-// ดึงคำร้องทั้งหมด
 
+// Get all project requests
 router.get("/all", async (req, res) => {
   try {
     const [projects] = await db.query(`
       SELECT pr.request_id, pr.project_name, pr.status, 
-             pr.advisor_id, ti.teacher_name,
-             GROUP_CONCAT(u.username) AS students
-      FROM project_requests pr
-      LEFT JOIN teacher_info ti ON pr.advisor_id = ti.teacher_id
-      LEFT JOIN students_projects sp ON pr.request_id = sp.request_id
-      LEFT JOIN users u ON sp.student_id = u.user_id
-      GROUP BY pr.request_id
+       pr.advisor_id, ti.teacher_name,
+       GROUP_CONCAT(DISTINCT u.username) AS students
+FROM project_requests pr
+LEFT JOIN teacher_info ti ON pr.advisor_id = ti.teacher_id
+LEFT JOIN students_projects sp ON pr.request_id = sp.request_id
+LEFT JOIN users u ON sp.student_id = u.user_id
+GROUP BY pr.request_id
+ORDER BY pr.created_at DESC;
+
     `);
 
     res.status(200).json(projects);
   } catch (error) {
     console.error("Error fetching project requests:", error.message);
-    res
-      .status(500)
-      .json({ success: false, error: "เกิดข้อผิดพลาดในการดึงข้อมูล" });
+    res.status(500).json({ success: false, error: "Failed to fetch data" });
   }
 });
 
@@ -87,7 +86,7 @@ router.post("/update-status", async (req, res) => {
 
   try {
     const [result] = await db.query(
-      `UPDATE project_requests SET status = ? WHERE request_id = ?`,
+      `UPDATE project_requests SET status = ?, updated_at = NOW() WHERE request_id = ?`,
       [status, requestId]
     );
 
@@ -100,9 +99,7 @@ router.post("/update-status", async (req, res) => {
     res.status(200).json({ success: true });
   } catch (error) {
     console.error("Error updating status:", error.message);
-    res
-      .status(500)
-      .json({ success: false, error: "เกิดข้อผิดพลาดในการอัปเดตสถานะ" });
+    res.status(500).json({ success: false, error: "Failed to update status" });
   }
 });
 

@@ -14,21 +14,19 @@ import {
   CircularProgress,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-
 import { useMediaQuery, useTheme } from "@mui/material";
 import api from "../../services/api";
+
 const UploadDoc = () => {
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState("");
   const [docTitle, setDocTitle] = useState("");
   const [docDescription, setDocDescription] = useState("");
-  const [documents, setDocuments] = useState([]); // Default to an empty array
+  const [documents, setDocuments] = useState([]);
   const [pdfPath, setPdfPath] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
   const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState("Loading...");
-
-  // Snackbar state
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -36,26 +34,13 @@ const UploadDoc = () => {
   });
 
   const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down("md")); // Full screen for small devices
+  const fullScreen = useMediaQuery(theme.breakpoints.down("md"));
 
-  // Handle Snackbar close
-  const handleSnackbarClose = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
-  // Fetch documents from the server
   useEffect(() => {
     const fetchDocuments = async () => {
       try {
         const response = await api.get("/document");
-
-        // Validate response data
-        if (Array.isArray(response.data)) {
-          setDocuments(response.data);
-        } else {
-          console.error("Invalid response format:", response.data);
-          setDocuments([]);
-        }
+        setDocuments(response.data);
       } catch (error) {
         console.error("Error fetching documents:", error);
         setSnackbar({
@@ -65,6 +50,7 @@ const UploadDoc = () => {
         });
       }
     };
+
     const fetchUsername = async () => {
       try {
         const response = await api.get("/auth/check-session");
@@ -75,11 +61,11 @@ const UploadDoc = () => {
         console.error("Failed to fetch session info:", error);
       }
     };
+
     fetchUsername();
     fetchDocuments();
   }, []);
 
-  // File change handler
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile?.type !== "application/pdf") {
@@ -96,12 +82,11 @@ const UploadDoc = () => {
     }
   };
 
-  // Upload document
   const handleUpload = async () => {
     if (!file || !docTitle || !docDescription) {
       setSnackbar({
         open: true,
-        message: "กรุณากรอกข้อมูลให้ครบถ้วน",
+        message: "Please fill out all fields.",
         severity: "error",
       });
       return;
@@ -121,11 +106,9 @@ const UploadDoc = () => {
         severity: "success",
       });
 
-      // ดึงข้อมูลใหม่จากเซิร์ฟเวอร์หลังจากอัปโหลดสำเร็จ
       const updatedDocuments = await api.get("/document");
       setDocuments(updatedDocuments.data);
 
-      // รีเซ็ตฟอร์ม
       setFile(null);
       setFileName("");
       setDocTitle("");
@@ -134,18 +117,17 @@ const UploadDoc = () => {
       console.error("Error uploading document:", error);
       setSnackbar({
         open: true,
-        message: "การเพิ่มแบบฟอร์มเอกสารล้มเหลว",
+        message: "Failed to upload document.",
         severity: "error",
       });
     }
   };
 
-  // View document
   const handleViewDocument = (docPath) => {
     if (!docPath) {
       setSnackbar({
         open: true,
-        message: "ไม่เจอแบบฟอร์มเอกสาร",
+        message: "Document not found.",
         severity: "error",
       });
       return;
@@ -155,15 +137,15 @@ const UploadDoc = () => {
     setOpenDialog(true);
   };
 
-  // Delete document
   const handleDeleteDocument = async (docId) => {
-    if (!window.confirm("คุณแน่ใจแล้ว ว่าจะลบเอกสารนี้?")) return;
+    if (!window.confirm("Are you sure you want to delete this document?"))
+      return;
 
     try {
       await api.delete(`/document/${docId}`);
       setSnackbar({
         open: true,
-        message: "ลบเอกสารสำเร็จ",
+        message: "Document deleted successfully.",
         severity: "success",
       });
       setDocuments((prev) => prev.filter((doc) => doc.doc_id !== docId));
@@ -171,21 +153,21 @@ const UploadDoc = () => {
       console.error("Error deleting document:", error);
       setSnackbar({
         open: true,
-        message: "ลบเอกสารไม่สำเร็จ",
+        message: "Failed to delete document.",
         severity: "error",
       });
     }
   };
 
   return (
-    <Box sx={{ padding: 3, backgroundColor: "#f0f4f8" }}>
-      <Paper variant="outlined">
-        <Grid container>
+    <Box sx={{ padding: 3, backgroundColor: "#f9fafb", minHeight: "100vh" }}>
+      <Paper elevation={3} sx={{ padding: 4, borderRadius: 3 }}>
+        <Grid container spacing={4}>
           {/* Upload Section */}
-          <Grid item xs={6} sx={{ borderRight: "1px solid #000" }}>
-            <Box p={2}>
-              <Typography variant="h6" align="center">
-                เพิ่มแบบฟอร์มเอกสาร
+          <Grid item xs={12} md={6}>
+            <Box>
+              <Typography variant="h5" sx={{ mb: 2 }}>
+                Upload Document
               </Typography>
               <TextField
                 label="Document Title"
@@ -200,13 +182,17 @@ const UploadDoc = () => {
                 variant="outlined"
                 fullWidth
                 multiline
-                rows={4}
+                rows={3}
                 value={docDescription}
                 onChange={(e) => setDocDescription(e.target.value)}
                 sx={{ mb: 2 }}
               />
-              <Button variant="contained" component="label" sx={{ mb: 2 }}>
-                เลือกไฟล์
+              <Button
+                variant="contained"
+                component="label"
+                sx={{ mb: 2, display: "block" }}
+              >
+                Select File
                 <input
                   type="file"
                   hidden
@@ -215,11 +201,7 @@ const UploadDoc = () => {
                 />
               </Button>
               {fileName && (
-                <Typography
-                  variant="body2"
-                  color="textSecondary"
-                  sx={{ mb: 2 }}
-                >
+                <Typography variant="body2" sx={{ mb: 2 }}>
                   Selected File: {fileName}
                 </Typography>
               )}
@@ -229,78 +211,66 @@ const UploadDoc = () => {
                 fullWidth
                 onClick={handleUpload}
               >
-                เพิ่มแบบฟอร์มเอกสาร
+                Upload Document
               </Button>
             </Box>
           </Grid>
 
           {/* Document List Section */}
-          <Grid item xs={6}>
-            <Box p={2}>
-              <Typography variant="h6" align="center">
-                ประวัติการเพิ่มแบบฟอร์มเอกสาร
+          <Grid item xs={12} md={6}>
+            <Typography variant="h5" sx={{ mb: 2 }}>
+              Document List
+            </Typography>
+            {documents.length === 0 ? (
+              <Typography variant="body2" color="textSecondary">
+                No documents found.
               </Typography>
-              {documents.length === 0 ? (
-                <Typography
-                  variant="body2"
-                  align="center"
-                  color="textSecondary"
-                >
-                  No documents found.
-                </Typography>
-              ) : (
-                documents.map(
-                  (doc) =>
-                    doc && ( // Safeguard for undefined or null doc
-                      <Box
-                        key={doc.doc_id}
-                        mb={2}
-                        sx={{
-                          border: "1px solid #ccc",
-                          borderRadius: "5px",
-                          padding: "10px",
-                          justifyContent: "space-between",
-                          display: "flex",
-                        }}
+            ) : (
+              <Box sx={{ maxHeight: 400, overflowY: "auto" }}>
+                {documents.map((doc) => (
+                  <Paper
+                    key={doc.doc_id}
+                    elevation={2}
+                    sx={{
+                      padding: 2,
+                      mb: 2,
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      "&:hover": { backgroundColor: "#f1f1f1" },
+                    }}
+                  >
+                    <Box>
+                      <Typography variant="h6">{doc.doc_title}</Typography>
+                      <Typography variant="body2">
+                        {doc.doc_description}
+                      </Typography>
+                      <Typography variant="caption" color="textSecondary">
+                        Uploaded by: {doc.uploaded_by} |{" "}
+                        {new Date(doc.upload_date).toLocaleString()}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Button
+                        variant="outlined"
+                        color="primary"
+                        onClick={() => handleViewDocument(doc.doc_path)}
+                        sx={{ mr: 2 }}
                       >
-                        <Box>
-                          <Typography variant="body1">
-                            <strong>ชื่อแบบฟอร์มเอกสาร : </strong>{" "}
-                            {doc.doc_title}
-                          </Typography>
-                          <Typography variant="body2">
-                            <strong>คำอธิบาย : </strong> {doc.doc_description}
-                          </Typography>
-                          <Typography variant="body2">
-                            <strong>วันที่เพิ่ม : </strong>{" "}
-                            {new Date(doc.upload_date).toLocaleString()}
-                          </Typography>
-                          <Typography variant="body2">
-                            <strong>เพิ่มโดย : </strong> {doc.uploaded_by}
-                          </Typography>
-                        </Box>
-                        <Box>
-                          <Typography
-                            variant="outlined"
-                            color="primary"
-                            sx={{ mr: 1 }}
-                            onClick={() => handleViewDocument(doc.doc_path)}
-                          >
-                            View
-                          </Typography>
-                          <Typography
-                            variant="outlined"
-                            color="secondary"
-                            onClick={() => handleDeleteDocument(doc.doc_id)}
-                          >
-                            Delete
-                          </Typography>
-                        </Box>
-                      </Box>
-                    )
-                )
-              )}
-            </Box>
+                        View
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        onClick={() => handleDeleteDocument(doc.doc_id)}
+                      >
+                        Delete
+                      </Button>
+                    </Box>
+                  </Paper>
+                ))}
+              </Box>
+            )}
           </Grid>
         </Grid>
       </Paper>
@@ -309,13 +279,13 @@ const UploadDoc = () => {
       <Dialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}
-        fullScreen={fullScreen} // Full screen for mobile
+        fullScreen={fullScreen} // ทำให้เต็มหน้าจอในมือถือ
         maxWidth="lg"
         sx={{
-          "& .MuiDialog-paper": { width: "100%", height: "100%" },
+          "& .MuiDialog-paper": { width: "90%", height: "90%" }, // ปรับขนาด Dialog
         }}
       >
-        {/* Close Button */}
+        {/* ปุ่ม Close */}
         <IconButton
           onClick={() => setOpenDialog(false)}
           sx={{ position: "absolute", top: 8, right: 8, zIndex: 1 }}
@@ -328,19 +298,22 @@ const UploadDoc = () => {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
+            height: "100%", // ใช้พื้นที่ของ Dialog เต็มที่
           }}
         >
-          {loading && <CircularProgress />}
+          {loading && <CircularProgress />} {/* แสดง Loading */}
           {pdfPath && (
             <iframe
               src={pdfPath}
               width="100%"
-              height="100%"
+              height="100%" // ใช้พื้นที่ของ DialogContent เต็มที่
               onLoad={() => setLoading(false)}
               style={{
                 border: "none",
-                display: loading ? "none" : "block",
+                display: loading ? "none" : "block", // ซ่อน iframe จนกว่าจะโหลดเสร็จ
               }}
+              sandbox="allow-scripts allow-same-origin"
+              title="Document Viewer"
             />
           )}
         </DialogContent>
@@ -349,14 +322,13 @@ const UploadDoc = () => {
       {/* Snackbar */}
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={handleSnackbarClose}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
         anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
       >
         <Alert
-          onClose={handleSnackbarClose}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
           severity={snackbar.severity}
-          sx={{ width: "100%" }}
         >
           {snackbar.message}
         </Alert>

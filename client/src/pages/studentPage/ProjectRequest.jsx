@@ -1,5 +1,14 @@
 import { useState, useEffect, useCallback } from "react";
-import { Grid, Typography, Box, TextField, Button, MenuItem, CircularProgress, Alert } from "@mui/material";
+import {
+  Grid,
+  Typography,
+  Box,
+  TextField,
+  Button,
+  MenuItem,
+  CircularProgress,
+  Alert,
+} from "@mui/material";
 import api from "../../services/api";
 
 const ProjectRequest = () => {
@@ -18,13 +27,16 @@ const ProjectRequest = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [advisorResponse, studentResponse, sessionResponse] = await Promise.all([
-          api.get("/teacher"),
-          api.get("/users"),
-          api.get("/auth/check-session"),
-        ]);
+        const [advisorResponse, studentResponse, sessionResponse] =
+          await Promise.all([
+            api.get("/teacher"),
+            api.get("/users"),
+            api.get("/auth/check-session"),
+          ]);
 
-        const studentUsers = studentResponse.data.filter((user) => user.role === "student");
+        const studentUsers = studentResponse.data.filter(
+          (user) => user.role === "student"
+        );
         setAdvisors(advisorResponse.data);
         setStudents(studentUsers);
 
@@ -32,15 +44,25 @@ const ProjectRequest = () => {
         const statusResponse = await api.get("/project-requests/status", {
           params: { studentId: user_id },
         });
-        const statuses = statusResponse.data.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); // Sort by date
+        const statuses = statusResponse.data.data.sort(
+          (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        ); // Sort by date
         setProjectStatus(statuses);
 
         // Check the latest status
         const latestRequest = statuses[0]; // The most recent request
         setLatestStatus(latestRequest?.status || "");
-        setCanSubmit(!(latestRequest?.status === "pending" || latestRequest?.status === "approved"));
+        setCanSubmit(
+          !(
+            latestRequest?.status === "pending" ||
+            latestRequest?.status === "approved"
+          )
+        );
       } catch (error) {
-        console.error("Error fetching data:", error.response?.data || error.message);
+        console.error(
+          "Error fetching data:",
+          error.response?.data || error.message
+        );
       } finally {
         setLoading(false);
       }
@@ -55,6 +77,7 @@ const ProjectRequest = () => {
       const sessionResponse = await api.get("/auth/check-session");
       const { user_id } = sessionResponse.data.user;
 
+      // ส่งคำขอใหม่ไปยังเซิร์ฟเวอร์
       await api.post("/project-requests/create", {
         projectName,
         groupMembers,
@@ -62,14 +85,25 @@ const ProjectRequest = () => {
         studentId: user_id,
       });
 
+      // ดึงสถานะล่าสุดหลังจากส่งคำขอสำเร็จ
       const updatedStatus = await api.get("/project-requests/status", {
         params: { studentId: user_id },
       });
-      const statuses = updatedStatus.data.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+      // เรียงลำดับคำขอตามวันที่ล่าสุด
+      const statuses = updatedStatus.data.data.sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+      );
+
+      // อัพเดตสถานะใน UI
       setProjectStatus(statuses);
-      setCanSubmit(false); // Disable form after successful submission
+      setLatestStatus(statuses[0]?.status || ""); // อัพเดตสถานะล่าสุด
+      setCanSubmit(false); // ปิดการส่งคำขอใหม่จนกว่าสถานะจะเปลี่ยน
     } catch (error) {
-      console.error("Error submitting request:", error.response?.data || error.message);
+      console.error(
+        "Error submitting request:",
+        error.response?.data || error.message
+      );
     }
   }, [projectName, groupMembers, selectedAdvisor]);
 
@@ -92,7 +126,12 @@ const ProjectRequest = () => {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh"
+      >
         <CircularProgress />
       </Box>
     );
@@ -124,17 +163,17 @@ const ProjectRequest = () => {
         <Typography variant="h5" gutterBottom>
           Request a Project
         </Typography>
-        {!canSubmit && (
-          latestStatus === "approved" ? (
+        {!canSubmit &&
+          (latestStatus === "approved" ? (
             <Alert severity="success" sx={{ marginBottom: 2 }}>
               Congratulations! Your latest project request has been approved.
             </Alert>
           ) : (
             <Alert severity="info" sx={{ marginBottom: 2 }}>
-              You already have a pending project request. Please wait for approval or rejection before submitting a new request.
+              You already have a pending project request. Please wait for
+              approval or rejection before submitting a new request.
             </Alert>
-          )
-        )}
+          ))}
         <TextField
           fullWidth
           label="Project Name"
@@ -204,7 +243,11 @@ const ProjectRequest = () => {
             </MenuItem>
           ))}
         </TextField>
-        <Button variant="contained" onClick={handleSubmit} disabled={!canSubmit}>
+        <Button
+          variant="contained"
+          onClick={handleSubmit}
+          disabled={!canSubmit}
+        >
           Submit Request
         </Button>
       </Box>
@@ -237,13 +280,17 @@ const ProjectRequest = () => {
                     ? "#4caf50"
                     : "#f44336",
                 color: "#fff",
+                border: index === 0 ? "2px solid #000" : "none", // เน้นคำขอล่าสุด
               }}
             >
               <Typography variant="body1">
-                <strong>{index === 0 ? "Latest Request:" : ""} {status.project_name}</strong>
+                <strong>
+                  {index === 0 ? "Latest Request:" : ""} {status.project_name}
+                </strong>
               </Typography>
               <Typography variant="body2">
-                Status: {status.status.charAt(0).toUpperCase() + status.status.slice(1)}
+                Status:{" "}
+                {status.status.charAt(0).toUpperCase() + status.status.slice(1)}
               </Typography>
             </Box>
           ))}
