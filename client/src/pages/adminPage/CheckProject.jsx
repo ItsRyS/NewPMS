@@ -1,32 +1,30 @@
-import { useState, useEffect } from 'react';
-import { Button, Typography, Grid, Paper, CircularProgress } from '@mui/material';
-import api from '../../services/api';
+import { useState, useEffect } from "react";
+import { Button, Typography, Grid, Paper, Box, MenuItem, Select, FormControl, InputLabel } from "@mui/material";
+import api from "../../services/api";
 
 const CheckProject = () => {
-  const [requests, setRequests] = useState([]); // ข้อมูลคำร้อง
-  const [loading, setLoading] = useState(true); // สถานะการโหลดข้อมูล
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filterStatus, setFilterStatus] = useState("all"); // เก็บสถานะที่ต้องการกรอง
 
-  // ดึงข้อมูลคำร้อง
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const response = await api.get('/project-requests/all');
+        const response = await api.get("/project-requests/all");
         setRequests(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
-        console.error("Error fetching project requests:", error);
-        setRequests([]);
+        console.error("Error fetching project requests:", error.response?.data || error.message);
       } finally {
-        setLoading(false); // ปิดสถานะการโหลด
+        setLoading(false);
       }
     };
 
     fetchRequests();
   }, []);
 
-  // อัปเดตสถานะคำร้อง
   const handleStatusUpdate = async (requestId, status) => {
     try {
-      await api.post('/project-requests/update-status', { requestId, status });
+      await api.post("/project-requests/update-status", { requestId, status });
       setRequests((prev) =>
         prev.map((request) =>
           request.request_id === requestId ? { ...request, status } : request
@@ -37,52 +35,95 @@ const CheckProject = () => {
     }
   };
 
+  // ฟังก์ชันสำหรับกรองสถานะ
+  const filteredRequests =
+    filterStatus === "all"
+      ? requests
+      : requests.filter((request) => request.status === filterStatus);
+
   if (loading) {
     return (
-      <Grid container justifyContent="center" alignItems="center" style={{ height: '100vh' }}>
-        <CircularProgress />
+      <Grid container justifyContent="center" alignItems="center" style={{ height: "100vh" }}>
+        <Typography>Loading...</Typography>
       </Grid>
     );
   }
 
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={12}>
-        <Typography variant="h5">Approve or Reject Projects</Typography>
-      </Grid>
-      {requests.length > 0 ? (
-        requests.map((request) => (
-          <Grid item xs={12} key={request.request_id}>
-            <Paper elevation={3} style={{ padding: '16px' }}>
-              <Typography variant="h6">{request.project_name}</Typography>
-              <Typography>Advisor ID: {request.advisor_id}</Typography>
-              <Typography>Status: {request.status.charAt(0).toUpperCase() + request.status.slice(1)}</Typography>
-              <Button
-                variant="contained"
-                color="success"
-                onClick={() => handleStatusUpdate(request.request_id, 'approved')}
-                disabled={request.status === 'approved'} // ปิดปุ่มถ้าสถานะเป็น approved
-              >
-                Approve
-              </Button>
-              <Button
-                variant="contained"
-                color="error"
-                onClick={() => handleStatusUpdate(request.request_id, 'rejected')}
-                disabled={request.status === 'rejected'} // ปิดปุ่มถ้าสถานะเป็น rejected
-                style={{ marginLeft: '8px' }}
-              >
-                Reject
-              </Button>
-            </Paper>
-          </Grid>
-        ))
-      ) : (
-        <Grid item xs={12}>
-          <Typography>No project requests found.</Typography>
+    <Box sx={{ padding: 3 }}>
+      {/* หัวข้อและตัวเลือกกรอง */}
+      <Grid container spacing={2} alignItems="center">
+        <Grid item xs={12} md={6}>
+          <Typography variant="h5" gutterBottom>
+            Approve or Reject Projects
+          </Typography>
         </Grid>
-      )}
-    </Grid>
+        <Grid item xs={12} md={6}>
+          <FormControl fullWidth>
+            <InputLabel id="status-filter-label">Filter Status</InputLabel>
+            <Select
+              labelId="status-filter-label"
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              label="Filter Status"
+            >
+              <MenuItem value="all">All</MenuItem>
+              <MenuItem value="pending">Pending</MenuItem>
+              <MenuItem value="approved">Approved</MenuItem>
+              <MenuItem value="rejected">Rejected</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+      </Grid>
+
+      {/* รายการคำร้อง */}
+      <Grid container spacing={2} sx={{ marginTop: 2 }}>
+        {filteredRequests.length > 0 ? (
+          filteredRequests.map((request) => (
+            <Grid item xs={12} md={6} key={request.request_id}>
+              <Paper elevation={3} sx={{ padding: 2 }}>
+                <Typography variant="h6" gutterBottom>
+                  {request.project_name}
+                </Typography>
+                <Typography>
+                  <strong>Advisor:</strong> {request.teacher_name || "N/A"}
+                </Typography>
+                <Typography>
+                  <strong>Students:</strong> {request.students || "N/A"}
+                </Typography>
+                <Typography>
+                  <strong>Status:</strong>{" "}
+                  {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                </Typography>
+                <Box sx={{ marginTop: 2 }}>
+                  <Button
+                    variant="contained"
+                    color="success"
+                    onClick={() => handleStatusUpdate(request.request_id, "approved")}
+                    disabled={request.status === "approved"}
+                    sx={{ marginRight: 1 }}
+                  >
+                    Approve
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={() => handleStatusUpdate(request.request_id, "rejected")}
+                    disabled={request.status === "rejected"}
+                  >
+                    Reject
+                  </Button>
+                </Box>
+              </Paper>
+            </Grid>
+          ))
+        ) : (
+          <Grid item xs={12}>
+            <Typography>No project requests found.</Typography>
+          </Grid>
+        )}
+      </Grid>
+    </Box>
   );
 };
 

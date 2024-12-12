@@ -32,7 +32,9 @@ router.post("/create", async (req, res) => {
   } catch (error) {
     await connection.rollback(); // ย้อนกลับการเปลี่ยนแปลงหากเกิดข้อผิดพลาด
     console.error("Database Error:", error.message);
-    res.status(500).json({ success: false, error: "เกิดข้อผิดพลาดในการบันทึกข้อมูล" });
+    res
+      .status(500)
+      .json({ success: false, error: "เกิดข้อผิดพลาดในการบันทึกข้อมูล" });
   } finally {
     connection.release(); // ปล่อย connection
   }
@@ -50,23 +52,36 @@ router.get("/status", async (req, res) => {
     res.status(200).json({ success: true, data: results });
   } catch (error) {
     console.error("Error fetching statuses:", error.message);
-    res.status(500).json({ success: false, error: "เกิดข้อผิดพลาดในการดึงข้อมูล" });
+    res
+      .status(500)
+      .json({ success: false, error: "เกิดข้อผิดพลาดในการดึงข้อมูล" });
   }
 });
 // ดึงคำร้องทั้งหมด
+
 router.get("/all", async (req, res) => {
   try {
-    const [results] = await db.query(
-      `SELECT request_id, project_name, advisor_id, status FROM project_requests`
-    );
-    res.status(200).json(results);
+    const [projects] = await db.query(`
+      SELECT pr.request_id, pr.project_name, pr.status, 
+             pr.advisor_id, ti.teacher_name,
+             GROUP_CONCAT(u.username) AS students
+      FROM project_requests pr
+      LEFT JOIN teacher_info ti ON pr.advisor_id = ti.teacher_id
+      LEFT JOIN students_projects sp ON pr.request_id = sp.request_id
+      LEFT JOIN users u ON sp.student_id = u.user_id
+      GROUP BY pr.request_id
+    `);
+
+    res.status(200).json(projects);
   } catch (error) {
     console.error("Error fetching project requests:", error.message);
-    res.status(500).json({ success: false, error: "เกิดข้อผิดพลาดในการดึงข้อมูล" });
+    res
+      .status(500)
+      .json({ success: false, error: "เกิดข้อผิดพลาดในการดึงข้อมูล" });
   }
 });
 
-// อัปเดตสถานะของคำร้อง
+// Update the status of a project request
 router.post("/update-status", async (req, res) => {
   const { requestId, status } = req.body;
 
@@ -77,13 +92,17 @@ router.post("/update-status", async (req, res) => {
     );
 
     if (result.affectedRows === 0) {
-      return res.status(404).json({ success: false, error: "Request not found" });
+      return res
+        .status(404)
+        .json({ success: false, error: "Request not found" });
     }
 
     res.status(200).json({ success: true });
   } catch (error) {
     console.error("Error updating status:", error.message);
-    res.status(500).json({ success: false, error: "เกิดข้อผิดพลาดในการอัปเดตสถานะ" });
+    res
+      .status(500)
+      .json({ success: false, error: "เกิดข้อผิดพลาดในการอัปเดตสถานะ" });
   }
 });
 

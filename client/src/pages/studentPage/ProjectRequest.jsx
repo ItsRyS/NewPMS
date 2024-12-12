@@ -13,7 +13,7 @@ const ProjectRequest = () => {
   const [canSubmit, setCanSubmit] = useState(true);
   const [latestStatus, setLatestStatus] = useState("");
 
-  // ดึงข้อมูลทั้งหมด
+  // Fetch all required data
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -32,11 +32,11 @@ const ProjectRequest = () => {
         const statusResponse = await api.get("/project-requests/status", {
           params: { studentId: user_id },
         });
-        const statuses = statusResponse.data.data;
+        const statuses = statusResponse.data.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); // Sort by date
         setProjectStatus(statuses);
 
-        // ตรวจสอบสถานะล่าสุด
-        const latestRequest = statuses[statuses.length - 1]; // คำร้องล่าสุด
+        // Check the latest status
+        const latestRequest = statuses[0]; // The most recent request
         setLatestStatus(latestRequest?.status || "");
         setCanSubmit(!(latestRequest?.status === "pending" || latestRequest?.status === "approved"));
       } catch (error) {
@@ -49,7 +49,7 @@ const ProjectRequest = () => {
     fetchData();
   }, []);
 
-  // ฟังก์ชันส่งคำขอ
+  // Submit new project request
   const handleSubmit = useCallback(async () => {
     try {
       const sessionResponse = await api.get("/auth/check-session");
@@ -65,21 +65,22 @@ const ProjectRequest = () => {
       const updatedStatus = await api.get("/project-requests/status", {
         params: { studentId: user_id },
       });
-      setProjectStatus(updatedStatus.data.data);
-      setCanSubmit(false); // ปิดฟอร์มหลังส่งคำร้องสำเร็จ
+      const statuses = updatedStatus.data.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      setProjectStatus(statuses);
+      setCanSubmit(false); // Disable form after successful submission
     } catch (error) {
       console.error("Error submitting request:", error.response?.data || error.message);
     }
   }, [projectName, groupMembers, selectedAdvisor]);
 
-  // เพิ่มสมาชิก
+  // Add group member
   const handleAddMember = useCallback(() => {
     if (groupMembers.length < 3) {
       setGroupMembers([...groupMembers, ""]);
     }
   }, [groupMembers]);
 
-  // ลบสมาชิก
+  // Remove group member
   const handleRemoveMember = useCallback(
     (index) => {
       const updatedMembers = [...groupMembers];
@@ -126,7 +127,7 @@ const ProjectRequest = () => {
         {!canSubmit && (
           latestStatus === "approved" ? (
             <Alert severity="success" sx={{ marginBottom: 2 }}>
-              Congratulations! Your project request has been approved.
+              Congratulations! Your latest project request has been approved.
             </Alert>
           ) : (
             <Alert severity="info" sx={{ marginBottom: 2 }}>
@@ -223,7 +224,7 @@ const ProjectRequest = () => {
           Document Status
         </Typography>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          {projectStatus.map((status) => (
+          {projectStatus.map((status, index) => (
             <Box
               key={status.request_id}
               sx={{
@@ -239,7 +240,7 @@ const ProjectRequest = () => {
               }}
             >
               <Typography variant="body1">
-                <strong>{status.project_name}</strong>
+                <strong>{index === 0 ? "Latest Request:" : ""} {status.project_name}</strong>
               </Typography>
               <Typography variant="body2">
                 Status: {status.status.charAt(0).toUpperCase() + status.status.slice(1)}
