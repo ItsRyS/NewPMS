@@ -12,7 +12,7 @@ const teacherRoutes = require("./src/routes/teacher");
 const documentRoutes = require("./src/routes/document");
 const userRoutes = require("./src/routes/users");
 const projectRequestsRoutes = require("./src/routes/projectRequests");
-
+const projectDocumentsRoutes = require("./src/routes/project_documents");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -60,6 +60,8 @@ app.use("/api/teacher", teacherRoutes);
 app.use("/api/document", documentRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/project-requests", projectRequestsRoutes);
+app.use("/api/document-types", projectDocumentsRoutes);
+app.use("/api/project-documents", projectDocumentsRoutes);
 // Test Endpoint
 app.get("/api/test", (req, res) => {
   res.json({ message: "API is working!" });

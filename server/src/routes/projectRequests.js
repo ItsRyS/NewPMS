@@ -43,19 +43,25 @@ router.get("/status", async (req, res) => {
   const { studentId } = req.query;
 
   try {
+    if (!studentId) {
+      return res.status(400).json({ success: false, error: "Student ID is required." });
+    }
     const [results] = await db.query(
-      `SELECT request_id, project_name, status, created_at 
+      `SELECT request_id, project_name, status 
        FROM project_requests 
-       WHERE student_id = ? 
+       WHERE student_id = ?  
        ORDER BY created_at DESC`,
       [studentId]
     );
+
+    console.log("Project Requests for Student:", results);
     res.status(200).json({ success: true, data: results });
   } catch (error) {
     console.error("Error fetching statuses:", error.message);
-    res.status(500).json({ success: false, error: "Failed to fetch data" });
+    res.status(500).json({ success: false, error: "Error fetching statuses" });
   }
 });
+
 
 // Get all project requests
 router.get("/all", async (req, res) => {

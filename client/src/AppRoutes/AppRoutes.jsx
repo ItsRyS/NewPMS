@@ -1,4 +1,4 @@
-import  { lazy, Suspense } from "react";
+import { lazy, Suspense } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 // ใช้ React.lazy สำหรับ Dynamic Import
@@ -20,11 +20,16 @@ const ManageUser = lazy(() => import("../pages/adminPage/ManageUser"));
 const ReleaseProject = lazy(() => import("../pages/adminPage/ReleaseProject"));
 const UploadDoc = lazy(() => import("../pages/adminPage/UploadDoc"));
 const TeacherInfo = lazy(() => import("../pages/adminPage/TeacherInfo"));
+const ViewProjectDocuments = lazy(() => import("../pages/adminPage/ViewProjectDocuments"));
 
 const Documentation = lazy(() => import("../pages/studentPage/Documentation"));
 const SendProject = lazy(() => import("../pages/studentPage/SendProject"));
-const ProjectRequest = lazy(() => import("../pages/studentPage/ProjectRequest"));
-
+const ProjectRequest = lazy(() =>
+  import("../pages/studentPage/ProjectRequest")
+);
+const UploadProjectDocument = lazy(() =>
+  import("../pages/studentPage/UploadProjectDocument")
+);
 // สร้าง Router โดยใช้ Lazy Components
 const router = createBrowserRouter([
   {
@@ -125,6 +130,14 @@ const router = createBrowserRouter([
           </Suspense>
         ),
       },
+      {
+        path: "ViewProjectDocuments",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <ViewProjectDocuments />
+          </Suspense>
+        ),
+      }
     ],
   },
   {
@@ -167,6 +180,15 @@ const router = createBrowserRouter([
           </Suspense>
         ),
       },
+      {
+        path: "UploadProjectDocument",
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <UploadProjectDocument />
+          </Suspense>
+        ),
+      },
+      // Add more routes here
     ],
   },
   {

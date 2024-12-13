@@ -12,7 +12,7 @@ import {
   Typography,
   Avatar,
 } from "@mui/material";
-import { Home, School, Assignment } from "@mui/icons-material";
+import { Home, School, Assignment,PresentToAll } from "@mui/icons-material";
 import { NavLink, useNavigate } from "react-router-dom";
 import LogoutIcon from "@mui/icons-material/Logout";
 import api from "../services/api";
@@ -103,6 +103,17 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
               <Assignment sx={{ color: "#9CA3AF" }} />
             </ListItemIcon>
             <ListItemText primary="คำร้องโครงการ" />
+          </ListItemButton>
+        </NavLink>
+        <NavLink
+          to="/studentHome/uploadProjectDocument"
+          style={{ textDecoration: "none", color: "inherit" }}
+        >
+          <ListItemButton onClick={() => setTitle("ส่งเอกสาร")}>
+            <ListItemIcon>
+              <PresentToAll sx={{ color: "#9CA3AF" }} />
+            </ListItemIcon>
+            <ListItemText primary="ส่งเอกสาร" />
           </ListItemButton>
         </NavLink>
       </List>

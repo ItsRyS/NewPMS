@@ -121,6 +121,19 @@ const SideAdmin = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
             <ListItemText primary="แบบร่างเอกสาร" />
           </ListItemButton>
         </NavLink>
+
+        <NavLink
+          to="/adminHome/ViewProjectDocuments"
+          style={{ textDecoration: "none", color: "inherit" }}
+        >
+          <ListItemButton onClick={() => setTitle("ตรวจเอกสาร")}>
+            <ListItemIcon>
+              <CloudUploadIcon sx={{ color: "#9CA3AF" }} />
+            </ListItemIcon>
+            <ListItemText primary="ตรวจเอกสาร" />
+          </ListItemButton>
+        </NavLink>
+
       </List>
 
       <Divider sx={{ borderColor: "#374151", mt: 2 }} />
