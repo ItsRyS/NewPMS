@@ -109,6 +109,19 @@ router.get("/all", async (req, res) => {
         .json({ message: "Failed to fetch document history." });
     }
   });
+  router.delete("/delete/:documentId", async (req, res) => {
+    const { documentId } = req.params;
+  
+    try {
+      await db.query("DELETE FROM project_documents WHERE document_id = ?", [
+        documentId,
+      ]);
+      res.status(200).json({ message: "Document deleted successfully." });
+    } catch (error) {
+      console.error("Error deleting document:", error.message);
+      res.status(500).json({ message: "Failed to delete document." });
+    }
+  });
   
 
 module.exports = router;
