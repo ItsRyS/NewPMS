@@ -41,16 +41,18 @@ const ProjectRequest = () => {
         setStudents(studentUsers);
 
         const { user_id } = sessionResponse.data.user;
+        setGroupMembers([user_id]);
+
+        // ดึงสถานะคำขอล่าสุด
         const statusResponse = await api.get("/project-requests/status", {
           params: { studentId: user_id },
         });
         const statuses = statusResponse.data.data.sort(
           (a, b) => new Date(b.created_at) - new Date(a.created_at)
-        ); // Sort by date
+        );
         setProjectStatus(statuses);
 
-        // Check the latest status
-        const latestRequest = statuses[0]; // The most recent request
+        const latestRequest = statuses[0];
         setLatestStatus(latestRequest?.status || "");
         setCanSubmit(
           !(
@@ -59,10 +61,7 @@ const ProjectRequest = () => {
           )
         );
       } catch (error) {
-        console.error(
-          "Error fetching data:",
-          error.response?.data || error.message
-        );
+        console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
       }
@@ -70,7 +69,6 @@ const ProjectRequest = () => {
 
     fetchData();
   }, []);
-
   // Submit new project request
   const handleSubmit = useCallback(async () => {
     try {
@@ -183,7 +181,7 @@ const ProjectRequest = () => {
           disabled={!canSubmit}
         />
         {groupMembers.map((member, index) => (
-          <Grid container spacing={2} key={index}>
+          <Grid container spacing={2} key={index} sx={{mb: 2}}>
             <Grid item xs={10}>
               <TextField
                 select

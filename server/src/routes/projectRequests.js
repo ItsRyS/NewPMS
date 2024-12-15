@@ -44,7 +44,9 @@ router.get("/status", async (req, res) => {
 
   try {
     if (!studentId) {
-      return res.status(400).json({ success: false, error: "Student ID is required." });
+      return res
+        .status(400)
+        .json({ success: false, error: "Student ID is required." });
     }
     const [results] = await db.query(
       `SELECT request_id, project_name, status 
@@ -62,20 +64,19 @@ router.get("/status", async (req, res) => {
   }
 });
 
-
 // Get all project requests
 router.get("/all", async (req, res) => {
   try {
     const [projects] = await db.query(`
       SELECT pr.request_id, pr.project_name, pr.status, 
-       pr.advisor_id, ti.teacher_name,
-       GROUP_CONCAT(DISTINCT u.username) AS students
-FROM project_requests pr
-LEFT JOIN teacher_info ti ON pr.advisor_id = ti.teacher_id
-LEFT JOIN students_projects sp ON pr.request_id = sp.request_id
-LEFT JOIN users u ON sp.student_id = u.user_id
-GROUP BY pr.request_id
-ORDER BY pr.created_at DESC;
+            pr.advisor_id, ti.teacher_name,
+            GROUP_CONCAT(DISTINCT u.username) AS students
+      FROM project_requests pr
+      LEFT JOIN teacher_info ti ON pr.advisor_id = ti.teacher_id
+      LEFT JOIN students_projects sp ON pr.request_id = sp.request_id
+      LEFT JOIN users u ON sp.student_id = u.user_id
+      GROUP BY pr.request_id
+      ORDER BY pr.created_at DESC;
 
     `);
 
