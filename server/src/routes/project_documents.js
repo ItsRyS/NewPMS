@@ -162,5 +162,44 @@ router.post("/reject/:id", async (req, res) => {
     res.status(500).json({ message: "Database error." });
   }
 });
+// Resubmit Document Endpoint
+router.post("/resubmit/:id", upload.single("file"), async (req, res) => {
+  const { id } = req.params;
+  const file_path = req.file ? req.file.path : null;
+
+  if (!file_path) {
+    return res.status(400).json({ message: "File upload failed." });
+  }
+
+  try {
+    // Fetch document details
+    const [documentDetails] = await db.query(
+      "SELECT type_id, request_id FROM project_documents WHERE document_id = ?",
+      [id]
+    );
+
+    if (!documentDetails || documentDetails.length === 0) {
+      return res.status(404).json({ message: "Document not found." });
+    }
+
+    const { type_id, request_id } = documentDetails[0];
+
+    // Delete the rejected document
+    await db.query("DELETE FROM project_documents WHERE document_id = ?", [id]);
+
+    // Insert the new document
+    await db.query(
+      "INSERT INTO project_documents (request_id, type_id, file_path, status) VALUES (?, ?, ?, 'pending')",
+      [request_id, type_id, file_path]
+    );
+
+    res.status(200).json({ message: "Document resubmitted successfully." });
+  } catch (error) {
+    console.error("Error resubmitting document:", error.message);
+    res.status(500).json({ message: "Database error." });
+  }
+});
+
+
 
 module.exports = router;
