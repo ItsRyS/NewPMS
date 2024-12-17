@@ -130,7 +130,10 @@ router.delete("/delete/:documentId", async (req, res) => {
     const filePath = document[0].file_path;
 
     // ลบเอกสารจากฐานข้อมูล
-    await connection.query("DELETE FROM project_documents WHERE document_id = ?", [documentId]);
+    await connection.query(
+      "DELETE FROM project_documents WHERE document_id = ?",
+      [documentId]
+    );
 
     // ลบไฟล์ออกจากระบบไฟล์
     const fs = require("fs");
@@ -145,7 +148,6 @@ router.delete("/delete/:documentId", async (req, res) => {
     res.status(500).json({ message: "Failed to delete document." });
   }
 });
-
 
 // Approve Document
 router.post("/approve/:id", async (req, res) => {
@@ -186,53 +188,56 @@ router.post("/reject/:id", async (req, res) => {
   }
 });
 // Resubmit Document Endpoint
-router.post("/resubmit/:documentId", upload.single("file"), async (req, res) => {
-  const { documentId } = req.params;
-  const { request_id, type_id } = req.body;
+router.post("/resubmit/:id", upload.single("file"), async (req, res) => {
+  const { id } = req.params; // document_id
   const file_path = req.file ? req.file.path : null;
 
   if (!file_path) {
-    return res.status(400).json({ message: "File upload failed. No file provided." });
+    return res.status(400).json({ message: "File upload failed." });
   }
 
+  const connection = await db.getConnection();
+
   try {
-    const connection = await db.getConnection();
     await connection.beginTransaction();
 
-    // Get the old file path to delete it later
-    const [oldDocument] = await connection.query(
-      "SELECT file_path FROM project_documents WHERE document_id = ? AND status = 'rejected'",
-      [documentId]
+    // ดึงข้อมูลเอกสารเดิม
+    const [documentDetails] = await connection.query(
+      "SELECT request_id, type_id, file_path FROM project_documents WHERE document_id = ?",
+      [id]
     );
 
-    if (!oldDocument || oldDocument.length === 0) {
-      return res.status(404).json({ message: "Document not found or not rejected." });
+    if (!documentDetails || documentDetails.length === 0) {
+      return res.status(404).json({ message: "Document not found." });
     }
 
-    // Delete the old document entry in the database
-    await connection.query("DELETE FROM project_documents WHERE document_id = ?", [documentId]);
+    const { request_id, type_id, file_path: oldFilePath } = documentDetails[0];
 
-    // Insert the new document
+    // ลบไฟล์เก่าออกจากระบบ
+    const fs = require("fs");
+    if (oldFilePath && fs.existsSync(oldFilePath)) {
+      fs.unlinkSync(oldFilePath); // ลบไฟล์เก่า
+    }
+
+    // ลบเอกสารเก่าออกจากฐานข้อมูล
+    await connection.query("DELETE FROM project_documents WHERE document_id = ?", [id]);
+
+    // เพิ่มเอกสารใหม่เข้าไป
     await connection.query(
       "INSERT INTO project_documents (request_id, type_id, file_path, status) VALUES (?, ?, ?, 'pending')",
       [request_id, type_id, file_path]
     );
 
-    // Delete the old file from the filesystem
-    const fs = require("fs");
-    if (fs.existsSync(oldDocument[0].file_path)) {
-      fs.unlinkSync(oldDocument[0].file_path); // Safely delete the old file
-    }
-
     await connection.commit();
     res.status(200).json({ message: "Document resubmitted successfully." });
   } catch (error) {
+    await connection.rollback();
     console.error("Error resubmitting document:", error.message);
     res.status(500).json({ message: "Failed to resubmit document." });
+  } finally {
+    connection.release();
   }
 });
-
-
 
 
 module.exports = router;

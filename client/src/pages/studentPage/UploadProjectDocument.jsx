@@ -146,16 +146,13 @@ const UploadProjectDocument = () => {
       });
       return;
     }
-
+  
     const formData = new FormData();
     formData.append("file", file);
-
+  
     try {
       setLoading(true);
-      await api.post(
-        `/project-documents/resubmit/${currentDocumentId}`,
-        formData
-      );
+      await api.post(`/project-documents/resubmit/${currentDocumentId}`, formData);
       setSnackbar({
         open: true,
         message: "Document resubmitted successfully.",
@@ -173,7 +170,10 @@ const UploadProjectDocument = () => {
     } finally {
       setLoading(false);
     }
+  
   };
+  
+  
 
   const handleOpenResubmitDialog = (documentId) => {
     setCurrentDocumentId(documentId);
@@ -283,7 +283,7 @@ const UploadProjectDocument = () => {
                       size="small"
                       variant="outlined"
                       color="primary"
-                      onClick={() => handleOpenResubmitDialog(doc.document_id)}
+                      onClick={() => handleOpenResubmitDialog(doc.document_id, doc.type_id)}
                     >
                       Resubmit
                     </Button>
