@@ -56,7 +56,7 @@ router.get("/status", async (req, res) => {
       [studentId]
     );
 
-    console.log("Project Requests for Student:", results);
+    //console.log("Project Requests for Student:", results);
     res.status(200).json({ success: true, data: results });
   } catch (error) {
     console.error("Error fetching statuses:", error.message);

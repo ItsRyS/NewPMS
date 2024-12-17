@@ -13,15 +13,9 @@ import {
   List,
   ListItem,
   ListItemText,
-  IconButton,
   Grid,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  DialogContentText,
+  Chip,
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
 import api from "../../services/api";
 
 const UploadProjectDocument = () => {
@@ -36,10 +30,6 @@ const UploadProjectDocument = () => {
     message: "",
     severity: "info",
   });
-
-  // State สำหรับ Confirm Dialog
-  const [openDialog, setOpenDialog] = useState(false);
-  const [selectedDocumentId, setSelectedDocumentId] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -121,36 +111,6 @@ const UploadProjectDocument = () => {
     }
   };
 
-  const handleOpenDialog = (documentId) => {
-    setSelectedDocumentId(documentId);
-    setOpenDialog(true);
-  };
-
-  const handleDeleteDocument = async () => {
-    try {
-      await api.delete(`/project-documents/delete/${selectedDocumentId}`);
-      setSnackbar({
-        open: true,
-        message: "Document deleted successfully.",
-        severity: "success",
-      });
-
-      const historyResponse = await api.get(
-        `/project-documents/history?requestId=${approvedProject.request_id}`
-      );
-      setDocumentHistory(historyResponse.data);
-    } catch (error) {
-      console.error("Error deleting document:", error);
-      setSnackbar({
-        open: true,
-        message: "Failed to delete document.",
-        severity: "error",
-      });
-    } finally {
-      setOpenDialog(false);
-    }
-  };
-
   return (
     <Box sx={{ p: 4, maxWidth: 1000, mx: "auto" }}>
       <Typography variant="h5" gutterBottom>
@@ -210,7 +170,6 @@ const UploadProjectDocument = () => {
           </Button>
         </Grid>
 
-        {/* Right Section */}
         <Grid item xs={12} md={6}>
           <Typography variant="h6" gutterBottom>
             Submission History
@@ -219,45 +178,42 @@ const UploadProjectDocument = () => {
             {documentHistory.map((doc) => (
               <ListItem
                 key={doc.document_id}
-                secondaryAction={
-                  <IconButton
-                    edge="end"
-                    aria-label="delete"
-                    onClick={() => handleOpenDialog(doc.document_id)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                }
+                sx={{ display: "flex", flexDirection: "row" }}
               >
                 <ListItemText
                   primary={doc.type_name}
-                  secondary={`Submitted at: ${new Date(
-                    doc.submitted_at
-                  ).toLocaleString()}`}
+                  secondary={
+                    <>
+                      <Typography variant="body2" color="textSecondary">
+                        Submitted at:{" "}
+                        {new Date(doc.submitted_at).toLocaleString()}
+                      </Typography>
+                      {doc.status === "rejected" && (
+                        <Typography
+                          variant="body2"
+                          color="error"
+                          sx={{ mt: 0.5 }}
+                        >
+                          Reason: {doc.reject_reason}
+                        </Typography>
+                      )}
+                    </>
+                  }
                 />
+                <Box mt={1}>
+                  {doc.status === "approved" ? (
+                    <Chip label="Approved" color="success" />
+                  ) : doc.status === "rejected" ? (
+                    <Chip label="Rejected" color="error" />
+                  ) : (
+                    <Chip label="Pending" />
+                  )}
+                </Box>
               </ListItem>
             ))}
           </List>
         </Grid>
       </Grid>
-
-      {/* Confirm Delete Dialog */}
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-        <DialogTitle>Confirm Delete</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Are you sure you want to delete this document? This action cannot be undone.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(false)} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleDeleteDocument} color="error" autoFocus>
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
 
       <Snackbar
         open={snackbar.open}

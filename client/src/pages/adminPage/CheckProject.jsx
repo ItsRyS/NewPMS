@@ -1,5 +1,15 @@
 import { useState, useEffect } from "react";
-import { Button, Typography, Grid, Paper, Box, MenuItem, Select, FormControl, InputLabel } from "@mui/material";
+import {
+  Button,
+  Typography,
+  Grid,
+  Paper,
+  Box,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+} from "@mui/material";
 import api from "../../services/api";
 
 const CheckProject = () => {
@@ -13,7 +23,10 @@ const CheckProject = () => {
         const response = await api.get("/project-requests/all");
         setRequests(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
-        console.error("Error fetching project requests:", error.response?.data || error.message);
+        console.error(
+          "Error fetching project requests:",
+          error.response?.data || error.message
+        );
       } finally {
         setLoading(false);
       }
@@ -43,7 +56,12 @@ const CheckProject = () => {
 
   if (loading) {
     return (
-      <Grid container justifyContent="center" alignItems="center" style={{ height: "100vh" }}>
+      <Grid
+        container
+        justifyContent="center"
+        alignItems="center"
+        style={{ height: "100vh" }}
+      >
         <Typography>Loading...</Typography>
       </Grid>
     );
@@ -81,8 +99,27 @@ const CheckProject = () => {
         {filteredRequests.length > 0 ? (
           filteredRequests.map((request) => (
             <Grid item xs={12} md={6} key={request.request_id}>
-              <Paper elevation={3} sx={{ padding: 2 }}>
-                <Typography variant="h6" gutterBottom>
+              <Paper
+                elevation={3}
+                sx={{
+                  padding: 2,
+                  backgroundColor:
+                    request.status === "approved"
+                      ? "SpringGreen"
+                      : request.status === "rejected"
+                      ? "salmon"
+                      : "lightgray",
+                  color: "white",
+                }}
+              >
+                <Typography
+                  variant="h4"
+                  gutterBottom
+                  sx={{
+                    textDecoration: "underline",
+                    fontWeight: "bold",
+                  }}
+                >
                   {request.project_name}
                 </Typography>
                 <Typography>
@@ -93,13 +130,16 @@ const CheckProject = () => {
                 </Typography>
                 <Typography>
                   <strong>Status:</strong>{" "}
-                  {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                  {request.status.charAt(0).toUpperCase() +
+                    request.status.slice(1)}
                 </Typography>
                 <Box sx={{ marginTop: 2 }}>
                   <Button
                     variant="contained"
-                    color="success"
-                    onClick={() => handleStatusUpdate(request.request_id, "approved")}
+                    color="white"
+                    onClick={() =>
+                      handleStatusUpdate(request.request_id, "approved")
+                    }
                     disabled={request.status === "approved"}
                     sx={{ marginRight: 1 }}
                   >
@@ -107,8 +147,10 @@ const CheckProject = () => {
                   </Button>
                   <Button
                     variant="contained"
-                    color="error"
-                    onClick={() => handleStatusUpdate(request.request_id, "rejected")}
+                    color="white"
+                    onClick={() =>
+                      handleStatusUpdate(request.request_id, "rejected")
+                    }
                     disabled={request.status === "rejected"}
                   >
                     Reject
