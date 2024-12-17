@@ -12,7 +12,6 @@ import {
   MenuItem,
   List,
   ListItem,
-  ListItemText,
   Grid,
   Chip,
   Paper,
@@ -21,8 +20,10 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  DialogContentText
+  DialogContentText,
 } from "@mui/material";
+import RemoveRedEyeTwoToneIcon from "@mui/icons-material/RemoveRedEyeTwoTone";
+import CancelTwoToneIcon from "@mui/icons-material/CancelTwoTone";
 import api from "../../services/api";
 
 const UploadProjectDocument = () => {
@@ -32,14 +33,16 @@ const UploadProjectDocument = () => {
   const [approvedProject, setApprovedProject] = useState(null);
   const [documentHistory, setDocumentHistory] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [openResubmitDialog, setOpenResubmitDialog] = useState(false);
+  const [currentDocumentId, setCurrentDocumentId] = useState(null);
+  const [openCancelDialog, setOpenCancelDialog] = useState(false);
+  const [openViewDialog, setOpenViewDialog] = useState(false);
+  const [selectedFilePath, setSelectedFilePath] = useState("");
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "info",
   });
-  const [openResubmitDialog, setOpenResubmitDialog] = useState(false);
-  const [currentDocumentId, setCurrentDocumentId] = useState(null);
-  const [openCancelDialog, setOpenCancelDialog] = useState(false);
   useEffect(() => {
     fetchData();
   }, []);
@@ -71,6 +74,19 @@ const UploadProjectDocument = () => {
     } catch (error) {
       console.error("Error fetching data:", error);
     }
+  };
+  const handleViewDocument = (filePath) => {
+    if (filePath) {
+      setSelectedFilePath(`http://localhost:5000/${filePath}`);
+      setOpenViewDialog(true);
+    } else {
+      console.error("Invalid file path:", filePath);
+    }
+  };
+
+  const handleCloseViewDialog = () => {
+    setSelectedFilePath("");
+    setOpenViewDialog(false);
   };
 
   const handleFileChange = (e) => {
@@ -146,13 +162,16 @@ const UploadProjectDocument = () => {
       });
       return;
     }
-  
+
     const formData = new FormData();
     formData.append("file", file);
-  
+
     try {
       setLoading(true);
-      await api.post(`/project-documents/resubmit/${currentDocumentId}`, formData);
+      await api.post(
+        `/project-documents/resubmit/${currentDocumentId}`,
+        formData
+      );
       setSnackbar({
         open: true,
         message: "Document resubmitted successfully.",
@@ -170,10 +189,7 @@ const UploadProjectDocument = () => {
     } finally {
       setLoading(false);
     }
-  
   };
-  
-  
 
   const handleOpenResubmitDialog = (documentId) => {
     setCurrentDocumentId(documentId);
@@ -242,52 +258,87 @@ const UploadProjectDocument = () => {
 
         <Grid item xs={12} md={6}>
           <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
-            <Typography variant="h6" gutterBottom>
+            <Typography
+              variant="h6"
+              gutterBottom
+              sx={{
+                textAlign: "center",
+                borderBottom: "2px solid #ddd",
+                pb: 1,
+                mb: 2,
+              }}
+            >
               Submission History
             </Typography>
-            <List>
+            <List sx={{ maxHeight: "60vh", overflowY: "auto" }}>
               {documentHistory.map((doc) => (
-                <ListItem key={doc.document_id} divider>
-                  <ListItemText
-                    primary={doc.type_name}
-                    secondary={
-                      <>
-                        <Typography variant="body2" color="textSecondary">
-                          Submitted at:{" "}
-                          {new Date(doc.submitted_at).toLocaleString()}
-                        </Typography>
-                        {doc.status === "rejected" && (
-                          <Typography
-                            variant="body2"
-                            color="error"
-                            sx={{ mt: 0.5 }}
-                          >
-                            Reason: {doc.reject_reason}
-                          </Typography>
-                        )}
-                      </>
-                    }
-                  />
-                  {doc.status === "pending" && (
+                <ListItem
+                  key={doc.document_id}
+                  divider
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                    gap: 1,
+                  }}
+                >
+                  {/* Left Content */}
+                  <Box>
+                    <Typography variant="subtitle1" fontWeight="bold">
+                      {doc.type_name}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      Submitted at:{" "}
+                      {new Date(doc.submitted_at).toLocaleString()}
+                    </Typography>
+                    {doc.status === "rejected" && (
+                      <Typography variant="body2" color="error">
+                        Reason: {doc.reject_reason}
+                      </Typography>
+                    )}
+                  </Box>
+
+                  {/* Actions */}
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                     <Button
-                      size="small"
-                      variant="outlined"
-                      color="error"
-                      onClick={() => handleOpenCancelDialog(doc.document_id)}
+                      onClick={() => {
+                        if (doc.file_path) {
+                          handleViewDocument(doc.file_path);
+                        } else {
+                          console.error("File path is undefined");
+                        }
+                      }}
+                      sx={{ minWidth: "auto", p: 0 }}
+                      color="inherit"
                     >
-                      Cancel
+                      <RemoveRedEyeTwoToneIcon />
                     </Button>
-                  )}
-                  {doc.status === "rejected" && (
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      color="primary"
-                      onClick={() => handleOpenResubmitDialog(doc.document_id, doc.type_id)}
-                    >
-                      Resubmit
-                    </Button>
-                  )}
+
+                    {doc.status === "pending" && (
+                      <Button
+                        color="error"
+                        sx={{ minWidth: "auto", p: 0 }}
+                        onClick={() => handleOpenCancelDialog(doc.document_id)}
+                      >
+                        <CancelTwoToneIcon />
+                      </Button>
+                    )}
+
+                    {doc.status === "rejected" && (
+                      <Button
+                        color="warning"
+                        sx={{ minWidth: "auto", p: 0, fontWeight: "bold" }}
+                        onClick={() =>
+                          handleOpenResubmitDialog(doc.document_id, doc.type_id)
+                        }
+                      >
+                        Resubmit
+                      </Button>
+                    )}
+                  </Box>
+
+                  {/* Status Chip */}
                   <Chip
                     label={
                       doc.status.charAt(0).toUpperCase() + doc.status.slice(1)
@@ -299,6 +350,7 @@ const UploadProjectDocument = () => {
                         ? "error"
                         : "default"
                     }
+                    sx={{ mt: { xs: 1, md: 0 } }}
                   />
                 </ListItem>
               ))}
@@ -343,6 +395,35 @@ const UploadProjectDocument = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      <Dialog
+        open={openViewDialog}
+        onClose={handleCloseViewDialog}
+        maxWidth="lg"
+        fullWidth
+      >
+        <DialogTitle>View Document</DialogTitle>
+        <DialogContent>
+          {selectedFilePath ? (
+            <iframe
+              src={selectedFilePath}
+              width="100%"
+              height="500px"
+              title="Document Viewer"
+              style={{ border: "none" }}
+            />
+          ) : (
+            <Typography variant="body2" color="textSecondary">
+              Document not available.
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseViewDialog} color="error">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}

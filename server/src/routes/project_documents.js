@@ -78,7 +78,7 @@ LEFT JOIN users u ON pr.student_id = u.user_id
 ORDER BY pd.submitted_at DESC;
 
       `);
-
+    //console.log(documents);
     res.status(200).json(documents);
   } catch (error) {
     console.error("Error fetching project documents:", error.message);
@@ -94,6 +94,7 @@ router.get("/history", async (req, res) => {
     const [documents] = await db.query(
       `SELECT 
          pd.document_id, 
+         pd.file_path,
          dt.type_name, 
          pd.submitted_at,
          pd.status, 
@@ -220,7 +221,10 @@ router.post("/resubmit/:id", upload.single("file"), async (req, res) => {
     }
 
     // ลบเอกสารเก่าออกจากฐานข้อมูล
-    await connection.query("DELETE FROM project_documents WHERE document_id = ?", [id]);
+    await connection.query(
+      "DELETE FROM project_documents WHERE document_id = ?",
+      [id]
+    );
 
     // เพิ่มเอกสารใหม่เข้าไป
     await connection.query(
@@ -238,6 +242,5 @@ router.post("/resubmit/:id", upload.single("file"), async (req, res) => {
     connection.release();
   }
 });
-
 
 module.exports = router;
