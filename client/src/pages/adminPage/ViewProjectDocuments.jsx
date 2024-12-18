@@ -221,11 +221,11 @@ const ViewProjectDocuments = () => {
           )}
           <Box
             textAlign="right"
-            mt={2}
-            sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}
+            mt={1}
+            sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}
           >
             <Button
-              variant="contained"
+              variant="text"
               color="success"
               onClick={() => {
                 handleApprove(selectedDocument.document_id);
@@ -235,7 +235,7 @@ const ViewProjectDocuments = () => {
               Approve
             </Button>
             <Button
-              variant="contained"
+              variant="text"
               color="error"
               onClick={() => {
                 handleOpenRejectDialog(selectedDocument.document_id);
@@ -245,7 +245,7 @@ const ViewProjectDocuments = () => {
               Reject
             </Button>
             <Button
-              variant="contained"
+              variant="text"
               color="primary"
               onClick={handleCloseModal}
             >
