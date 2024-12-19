@@ -204,7 +204,9 @@ const ViewProjectDocuments = () => {
             height: "90%",
             backgroundColor: "white",
             boxShadow: 24,
-            p: 2,
+            p: 1,
+            margin: 1,
+            
           }}
         >
           <Typography variant="h6" gutterBottom>
@@ -215,7 +217,7 @@ const ViewProjectDocuments = () => {
               src={selectedDocument.url}
               width="100%"
               height="80%"
-              style={{ border: "none" }}
+              style={{ border: "none" ,padding: 0, margin: 0}}
               title="Document Viewer"
             ></iframe>
           )}
