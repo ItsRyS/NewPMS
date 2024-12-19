@@ -24,6 +24,17 @@ exports.uploadDocument = async (req, res) => {
   }
 };
 
+// ดึงข้อมูลประเภทเอกสาร
+exports.getDocumentTypes = async (req, res) => {
+  try {
+    const [results] = await db.query("SELECT * FROM document_types");
+    res.status(200).json(results);
+  } catch (error) {
+    console.error("Error fetching document types:", error.message);
+    res.status(500).json({ message: "Failed to fetch document types." });
+  }
+};
+
 // ดึงข้อมูลเอกสารทั้งหมด
 exports.getAllDocuments = async (req, res) => {
   try {
@@ -47,6 +58,31 @@ exports.getAllDocuments = async (req, res) => {
   } catch (error) {
     console.error("Error fetching project documents:", error.message);
     res.status(500).json({ message: "Failed to fetch documents." });
+  }
+};
+
+// ดึงประวัติเอกสาร
+exports.getDocumentHistory = async (req, res) => {
+  const { requestId } = req.query;
+  try {
+    const [documents] = await db.query(
+      `SELECT 
+         pd.document_id, 
+         pd.file_path,
+         dt.type_name, 
+         pd.submitted_at,
+         pd.status, 
+         pd.reject_reason 
+       FROM project_documents pd
+       LEFT JOIN document_types dt ON pd.type_id = dt.type_id
+       WHERE pd.request_id = ?
+       ORDER BY pd.submitted_at DESC`,
+      [requestId]
+    );
+    res.status(200).json(documents);
+  } catch (error) {
+    console.error("Error fetching document history:", error.message);
+    res.status(500).json({ message: "Failed to fetch document history." });
   }
 };
 
@@ -120,5 +156,55 @@ exports.rejectDocument = async (req, res) => {
   } catch (error) {
     console.error("Error rejecting document:", error.message);
     res.status(500).json({ message: "Failed to reject document." });
+  }
+};
+
+// ส่งเอกสารใหม่
+exports.resubmitDocument = async (req, res) => {
+  const { id } = req.params; // document_id
+  const file_path = req.file ? req.file.path : null;
+
+  if (!file_path) {
+    return res.status(400).json({ message: "File upload failed." });
+  }
+
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const [documentDetails] = await connection.query(
+      "SELECT request_id, type_id, file_path FROM project_documents WHERE document_id = ?",
+      [id]
+    );
+
+    if (!documentDetails || documentDetails.length === 0) {
+      return res.status(404).json({ message: "Document not found." });
+    }
+
+    const { request_id, type_id, file_path: oldFilePath } = documentDetails[0];
+
+    if (oldFilePath && fs.existsSync(oldFilePath)) {
+      fs.unlinkSync(oldFilePath);
+    }
+
+    await connection.query(
+      "DELETE FROM project_documents WHERE document_id = ?",
+      [id]
+    );
+
+    await connection.query(
+      "INSERT INTO project_documents (request_id, type_id, file_path, status) VALUES (?, ?, ?, 'pending')",
+      [request_id, type_id, file_path]
+    );
+
+    await connection.commit();
+    res.status(200).json({ message: "Document resubmitted successfully." });
+  } catch (error) {
+    await connection.rollback();
+    console.error("Error resubmitting document:", error.message);
+    res.status(500).json({ message: "Failed to resubmit document." });
+  } finally {
+    connection.release();
   }
 };
