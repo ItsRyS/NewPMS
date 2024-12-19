@@ -21,9 +21,12 @@ import {
   DialogContent,
   DialogTitle,
   DialogContentText,
+  Tooltip,
 } from "@mui/material";
 import RemoveRedEyeTwoToneIcon from "@mui/icons-material/RemoveRedEyeTwoTone";
-import CancelTwoToneIcon from "@mui/icons-material/CancelTwoTone";
+import DeleteForeverTwoToneIcon from "@mui/icons-material/DeleteForeverTwoTone";
+import RefreshTwoToneIcon from "@mui/icons-material/RefreshTwoTone";
+
 import api from "../../services/api";
 
 const UploadProjectDocument = () => {
@@ -211,7 +214,7 @@ const UploadProjectDocument = () => {
   return (
     <Box sx={{ p: 2, maxWidth: "1200px", mx: "auto" }}>
       <Typography variant="h4" gutterBottom textAlign="center">
-        Upload Project Document
+        ส่งเอกสารประกอบโครงงาน
       </Typography>
 
       <Grid container spacing={4}>
@@ -242,6 +245,12 @@ const UploadProjectDocument = () => {
                 <input type="file" hidden onChange={handleFileChange} />
               </Button>
             </Box>
+
+            {/* แสดงข้อความตามสถานะการเลือกไฟล์ */}
+            <Typography variant="body2" sx={{ mb: 2, color: "text.secondary" }}>
+              {file ? `ไฟล์ที่เลือก: ${file.name}` : "ยังไม่ได้เลือกเอกสาร"}
+            </Typography>
+
             <Button
               variant="contained"
               color="primary"
@@ -294,48 +303,82 @@ const UploadProjectDocument = () => {
                     </Typography>
                     {doc.status === "rejected" && (
                       <Typography variant="body2" color="error">
-                        Reason: {doc.reject_reason}
+                        หมายเหตุ: {doc.reject_reason}
                       </Typography>
                     )}
                   </Box>
 
                   {/* Actions */}
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <Button
-                      onClick={() => {
-                        if (doc.file_path) {
-                          handleViewDocument(doc.file_path);
-                        } else {
-                          console.error("File path is undefined");
-                        }
-                      }}
-                      sx={{ minWidth: "auto", p: 0 }}
-                      color="inherit"
-                    >
-                      <RemoveRedEyeTwoToneIcon />
-                    </Button>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      gap: 1, // Adjust spacing between icons
+                    }}
+                  >
+                    {/* View Icon */}
+                    <Tooltip title="ดูเอกสาร">
+                      <span>
+                        <Button
+                          onClick={() => {
+                            if (doc.file_path) {
+                              handleViewDocument(doc.file_path);
+                            } else {
+                              console.error("File path is undefined");
+                            }
+                          }}
+                          sx={{ minWidth: "auto", p: 0 }}
+                          color="inherit"
+                          disabled={!doc.file_path}
+                        >
+                          <RemoveRedEyeTwoToneIcon
+                            color={doc.file_path ? "primary" : "disabled"}
+                          />
+                        </Button>
+                      </span>
+                    </Tooltip>
 
-                    {doc.status === "pending" && (
-                      <Button
-                        color="error"
-                        sx={{ minWidth: "auto", p: 0 }}
-                        onClick={() => handleOpenCancelDialog(doc.document_id)}
-                      >
-                        <CancelTwoToneIcon />
-                      </Button>
-                    )}
+                    {/* Resubmit Icon */}
+                    <Tooltip title="ส่งอีกครั้ง">
+                      <span>
+                        <Button
+                          sx={{ minWidth: "auto", p: 0, fontWeight: "bold" }}
+                          onClick={() =>
+                            handleOpenResubmitDialog(
+                              doc.document_id,
+                              doc.type_id
+                            )
+                          }
+                          disabled={doc.status !== "rejected"}
+                        >
+                          <RefreshTwoToneIcon
+                            color={
+                              doc.status === "rejected" ? "warning" : "disabled"
+                            }
+                          />
+                        </Button>
+                      </span>
+                    </Tooltip>
 
-                    {doc.status === "rejected" && (
-                      <Button
-                        color="warning"
-                        sx={{ minWidth: "auto", p: 0, fontWeight: "bold" }}
-                        onClick={() =>
-                          handleOpenResubmitDialog(doc.document_id, doc.type_id)
-                        }
-                      >
-                        Resubmit
-                      </Button>
-                    )}
+                    {/* Cancel Icon */}
+                    <Tooltip title="ยกเลิกการส่ง">
+                      <span>
+                        <Button
+                          sx={{ minWidth: "auto", p: 0 }}
+                          onClick={() =>
+                            handleOpenCancelDialog(doc.document_id)
+                          }
+                          disabled={doc.status !== "pending"}
+                        >
+                          <DeleteForeverTwoToneIcon
+                            color={
+                              doc.status === "pending" ? "error" : "disabled"
+                            }
+                          />
+                        </Button>
+                      </span>
+                    </Tooltip>
                   </Box>
 
                   {/* Status Chip */}
@@ -350,7 +393,10 @@ const UploadProjectDocument = () => {
                         ? "error"
                         : "default"
                     }
-                    sx={{ mt: { xs: 1, md: 0 } }}
+                    sx={{
+                      width: "90px", // กำหนดความกว้างคงที่
+                      textAlign: "center",
+                    }}
                   />
                 </ListItem>
               ))}

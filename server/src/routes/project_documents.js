@@ -3,12 +3,22 @@ const router = express.Router();
 const multer = require("multer");
 const projectDocumentsController = require("../controllers/projectDocumentsController");
 
-// ตั้งค่า Multer สำหรับการอัปโหลดไฟล์
 const storage = multer.diskStorage({
   destination: "upload/project-documents",
-  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
+  filename: (req, file, cb) => {
+    const originalName = Buffer.from(file.originalname, "latin1").toString("utf8");
+    const uniqueSuffix = Date.now();
+    const sanitizedName = originalName
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, "_");
+    cb(null, `${uniqueSuffix}-${sanitizedName}`);
+  },
 });
+
 const upload = multer({ storage });
+
+
 
 // เส้นทางสำหรับการจัดการเอกสารโครงงาน
 router.post("/upload", upload.single("file"), projectDocumentsController.uploadDocument); // อัปโหลดเอกสาร
