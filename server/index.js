@@ -23,6 +23,7 @@ app.use(
     credentials: true,
   })
 );
+
 // การตั้งค่า session store
 const sessionStore = new MySQLStore({
   host: process.env.DB_HOST,
@@ -46,6 +47,16 @@ app.use(
     },
   })
 );
+
+// Middleware to log Tab ID
+app.use((req, res, next) => {
+  const tabId = req.headers["x-tab-id"];
+  if (tabId) {
+    console.log("Tab ID:", tabId);
+  }
+  next();
+});
+
 // Middleware
 app.use(express.json()); // Parse JSON requests
 app.use(bodyParser.json()); // Parse JSON bodies
@@ -53,6 +64,7 @@ app.use(bodyParser.json()); // Parse JSON bodies
 // Static Files
 app.use("/upload", express.static(path.join(__dirname, "upload")));
 app.use("/upload", express.static("upload")); // ให้บริการไฟล์ในโฟลเดอร์ upload
+
 // API Routes
 app.use("/api/projects", projectRoutes);
 app.use("/api/auth", authRoutes);
@@ -62,6 +74,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/project-requests", projectRequestsRoutes);
 app.use("/api/document-types", projectDocumentsRoutes);
 app.use("/api/project-documents", projectDocumentsRoutes);
+
 // Test Endpoint
 app.get("/api/test", (req, res) => {
   res.json({ message: "API is working!" });
@@ -72,26 +85,19 @@ app.get("/", (req, res) => {
   res.send("Hello from server");
 });
 
-// Handle 404 Not Found
-app.use((req, res) => {
-  res.status(404).json({ error: "Endpoint not found" });
-});
-
-// Global Error Handler
+// Handle 404 Not Found and Global Error Handler
 app.use((err, req, res, next) => {
-  console.error("Error stack:", err.stack); // Log error stack for debugging
-  res
-    .status(500)
-    .json({ error: "An unexpected error occurred", details: err.message });
-});
-
-// Middleware to log Tab ID
-app.use((req, res, next) => {
-  const tabId = req.headers["x-tab-id"];
-  if (tabId) {
-    console.log("Tab ID:", tabId);
+  if (res.headersSent) {
+    return next(err);
   }
-  next();
+  if (err) {
+    console.error("Error stack:", err.stack); // Log error stack for debugging
+    res
+      .status(500)
+      .json({ error: "An unexpected error occurred", details: err.message });
+  } else {
+    res.status(404).json({ error: "Endpoint not found" });
+  }
 });
 
 // Start Server
