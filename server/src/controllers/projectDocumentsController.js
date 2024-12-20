@@ -35,6 +35,28 @@ exports.getDocumentTypes = async (req, res) => {
   }
 };
 
+exports.getDocumentTypesWithStatus = async (req, res) => {
+  const { requestId } = req.query; // รับ requestId จาก query
+
+  try {
+    const [results] = await db.query(
+      `SELECT 
+         dt.type_id, 
+         dt.type_name, 
+         pd.status 
+       FROM document_types dt
+       LEFT JOIN project_documents pd 
+         ON dt.type_id = pd.type_id AND pd.request_id = ?
+       ORDER BY dt.type_id`,
+      [requestId]
+    );
+    res.status(200).json(results);
+  } catch (error) {
+    console.error("Error fetching document types with status:", error.message);
+    res.status(500).json({ message: "Failed to fetch document types with status." });
+  }
+};
+
 // ดึงข้อมูลเอกสารทั้งหมด
 exports.getAllDocuments = async (req, res) => {
   try {

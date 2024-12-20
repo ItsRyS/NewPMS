@@ -32,6 +32,8 @@ import DeleteForeverTwoToneIcon from "@mui/icons-material/DeleteForeverTwoTone";
 import RefreshTwoToneIcon from "@mui/icons-material/RefreshTwoTone";
 import ArrowDownwardTwoToneIcon from "@mui/icons-material/ArrowDownwardTwoTone";
 import ArrowUpwardTwoToneIcon from "@mui/icons-material/ArrowUpwardTwoTone";
+import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
+import AssignmentIcon from "@mui/icons-material/Assignment";
 import api from "../../services/api";
 
 const UploadProjectDocument = () => {
@@ -75,10 +77,14 @@ const UploadProjectDocument = () => {
       setApprovedProject(approvedRequest || null);
 
       if (approvedRequest) {
+        const typesResponse = await api.get(
+          `/project-documents/types-with-status?requestId=${approvedRequest.request_id}`
+        );
         const historyResponse = await api.get(
           `/project-documents/history?requestId=${approvedRequest.request_id}`
         );
         setDocumentHistory(historyResponse.data);
+        setDocumentTypes(typesResponse.data);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -225,19 +231,19 @@ const UploadProjectDocument = () => {
   );
 
   return (
-    <Box sx={{ p: 2, maxWidth: "1200px", mx: "auto" }}>
-      <Typography variant="h4" gutterBottom textAlign="center">
-        ส่งเอกสารประกอบโครงงาน
-      </Typography>
+    <Box sx={{ p: 2, maxWidth: "1250px", mx: "auto" }}>
 
-      <Grid container spacing={4}>
+      <Grid container spacing={4} alignItems={"stretch"} justifyContent={"center"}>
         {/* Upload Section */}
         <Grid item xs={12} md={6}>
           <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
+            {/* Header */}
             <Typography variant="h6" gutterBottom>
               Upload Document
             </Typography>
             <Divider sx={{ mb: 2 }} />
+
+            {/* Document Upload Form */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
               <FormControl fullWidth>
                 <InputLabel>Document Type</InputLabel>
@@ -259,27 +265,74 @@ const UploadProjectDocument = () => {
               </Button>
             </Box>
 
-            {/* แสดงข้อความตามสถานะการเลือกไฟล์ */}
-            <Typography variant="body2" sx={{ mb: 2, color: "text.secondary" }}>
+            {/* Selected File Information */}
+            <Typography
+              variant="body2"
+              sx={{ mb: 2, color: file ? "text.primary" : "text.secondary" }}
+            >
               {file ? `ไฟล์ที่เลือก: ${file.name}` : "ยังไม่ได้เลือกเอกสาร"}
             </Typography>
 
+            {/* Submit Button */}
             <Button
               variant="contained"
               color="primary"
               onClick={handleSubmit}
               disabled={loading}
               fullWidth
+              sx={{ mb: 3 }}
             >
               {loading ? <CircularProgress size={24} /> : "Upload Document"}
             </Button>
+
+            {/* Required Documents Section */}
+            <Box>
+              <Typography variant="h6" gutterBottom>
+                เอกสารทั้งหมดที่ต้องส่ง
+              </Typography>
+              {documentTypes.length === 0 ? (
+                <Typography variant="body2" color="text.secondary">
+                  No documents required.
+                </Typography>
+              ) : (
+                <Box component="ul" sx={{ pl: 2, mb: 0 }}>
+                  {documentTypes.map((type) => (
+                    <Box
+                      component="li"
+                      key={type.type_id}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        color:
+                          type.status === "approved"
+                            ? "success.main"
+                            : "text.secondary",
+                      }}
+                    >
+                      {/* Icon ตามสถานะ */}
+                      {type.status === "approved" ? (
+                        <AssignmentTurnedInIcon
+                          sx={{ color: "success.main" }}
+                        />
+                      ) : (
+                        <AssignmentIcon sx={{ color: "text.secondary" }} />
+                      )}
+
+                      {/* ชื่อเอกสาร */}
+                      <Typography variant="body2">{type.type_name}</Typography>
+                    </Box>
+                  ))}
+                </Box>
+              )}
+            </Box>
           </Paper>
         </Grid>
 
         {/* Submission History */}
 
         <Grid item xs={12} md={6}>
-          <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
+          <Paper elevation={3} sx={{ p: 3, borderRadius: 2,height: "100%", }}>
             <Box sx={{ display: "flex", justifyContent: "space-between" }}>
               <Typography
                 variant="h6"
@@ -305,7 +358,7 @@ const UploadProjectDocument = () => {
                 {sortOrder === "desc" ? "ใหม่ไปเก่า" : "เก่าไปใหม่"}
               </Button>
             </Box>
-            <TableContainer sx={{ maxHeight: 400, overflowY: "auto" }}>
+            <TableContainer sx={{ maxHeight: 500, overflowY: "auto" }}>
               <Table stickyHeader>
                 <TableHead>
                   <TableRow>

@@ -29,5 +29,6 @@ router.delete("/delete/:documentId", projectDocumentsController.deleteDocument);
 router.post("/approve/:id", projectDocumentsController.approveDocument); // อนุมัติเอกสาร
 router.post("/reject/:id", projectDocumentsController.rejectDocument); // ปฏิเสธเอกสาร
 router.post("/resubmit/:id", upload.single("file"), projectDocumentsController.resubmitDocument); // ส่งเอกสารใหม่
+router.get("/types-with-status", projectDocumentsController.getDocumentTypesWithStatus);
 
 module.exports = router;
