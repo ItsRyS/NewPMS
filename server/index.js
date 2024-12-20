@@ -52,7 +52,7 @@ app.use(bodyParser.json()); // Parse JSON bodies
 
 // Static Files
 app.use("/upload", express.static(path.join(__dirname, "upload")));
-app.use('/upload', express.static('upload')); // ให้บริการไฟล์ในโฟลเดอร์ upload
+app.use("/upload", express.static("upload")); // ให้บริการไฟล์ในโฟลเดอร์ upload
 // API Routes
 app.use("/api/projects", projectRoutes);
 app.use("/api/auth", authRoutes);
@@ -80,8 +80,12 @@ app.use((req, res) => {
 // Global Error Handler
 app.use((err, req, res, next) => {
   console.error("Error stack:", err.stack); // Log error stack for debugging
-  res.status(500).json({ error: "An unexpected error occurred", details: err.message });
+  res
+    .status(500)
+    .json({ error: "An unexpected error occurred", details: err.message });
 });
+
+// Middleware to log Tab ID
 app.use((req, res, next) => {
   const tabId = req.headers["x-tab-id"];
   if (tabId) {
