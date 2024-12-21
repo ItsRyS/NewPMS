@@ -26,7 +26,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  
 } from "@mui/material";
 import RemoveRedEyeTwoToneIcon from "@mui/icons-material/RemoveRedEyeTwoTone";
 import DeleteForeverTwoToneIcon from "@mui/icons-material/DeleteForeverTwoTone";
@@ -389,6 +388,11 @@ const UploadProjectDocument = () => {
                           วันที่ส่ง:{" "}
                           {new Date(doc.submitted_at).toLocaleString()}
                         </Typography>
+                        {doc.status === "rejected" && (
+                          <Typography variant="body2" color="error">
+                            หมายเหตุ: {doc.reject_reason}
+                          </Typography>
+                        )}
                       </TableCell>
                       <TableCell align="center">
                         <Box

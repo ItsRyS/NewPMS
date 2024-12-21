@@ -19,7 +19,8 @@ import {
   DialogContentText,
   TextField,
   Snackbar,
-  Alert
+  Alert,
+  useTheme,
 } from "@mui/material";
 import api from "../../services/api";
 
@@ -36,6 +37,9 @@ const ViewProjectDocuments = () => {
     message: "",
     severity: "info",
   });
+
+  const theme = useTheme(); // Use MUI theme for responsive breakpoints
+
   const fetchDocuments = async () => {
     try {
       setLoading(true);
@@ -52,6 +56,7 @@ const ViewProjectDocuments = () => {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     fetchDocuments();
   }, []);
@@ -78,8 +83,6 @@ const ViewProjectDocuments = () => {
         message: "Document approved successfully.",
         severity: "success",
       });
-  
-      // โหลดข้อมูลเอกสารใหม่
       fetchDocuments();
     } catch (error) {
       console.error("Error approving document:", error);
@@ -100,7 +103,7 @@ const ViewProjectDocuments = () => {
       });
       return;
     }
-  
+
     try {
       await api.post(`/project-documents/reject/${currentDocumentId}`, {
         reason: rejectReason,
@@ -110,8 +113,6 @@ const ViewProjectDocuments = () => {
         message: "Document rejected successfully.",
         severity: "success",
       });
-  
-      // ปิด Dialog และรีโหลดข้อมูล
       handleCloseRejectDialog();
       fetchDocuments();
     } catch (error) {
@@ -123,10 +124,12 @@ const ViewProjectDocuments = () => {
       });
     }
   };
+
   const handleOpenRejectDialog = (documentId) => {
     setCurrentDocumentId(documentId);
     setOpenRejectDialog(true);
   };
+
   const handleCloseRejectDialog = () => {
     setOpenRejectDialog(false);
     setRejectReason("");
@@ -149,50 +152,84 @@ const ViewProjectDocuments = () => {
   }
 
   return (
-    <Box sx={{ p: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Submitted Project Documents
-      </Typography>
-
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Document ID</TableCell>
-              <TableCell>Project Name</TableCell>
-              <TableCell>Document Type</TableCell>
-              <TableCell>Submitted By</TableCell>
-              <TableCell>Submitted At</TableCell>
-              <TableCell>Action</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {documents.map((doc) => (
-              <TableRow key={doc.document_id}>
-                <TableCell>{doc.document_id}</TableCell>
-                <TableCell>{doc.project_name}</TableCell>
-                <TableCell>{doc.type_name}</TableCell>
-                <TableCell>{doc.student_name}</TableCell>
-                <TableCell>
-                  {new Date(doc.submitted_at).toLocaleString()}
-                </TableCell>
-                <TableCell>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() =>
-                      handleViewDocument(doc.file_path, doc.type_name, doc.document_id)
-                    }
-                  >
-                    View Document
-                  </Button>
-                </TableCell>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "100vh",
+        bgcolor: "background.default", // ใช้สีพื้นหลังที่กำหนดจาก theme
+        p: 4,
+        [theme.breakpoints.down("sm")]: { p: 2 }, // Adjust padding for small screens
+      }}
+    >
+      <Box
+        sx={{
+          width: "100%",
+          maxWidth: "1200px",
+          bgcolor: "rgba(255, 255, 255, 0.9)", // Semi-transparent white background
+          boxShadow: "0px 8px 24px rgba(0, 0, 0, 0.2)", // Shadow for floating effect
+          borderRadius: "16px", // Rounded corners
+          p: 4,
+          [theme.breakpoints.down("sm")]: { p: 2 }, // Adjust padding for small screens
+        }}
+      >
+        <Typography
+          variant="h4"
+          gutterBottom
+          sx={{ fontSize: { xs: "1.5rem", md: "2rem" }, textAlign: "center" }}
+        >
+          Submitted Project Documents
+        </Typography>
+  
+        <TableContainer
+          component={Paper}
+          sx={{
+            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)", // Subtle shadow for floating table
+            borderRadius: "8px", // Rounded corners for the table
+            overflow: "hidden",
+          }}
+        >
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Document ID</TableCell>
+                <TableCell>Project Name</TableCell>
+                <TableCell>Document Type</TableCell>
+                <TableCell>Submitted By</TableCell>
+                <TableCell>Submitted At</TableCell>
+                <TableCell>Action</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
+            </TableHead>
+            <TableBody>
+              {documents.map((doc) => (
+                <TableRow key={doc.document_id}>
+                  <TableCell>{doc.document_id}</TableCell>
+                  <TableCell>{doc.project_name}</TableCell>
+                  <TableCell>{doc.type_name}</TableCell>
+                  <TableCell>{doc.student_name}</TableCell>
+                  <TableCell>
+                    {new Date(doc.submitted_at).toLocaleString()}
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() =>
+                        handleViewDocument(doc.file_path, doc.type_name, doc.document_id)
+                      }
+                    >
+                      View Document
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+  
       <Modal open={openModal} onClose={handleCloseModal}>
         <Box
           sx={{
@@ -202,11 +239,10 @@ const ViewProjectDocuments = () => {
             transform: "translate(-50%, -50%)",
             width: "90%",
             height: "90%",
-            backgroundColor: "white",
-            boxShadow: 24,
-            p: 1,
-            margin: 1,
-            
+            bgcolor: "background.paper",
+            boxShadow: "0px 16px 32px rgba(0, 0, 0, 0.3)", // Stronger shadow for modal
+            borderRadius: "16px", // Rounded corners
+            p: 2,
           }}
         >
           <Typography variant="h6" gutterBottom>
@@ -217,15 +253,11 @@ const ViewProjectDocuments = () => {
               src={selectedDocument.url}
               width="100%"
               height="80%"
-              style={{ border: "none" ,padding: 0, margin: 0}}
+              style={{ border: "none" }}
               title="Document Viewer"
             ></iframe>
           )}
-          <Box
-            textAlign="right"
-            mt={1}
-            sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}
-          >
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
             <Button
               variant="text"
               color="success"
@@ -246,17 +278,13 @@ const ViewProjectDocuments = () => {
             >
               Reject
             </Button>
-            <Button
-              variant="text"
-              color="primary"
-              onClick={handleCloseModal}
-            >
+            <Button variant="text" onClick={handleCloseModal}>
               Close
             </Button>
           </Box>
         </Box>
       </Modal>
-
+  
       <Dialog open={openRejectDialog} onClose={handleCloseRejectDialog}>
         <DialogTitle>Reject Document</DialogTitle>
         <DialogContent>
@@ -281,15 +309,16 @@ const ViewProjectDocuments = () => {
           </Button>
         </DialogActions>
       </Dialog>
+  
       <Snackbar
-              open={snackbar.open}
-              autoHideDuration={3000}
-              onClose={() => setSnackbar({ ...snackbar, open: false })}
-            >
-              <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
-            </Snackbar>
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+      >
+        <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
+      </Snackbar>
     </Box>
   );
-};
+};  
 
 export default ViewProjectDocuments;

@@ -144,7 +144,7 @@ exports.approveDocument = async (req, res) => {
 
   try {
     const [result] = await db.query(
-      "UPDATE project_documents SET status = 'approved' WHERE document_id = ?",
+      "UPDATE project_documents SET status = 'approved', reject_reason = NULL WHERE document_id = ?",
       [id]
     );
 
