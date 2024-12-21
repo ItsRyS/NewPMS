@@ -11,11 +11,9 @@ import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import MuiCard from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Link from "@mui/material/Link";
-import AppTheme from "../../utils/shared-theme/AppTheme";
-import ColorModeSelect from "../../utils/shared-theme/ColorModeSelect";
+import api from "../../services/api";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -25,41 +23,25 @@ const Card = styled(MuiCard)(({ theme }) => ({
   padding: theme.spacing(4),
   gap: theme.spacing(2),
   margin: "auto",
+  backgroundColor: "#ffffff", // พื้นหลังสีขาว
+  boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.1)",
   [theme.breakpoints.up("sm")]: {
     maxWidth: "450px",
   },
-  boxShadow:
-    "hsla(220, 30%, 5%, 0.05) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.05) 0px 15px 35px -5px",
-  ...theme.applyStyles("dark", {
-    boxShadow:
-      "hsla(220, 30%, 5%, 0.5) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px",
-  }),
 }));
 
 const SignInContainer = styled(Stack)(({ theme }) => ({
-  height: "calc((1 - var(--template-frame-height, 0)) * 100dvh)",
+  height: "100vh",
   minHeight: "100%",
   padding: theme.spacing(2),
+  backgroundColor: "#ffffff", // พื้นหลังสีขาว
   [theme.breakpoints.up("sm")]: {
     padding: theme.spacing(4),
   },
-  "&::before": {
-    content: '""',
-    display: "block",
-    position: "absolute",
-    zIndex: -1,
-    inset: 0,
-    backgroundImage:
-      "radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))",
-    backgroundRepeat: "no-repeat",
-    ...theme.applyStyles("dark", {
-      backgroundImage:
-        "radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%))",
-    }),
-  },
 }));
 
-export default function SignIn(props) {
+export default function SignIn() {
+  
   const [emailError, setEmailError] = React.useState(false);
   const [emailErrorMessage, setEmailErrorMessage] = React.useState("");
   const [passwordError, setPasswordError] = React.useState(false);
@@ -67,7 +49,6 @@ export default function SignIn(props) {
   const [serverError, setServerError] = React.useState("");
   const navigate = useNavigate();
 
-  // สร้าง tabId เมื่อเปิดแอป
   React.useEffect(() => {
     if (!sessionStorage.getItem("tabId")) {
       sessionStorage.setItem("tabId", `${Date.now()}-${Math.random()}`);
@@ -82,32 +63,25 @@ export default function SignIn(props) {
     const data = new FormData(event.currentTarget);
     const email = data.get("email");
     const password = data.get("password");
-    const tabId = sessionStorage.getItem("tabId"); // ดึง tabId จาก sessionStorage
+    const tabId = sessionStorage.getItem("tabId");
 
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/login",
+      const response = await api.post(
+        "/auth/login",
         { email, password, tabId },
         { withCredentials: true }
       );
       const { role } = response.data;
 
       if (role) {
-        if (role === "teacher") {
-          navigate("/adminHome");
-        } else if (role === "student") {
-          navigate("/studentHome");
-        } else {
-          setServerError("Unknown role, please contact support.");
-        }
+        navigate(role === "teacher" ? "/adminHome" : "/studentHome");
       } else {
-        setServerError("Login failed: Role not received.");
+        setServerError("Unknown role, please contact support.");
       }
     } catch (error) {
       console.error("Sign-in error:", error);
       setServerError(
-        error.response?.data?.error ||
-          "Sign-in failed. Please check your credentials."
+        error.response?.data?.error || "Sign-in failed. Please check your credentials."
       );
     }
   };
@@ -139,12 +113,9 @@ export default function SignIn(props) {
   };
 
   return (
-    <AppTheme {...props}>
-      <CssBaseline enableColorScheme />
+    <>
+      <CssBaseline />
       <SignInContainer direction="column" justifyContent="space-between">
-        <ColorModeSelect
-          sx={{ position: "fixed", top: "1rem", right: "1rem" }}
-        />
         <Card variant="outlined">
           <Box
             sx={{
@@ -159,37 +130,13 @@ export default function SignIn(props) {
             />
           </Box>
 
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              width: "100%",
-            }}
+          <Typography
+            component="h1"
+            variant="h4"
+            sx={{ fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
           >
-            <Typography
-              component="h1"
-              variant="h4"
-              sx={{ fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
-            >
-              Sign in
-            </Typography>
-            <Typography
-              onClick={() => navigate("/")}
-              sx={{
-                textDecoration: "none",
-                color: "#ffffff",
-                cursor: "pointer",
-                "&:hover": {
-                  textDecoration: "underline",
-                },
-                fontSize: "1rem",
-                fontWeight: "bold",
-              }}
-            >
-              Home
-            </Typography>
-          </Box>
+            Sign in
+          </Typography>
           <Box
             component="form"
             onSubmit={handleSubmit}
@@ -221,9 +168,7 @@ export default function SignIn(props) {
               />
             </FormControl>
             <FormControl>
-              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <FormLabel htmlFor="password">Password</FormLabel>
-              </Box>
+              <FormLabel htmlFor="password">Password</FormLabel>
               <TextField
                 error={passwordError}
                 helperText={passwordErrorMessage}
@@ -241,19 +186,18 @@ export default function SignIn(props) {
               control={<Checkbox value="remember" color="primary" />}
               label="Remember me"
             />
-
             <Button type="submit" fullWidth variant="contained">
               Sign in
             </Button>
             <Typography sx={{ textAlign: "center" }}>
               Don&apos;t have an account?{" "}
-              <Link href="SignUp" variant="body2" sx={{ alignSelf: "center" }}>
+              <Link href="SignUp" variant="body2">
                 Sign up
               </Link>
             </Typography>
           </Box>
         </Card>
       </SignInContainer>
-    </AppTheme>
+    </>
   );
 }
