@@ -1,69 +1,66 @@
 import { useEffect, useState } from "react";
-import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
 import {
+  DataGrid,
+  GridActionsCellItem,
+} from "@mui/x-data-grid";
+import {
+  Box,
   Button,
-  Container,
-  Typography,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  TextField,
-  Box,
+  FormControl,
+  InputLabel,
   MenuItem,
   Select,
-  InputLabel,
-  FormControl,
+  TextField,
+  Typography,
   useMediaQuery,
-  CircularProgress,
+  Paper,
 } from "@mui/material";
+import { useTheme } from "@mui/system";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import EditIcon from "@mui/icons-material/Edit";
-import { useTheme } from "@mui/system";
-import api from "../../services/api"; // axios instance
+import api from "../../services/api";
 
 const ManageUser = () => {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [open, setOpen] = useState(false);
-  const [editUser, setEditUser] = useState(null);
-  const [form, setForm] = useState({
-    username: "",
-    email: "",
-    password: "",
-    role: "",
-  });
+  const [openDialog, setOpenDialog] = useState(false);
+  const [form, setForm] = useState({ username: "", email: "", password: "", role: "" });
   const [errors, setErrors] = useState({});
   const [searchField, setSearchField] = useState("username");
   const [searchQuery, setSearchQuery] = useState("");
+  const [editUser, setEditUser] = useState(null);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
+  // Fetch Users
   useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await api.get("/users");
+        setUsers(response.data);
+        setFilteredUsers(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch users", error);
+      }
+    };
     fetchUsers();
   }, []);
 
-  const fetchUsers = async () => {
-    try {
-      const response = await api.get("/users");
-      setUsers(response.data);
-      setFilteredUsers(response.data);
-      setLoading(false);
-    } catch (error) {
-      console.error("Failed to fetch users", error);
-    }
-  };
-
+  // Filter Users
   useEffect(() => {
-    const filtered = users.filter((user) =>
-      user[searchField]
-        .toString()
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase())
+    setFilteredUsers(
+      users.filter((user) =>
+        user[searchField]?.toString().toLowerCase().includes(searchQuery.toLowerCase())
+      )
     );
-    setFilteredUsers(filtered);
   }, [users, searchField, searchQuery]);
 
   const validateForm = () => {
@@ -73,36 +70,29 @@ const ManageUser = () => {
     return newErrors;
   };
 
-  const handleOpen = (user = null) => {
+  const handleOpenDialog = (user = null) => {
     setEditUser(user);
-    setForm(
-      user
-        ? { ...user, password: "" }
-        : { username: "", email: "", password: "", role: "" }
-    );
+    setForm(user ? { ...user, password: "" } : { username: "", email: "", password: "", role: "" });
     setErrors({});
-    setOpen(true);
+    setOpenDialog(true);
   };
 
-  const handleClose = () => {
-    setOpen(false);
-  };
+  const handleCloseDialog = () => setOpenDialog(false);
 
   const handleSubmit = async () => {
-    const formErrors = validateForm();
-    if (Object.keys(formErrors).length > 0) {
-      setErrors(formErrors);
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length) {
+      setErrors(validationErrors);
       return;
     }
-
     try {
       if (editUser) {
         await api.put(`/users/${editUser.user_id}`, form);
       } else {
         await api.post("/users", form);
       }
-      fetchUsers();
-      handleClose();
+      setOpenDialog(false);
+      setUsers(await api.get("/users").then((res) => res.data));
     } catch (error) {
       console.error("Failed to save user", error);
     }
@@ -112,7 +102,7 @@ const ManageUser = () => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
     try {
       await api.delete(`/users/${id}`);
-      setUsers((prevUsers) => prevUsers.filter((user) => user.user_id !== id));
+      setUsers(users.filter((user) => user.user_id !== id));
     } catch (error) {
       console.error("Failed to delete user", error);
     }
@@ -127,17 +117,16 @@ const ManageUser = () => {
       field: "actions",
       type: "actions",
       headerName: "Actions",
-      flex: 1,
-      renderHeader: () => <Typography variant="body2">Actions</Typography>,
+      flex: 0.8,
       getActions: (params) => [
         <GridActionsCellItem
-          key={`edit-${params.id}`}
+          key="edit"
           icon={<EditIcon />}
           label="Edit"
-          onClick={() => handleOpen(params.row)}
+          onClick={() => handleOpenDialog(params.row)}
         />,
         <GridActionsCellItem
-          key={`delete-${params.id}`}
+          key="delete"
           icon={<DeleteForeverIcon />}
           label="Delete"
           onClick={() => deleteUser(params.id)}
@@ -147,123 +136,58 @@ const ManageUser = () => {
   ];
 
   return (
-    <Container
-      sx={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: { xs: 2, md: 4 },
-      }}
-    >
-      <Box
-        sx={{
-          backgroundColor: "#ffffff",
-          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-          borderRadius: "8px",
-          padding: { xs: "16px", md: "24px" },
-          width: "100%",
-          maxWidth: "900px",
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 3,
-          }}
-        >
-          <Typography
-            variant={isMobile ? "h6" : "h5"}
-            fontWeight="bold"
-            textAlign={isMobile ? "center" : "left"}
-          >
-            Manage Users
-          </Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => handleOpen()}
-            size={isMobile ? "small" : "medium"}
-          >
-            Add User
-          </Button>
-        </Box>
-
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: { xs: "column", md: "row" },
-            gap: 2,
-            mb: 2,
-          }}
-        >
-          <FormControl fullWidth variant="outlined" size="small">
-            <InputLabel>Search By</InputLabel>
-            <Select
-              value={searchField}
-              onChange={(e) => setSearchField(e.target.value)}
-              label="Search By"
-            >
-              <MenuItem value="username">Username</MenuItem>
-              <MenuItem value="email">Email</MenuItem>
-              <MenuItem value="role">Role</MenuItem>
-            </Select>
-          </FormControl>
-          <TextField
-            fullWidth
-            variant="outlined"
-            size="small"
-            label={`Search by ${searchField}`}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </Box>
-
-        <Box sx={{ height: 400, width: "100%" }}>
-          {loading ? (
-            <CircularProgress />
-          ) : (
-            <DataGrid
-              rows={filteredUsers}
-              columns={columns}
-              getRowId={(row) => row.user_id}
-              autoHeight
-              disableSelectionOnClick
-            />
-          )}
-        </Box>
+      <Paper elevation={3} sx={{ padding: 4, borderRadius: 3 }}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} >
+        <Typography variant={isMobile ? "h6" : "h5"}>Manage Users</Typography>
+        <Button variant="contained" onClick={() => handleOpenDialog()}>Add User</Button>
       </Box>
-
-      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
+      <Box display="flex" flexDirection={{ xs: "column", md: "row" }} gap={2} mb={2}>
+        <FormControl fullWidth>
+          <InputLabel>Search By</InputLabel>
+          <Select value={searchField} onChange={(e) => setSearchField(e.target.value)}>
+            <MenuItem value="username">Username</MenuItem>
+            <MenuItem value="email">Email</MenuItem>
+            <MenuItem value="role">Role</MenuItem>
+          </Select>
+        </FormControl>
+        <TextField
+          fullWidth
+          label={`Search by ${searchField}`}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </Box>
+      {loading ? (
+        <CircularProgress />
+      ) : (
+        <DataGrid rows={filteredUsers} columns={columns} autoHeight getRowId={(row) => row.user_id} />
+      )}
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
         <DialogTitle>{editUser ? "Edit User" : "Add User"}</DialogTitle>
         <DialogContent>
           <TextField
-            autoFocus
+            fullWidth
             margin="dense"
             label="Username"
-            fullWidth
             value={form.username}
             onChange={(e) => setForm({ ...form, username: e.target.value })}
             error={!!errors.username}
             helperText={errors.username}
           />
           <TextField
+            fullWidth
             margin="dense"
             label="Email"
-            fullWidth
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
             error={!!errors.email}
             helperText={errors.email}
           />
           <TextField
+            fullWidth
             margin="dense"
             label="Password"
             type="password"
-            fullWidth
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
           />
@@ -272,7 +196,6 @@ const ManageUser = () => {
             <Select
               value={form.role}
               onChange={(e) => setForm({ ...form, role: e.target.value })}
-              label="Role"
             >
               <MenuItem value="teacher">Teacher</MenuItem>
               <MenuItem value="student">Student</MenuItem>
@@ -280,13 +203,12 @@ const ManageUser = () => {
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleSubmit} variant="contained" color="primary">
-            Save
-          </Button>
+          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button variant="contained" onClick={handleSubmit}>Save</Button>
         </DialogActions>
       </Dialog>
-    </Container>
+      </Paper>
+   
   );
 };
 

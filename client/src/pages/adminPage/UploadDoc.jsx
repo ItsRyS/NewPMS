@@ -160,7 +160,7 @@ const UploadDoc = () => {
   };
 
   return (
-    <Box sx={{ padding: 3, backgroundColor: "#f9fafb", minHeight: "100vh" }}>
+    
       <Paper elevation={3} sx={{ padding: 4, borderRadius: 3 }}>
         <Grid container spacing={4}>
           {/* Upload Section */}
@@ -273,7 +273,7 @@ const UploadDoc = () => {
             )}
           </Grid>
         </Grid>
-      </Paper>
+      
 
       {/* PDF Viewer Dialog */}
       <Dialog
@@ -333,7 +333,8 @@ const UploadDoc = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </Box>
+      </Paper>
+    
   );
 };
 

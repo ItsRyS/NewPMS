@@ -11,8 +11,9 @@ import {
   Divider,
   Typography,
   Avatar,
+  Toolbar,
 } from "@mui/material";
-import { Home, School, Assignment,PresentToAll } from "@mui/icons-material";
+import { Home, School, Assignment, PresentToAll } from "@mui/icons-material";
 import { NavLink, useNavigate } from "react-router-dom";
 import LogoutIcon from "@mui/icons-material/Logout";
 import api from "../services/api";
@@ -54,16 +55,28 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
 
   const drawerContent = (
     <>
+    <Toolbar />
       <Box
         sx={{
-          padding: 2,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
+          padding: 2,
+          
         }}
       >
         <Avatar alt={username} src="https://i.pravatar.cc/300" />
-        <Typography variant="body1" sx={{ color: "#ffffff", marginTop: 1 }}>
+        <Typography
+          variant="body1"
+          sx={{
+            color: "#ffffff",
+            marginTop: 1,
+            display: { xs: "none", sm: "block" }, // ซ่อนชื่อผู้ใช้ในขนาด xs
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
           {username}
         </Typography>
         <Divider sx={{ borderColor: "#ff0000", width: "100%", mt: 2 }} />
@@ -142,7 +155,7 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
         ModalProps={{ keepMounted: true }}
         sx={{
           display: { xs: "block", sm: "none" },
-          "& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
+          "& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth,padding:1,overflowY:"auto" },
         }}
       >
         {drawerContent}

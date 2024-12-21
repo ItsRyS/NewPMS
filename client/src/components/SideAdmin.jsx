@@ -9,9 +9,9 @@ import {
   ListItemText,
   Typography,
   Divider,
-
   Avatar,
   Button,
+  Toolbar,
 } from "@mui/material";
 import { NavLink, useNavigate } from "react-router-dom";
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -59,16 +59,27 @@ const SideAdmin = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
 
   const drawerContent = (
     <>
+    <Toolbar />
       <Box
         sx={{
-          padding: 2,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
+          padding: 2,
         }}
       >
         <Avatar alt={username} src="https://i.pravatar.cc/300" />
-        <Typography variant="body1" sx={{ color: "#ffffff", marginTop: 1 }}>
+        <Typography
+          variant="body1"
+          sx={{
+            color: "#ffffff",
+            marginTop: 1,
+            display: { xs: "none", sm: "block" }, // ซ่อนชื่อผู้ใช้ในขนาด xs
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
           {username}
         </Typography>
         <Divider sx={{ borderColor: "#ff0000", width: "100%", mt: 2 }} />
@@ -133,7 +144,6 @@ const SideAdmin = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
             <ListItemText primary="ตรวจเอกสาร" />
           </ListItemButton>
         </NavLink>
-
       </List>
 
       <Divider sx={{ borderColor: "#374151", mt: 2 }} />
@@ -160,7 +170,7 @@ const SideAdmin = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
         ModalProps={{ keepMounted: true }}
         sx={{
           display: { xs: "block", sm: "none" },
-          "& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
+          "& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth ,padding:1,overflowY:"auto"},
         }}
       >
         {drawerContent}
@@ -174,6 +184,7 @@ const SideAdmin = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
             boxSizing: "border-box",
             backgroundColor: "#2d3a46",
             color: "#ffffff",
+            top: theme => theme.mixins.toolbar.minHeight, // เลื่อน Drawer ลงตาม AppBar
           },
         }}
         open

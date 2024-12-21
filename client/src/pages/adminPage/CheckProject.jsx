@@ -68,7 +68,7 @@ const CheckProject = () => {
   }
 
   return (
-    <Box sx={{ padding: 3 }}>
+    <Paper elevation={3} sx={{ padding: 4, borderRadius: 3 }}>
       {/* หัวข้อและตัวเลือกกรอง */}
       <Grid container spacing={2} alignItems="center">
         <Grid item xs={12} md={6}>
@@ -95,7 +95,7 @@ const CheckProject = () => {
       </Grid>
 
       {/* รายการคำร้อง */}
-      <Grid container spacing={2} sx={{ marginTop: 2 }}>
+      <Grid container spacing={2} sx={{ marginTop: 2 ,overflowX: "auto",}}>
         {filteredRequests.length > 0 ? (
           filteredRequests.map((request) => (
             <Grid item xs={12} md={6} key={request.request_id}>
@@ -165,7 +165,7 @@ const CheckProject = () => {
           </Grid>
         )}
       </Grid>
-    </Box>
+    </Paper>
   );
 };
 

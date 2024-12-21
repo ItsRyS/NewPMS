@@ -1,34 +1,42 @@
-// F:\NewPMS\client\src\Layout\LayoutStudent.jsx
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import { Suspense } from "react";
-import { Box, Toolbar } from "@mui/material";
 import SideStudent from "../components/SideStudent";
 import NavStudent from "../components/NavStudent";
+import { Box, Toolbar } from "@mui/material";
 
 const LayoutStudent = () => {
+  const [mobileOpen, setMobileOpen] = useState(false); // เพิ่ม State สำหรับ Drawer
   const [title, setTitle] = useState("Dashboard");
 
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen); // สลับสถานะ Drawer
+  };
+
   return (
-    <Box sx={{ display: "flex" }}>
-      <NavStudent handleDrawerToggle={() => {}} title={title} />
-      <SideStudent
-        mobileOpen={false}
-        handleDrawerToggle={() => {}}
-        setTitle={setTitle}
-      />
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          p: 3,
-          marginLeft: { sm: "240px" },
-        }}
-      >
-        <Toolbar />
-        <Suspense fallback={<div>Loading...</div>}>
-          <Outlet />
-        </Suspense>
+    <Box sx={{ display: "flex", flexDirection: "column", height: "100vh" }}>
+      <NavStudent handleDrawerToggle={handleDrawerToggle} title={title} />
+      <Box sx={{ display: "flex", flex: 1 }}>
+        <SideStudent
+          mobileOpen={mobileOpen}
+          handleDrawerToggle={handleDrawerToggle}
+          setTitle={setTitle}
+        />
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            display: "flex",
+            flexDirection: "column",
+            p: 2,
+            overflowY: "auto", // เพิ่ม scroll ถ้าเนื้อหายาวเกิน
+          }}
+        >
+          <Toolbar />
+          <Suspense fallback={<div>Loading...</div>}>
+            <Outlet />
+          </Suspense>
+        </Box>
       </Box>
     </Box>
   );

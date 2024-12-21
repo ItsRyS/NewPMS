@@ -20,7 +20,7 @@ import {
   TextField,
   Snackbar,
   Alert,
-  useTheme,
+
 } from "@mui/material";
 import api from "../../services/api";
 
@@ -37,8 +37,6 @@ const ViewProjectDocuments = () => {
     message: "",
     severity: "info",
   });
-
-  const theme = useTheme(); // Use MUI theme for responsive breakpoints
 
   const fetchDocuments = async () => {
     try {
@@ -152,29 +150,8 @@ const ViewProjectDocuments = () => {
   }
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "100vh",
-        bgcolor: "background.default", // ใช้สีพื้นหลังที่กำหนดจาก theme
-        p: 4,
-        [theme.breakpoints.down("sm")]: { p: 2 }, // Adjust padding for small screens
-      }}
-    >
-      <Box
-        sx={{
-          width: "100%",
-          maxWidth: "1200px",
-          bgcolor: "rgba(255, 255, 255, 0.9)", // Semi-transparent white background
-          boxShadow: "0px 8px 24px rgba(0, 0, 0, 0.2)", // Shadow for floating effect
-          borderRadius: "16px", // Rounded corners
-          p: 4,
-          [theme.breakpoints.down("sm")]: { p: 2 }, // Adjust padding for small screens
-        }}
-      >
+    
+    <Paper elevation={3} sx={{ padding: 4, borderRadius: 3 }}>
         <Typography
           variant="h4"
           gutterBottom
@@ -188,7 +165,8 @@ const ViewProjectDocuments = () => {
           sx={{
             boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)", // Subtle shadow for floating table
             borderRadius: "8px", // Rounded corners for the table
-            overflow: "hidden",
+            overflow: "auto",
+           
           }}
         >
           <Table>
@@ -228,7 +206,7 @@ const ViewProjectDocuments = () => {
             </TableBody>
           </Table>
         </TableContainer>
-      </Box>
+      
   
       <Modal open={openModal} onClose={handleCloseModal}>
         <Box
@@ -317,7 +295,7 @@ const ViewProjectDocuments = () => {
       >
         <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
       </Snackbar>
-    </Box>
+    </Paper>
   );
 };  
 
