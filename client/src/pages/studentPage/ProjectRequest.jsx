@@ -8,6 +8,7 @@ import {
   MenuItem,
   CircularProgress,
   Alert,
+  Paper,
 } from "@mui/material";
 import api from "../../services/api";
 
@@ -138,25 +139,18 @@ const ProjectRequest = () => {
   return (
     <Box
       sx={{
-        display: "flex",
-        flexDirection: { xs: "column", md: "row" },
-        gap: 4,
-        padding: 4,
-        backgroundColor: "#f5f5f5",
+        
         borderRadius: 2,
-        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+        width: "100%",
+        flexDirection: { xs: "column", md: "row" },
+        display: "flex",
+        gap: 2,
       }}
     >
       {/* Form Section */}
-      <Box
-        sx={{
-          flex: 1,
-          padding: 3,
-          backgroundColor: "#ffffff",
-          borderRadius: 2,
-          boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.1)",
-          width: { xs: "100%", md: "50%" },
-        }}
+      <Paper
+        elevation={3}
+        sx={{ padding: 4, borderRadius: 3, width: "100%", maxWidth: 800 }}
       >
         <Typography variant="h5" gutterBottom>
           Request a Project
@@ -181,7 +175,7 @@ const ProjectRequest = () => {
           disabled={!canSubmit}
         />
         {groupMembers.map((member, index) => (
-          <Grid container spacing={2} key={index} sx={{mb: 2}}>
+          <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
             <Grid item xs={10}>
               <TextField
                 select
@@ -248,18 +242,12 @@ const ProjectRequest = () => {
         >
           Submit Request
         </Button>
-      </Box>
+      </Paper>
 
       {/* Status Section */}
-      <Box
-        sx={{
-          flex: 1,
-          padding: 3,
-          backgroundColor: "#ffffff",
-          borderRadius: 2,
-          boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.1)",
-          width: { xs: "100%", md: "50%" },
-        }}
+      <Paper
+        elevation={3}
+        sx={{ padding: 4, borderRadius: 3, width: "100%", maxWidth: 800 }}
       >
         <Typography variant="h6" gutterBottom>
           Document Status
@@ -293,7 +281,7 @@ const ProjectRequest = () => {
             </Box>
           ))}
         </Box>
-      </Box>
+      </Paper>
     </Box>
   );
 };

@@ -15,28 +15,26 @@ const LayoutAdmin = () => {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100vh" }}>
-      {/* AppBar */}
       <NavAdmin handleDrawerToggle={handleDrawerToggle} title={title} />
       <Box sx={{ display: "flex", flex: 1 }}>
-        {/* Drawer */}
         <SideAdmin
           mobileOpen={mobileOpen}
           handleDrawerToggle={handleDrawerToggle}
           setTitle={setTitle}
         />
-        {/* Main Content */}
+
         <Box
           component="main"
           sx={{
             flexGrow: 1,
             display: "flex",
             flexDirection: "column",
-            marginLeft: { sm: "240px" }, // กำหนดระยะขอบสำหรับ Drawer
-    padding: 2, // เพิ่ม padding เพื่อให้มีพื้นที่
-            overflowY: "auto", // เพิ่ม scroll ถ้าเนื้อหายาวเกิน
+            marginLeft: { sm: "240px" },
+            padding: 2, 
+            overflowY: "auto", 
           }}
         >
-          <Toolbar /> {/* ช่วยดัน Content ลงตาม AppBar */}
+          <Toolbar /> 
           <Suspense fallback={<div>Loading...</div>}>
             <Outlet />
           </Suspense>

@@ -5,15 +5,11 @@ import {
   Toolbar,
   Typography,
   IconButton,
-  useMediaQuery,
-  useTheme,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 
 const NavStudent = ({ handleDrawerToggle, title }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-
+  
   return (
     <AppBar
       position="fixed"
@@ -21,10 +17,7 @@ const NavStudent = ({ handleDrawerToggle, title }) => {
         zIndex: (theme) => theme.zIndex.drawer + 1,
         backgroundColor: "#01153e",
         color: "#fff",
-        width: isMobile ? "100%" : "calc(100% - 240px)",
-        ml: isMobile ? 0 : "240px",
-        height: theme => theme.mixins.toolbar.minHeight, // กำหนดความสูง
-
+        width: "100%",
       }}
     >
       <Toolbar>

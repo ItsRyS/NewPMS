@@ -231,333 +231,260 @@ const UploadProjectDocument = () => {
   );
 
   return (
-    <Box sx={{ p: 2, maxWidth: "1250px", mx: "auto" }}>
-      <Grid
-        container
-        spacing={4}
-        alignItems={"stretch"}
-        justifyContent={"center"}
-      >
-        {/* Upload Section */}
-        <Grid item xs={12} md={6}>
-          <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
-            {/* Header */}
-            <Typography variant="h6" gutterBottom>
-              Upload Document
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-
-            {/* Document Upload Form */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
-              <FormControl fullWidth>
-                <InputLabel>Document Type</InputLabel>
-                <Select
-                  value={selectedType}
-                  onChange={(e) => setSelectedType(e.target.value)}
-                  label="Document Type"
-                >
-                  {documentTypes.map((type) => (
-                    <MenuItem key={type.type_id} value={type.type_id}>
-                      {type.type_name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <Button variant="contained" component="label">
-                Choose File
-                <input type="file" hidden onChange={handleFileChange} />
-              </Button>
-            </Box>
-
-            {/* Selected File Information */}
-            <Typography
-              variant="body2"
-              sx={{ mb: 2, color: file ? "text.primary" : "text.secondary" }}
-            >
-              {file ? `ไฟล์ที่เลือก: ${file.name}` : "ยังไม่ได้เลือกเอกสาร"}
-            </Typography>
-
-            {/* Submit Button */}
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleSubmit}
-              disabled={loading}
-              fullWidth
-              sx={{ mb: 3 }}
-            >
-              {loading ? <CircularProgress size={24} /> : "Upload Document"}
-            </Button>
-
-            {/* Required Documents Section */}
-            <Box>
+    //<Paper elevation={3} sx={{ padding: 4, borderRadius: 3, width: "100%", mx: "auto" }}>
+      <>
+      <Grid container spacing={4} alignItems={"stretch"} justifyContent={"center"}>
+          {/* Upload Section */}
+          <Grid item xs={12} md={6}>
+            <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
+              {/* Header */}
               <Typography variant="h6" gutterBottom>
-                เอกสารทั้งหมดที่ต้องส่ง
+                Upload Document
               </Typography>
-              {documentTypes.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">
-                  No documents required.
-                </Typography>
-              ) : (
-                <Box component="ul" sx={{ pl: 2, mb: 0 }}>
-                  {documentTypes.map((type) => (
-                    <Box
-                      component="li"
-                      key={type.type_id}
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1,
-                        color:
-                          type.status === "approved"
-                            ? "success.main"
-                            : "text.secondary",
-                      }}
-                    >
-                      {/* Icon ตามสถานะ */}
-                      {type.status === "approved" ? (
-                        <AssignmentTurnedInIcon
-                          sx={{ color: "success.main" }}
-                        />
-                      ) : (
-                        <AssignmentIcon sx={{ color: "text.secondary" }} />
-                      )}
+              <Divider sx={{ mb: 2 }} />
 
-                      {/* ชื่อเอกสาร */}
-                      <Typography variant="body2">{type.type_name}</Typography>
-                    </Box>
-                  ))}
-                </Box>
-              )}
-            </Box>
-          </Paper>
-        </Grid>
+              {/* Document Upload Form */}
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+                <FormControl fullWidth>
+                  <InputLabel>Document Type</InputLabel>
+                  <Select value={selectedType} onChange={(e) => setSelectedType(e.target.value)} label="Document Type">
+                    {documentTypes.map((type) => (
+                      <MenuItem key={type.type_id} value={type.type_id}>
+                        {type.type_name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <Button variant="contained" component="label">
+                  Choose File
+                  <input type="file" hidden onChange={handleFileChange} />
+                </Button>
+              </Box>
 
-        {/* Submission History */}
-
-        <Grid item xs={12} md={6}>
-          <Paper elevation={3} sx={{ p: 3, borderRadius: 2, height: "100%" }}>
-            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-              <Typography
-                variant="h6"
-                sx={{
-                  textAlign: "center",
-                  fontWeight: "bold",
-                }}
-              >
-                ประวัติการส่งเอกสาร
+              {/* Selected File Information */}
+              <Typography variant="body2" sx={{ mb: 2, color: file ? "text.primary" : "text.secondary" }}>
+                {file ? `ไฟล์ที่เลือก: ${file.name}` : "ยังไม่ได้เลือกเอกสาร"}
               </Typography>
-              <Button
-                onClick={() =>
-                  setSortOrder((prev) => (prev === "desc" ? "asc" : "desc"))
-                }
-                startIcon={
-                  sortOrder === "desc" ? (
-                    <ArrowDownwardTwoToneIcon />
-                  ) : (
-                    <ArrowUpwardTwoToneIcon />
-                  )
-                }
-              >
-                {sortOrder === "desc" ? "ใหม่ไปเก่า" : "เก่าไปใหม่"}
+
+              {/* Submit Button */}
+              <Button variant="contained" color="primary" onClick={handleSubmit} disabled={loading} fullWidth sx={{ mb: 3 }}>
+                {loading ? <CircularProgress size={24} /> : "Upload Document"}
               </Button>
-            </Box>
-            <TableContainer sx={{ maxHeight: 500, overflowY: "auto" }}>
-              <Table stickyHeader>
-                <TableHead>
-                  <TableRow>
-                    <TableCell align="center">
-                      <strong>รายการ</strong>
-                    </TableCell>
-                    <TableCell align="center">
-                      <strong>จัดการเอกสาร</strong>
-                    </TableCell>
-                    <TableCell align="center">
-                      <strong>ผลการส่ง</strong>
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {sortedDocumentHistory.map((doc) => (
-                    <TableRow key={doc.document_id}>
-                      <TableCell>
-                        <Typography variant="subtitle1" fontWeight="bold">
-                          {doc.type_name}
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary">
-                          วันที่ส่ง:{" "}
-                          {new Date(doc.submitted_at).toLocaleString()}
-                        </Typography>
-                        {doc.status === "rejected" && (
-                          <Typography variant="body2" color="error">
-                            หมายเหตุ: {doc.reject_reason}
-                          </Typography>
+
+              {/* Required Documents Section */}
+              <Box>
+                <Typography variant="h6" gutterBottom>
+                  เอกสารทั้งหมดที่ต้องส่ง
+                </Typography>
+                {documentTypes.length === 0 ? (
+                  <Typography variant="body2" color="text.secondary">
+                    No documents required.
+                  </Typography>
+                ) : (
+                  <Box component="ul" sx={{ pl: 2, mb: 0 }}>
+                    {documentTypes.map((type) => (
+                      <Box
+                        component="li"
+                        key={type.type_id}
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                          color: type.status === "approved" ? "success.main" : "text.secondary",
+                        }}
+                      >
+                        {/* Icon ตามสถานะ */}
+                        {type.status === "approved" ? (
+                          <AssignmentTurnedInIcon sx={{ color: "success.main" }} />
+                        ) : (
+                          <AssignmentIcon sx={{ color: "text.secondary" }} />
                         )}
+
+                        {/* ชื่อเอกสาร */}
+                        <Typography variant="body2">{type.type_name}</Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                )}
+              </Box>
+            </Paper>
+          </Grid>
+
+          {/* Submission History */}
+          <Grid item xs={12} md={6}>
+            <Paper elevation={3} sx={{ p: 3, borderRadius: 2, height: "100%" }}>
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <Typography variant="h6" sx={{ textAlign: "center", fontWeight: "bold" }}>
+                  ประวัติการส่งเอกสาร
+                </Typography>
+                <Button
+                  onClick={() => setSortOrder((prev) => (prev === "desc" ? "asc" : "desc"))}
+                  startIcon={sortOrder === "desc" ? <ArrowDownwardTwoToneIcon /> : <ArrowUpwardTwoToneIcon />}
+                >
+                  {sortOrder === "desc" ? "ใหม่ไปเก่า" : "เก่าไปใหม่"}
+                </Button>
+              </Box>
+              <TableContainer sx={{ maxHeight: 500, overflowY: "auto" }}>
+                <Table stickyHeader>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell align="center">
+                        <strong>รายการ</strong>
                       </TableCell>
                       <TableCell align="center">
-                        <Box
-                          sx={{
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            gap: 1, // ระยะห่างระหว่างไอคอน
-                          }}
-                        >
-                          {/* ดูเอกสาร */}
-                          <Tooltip title="ดูเอกสาร">
-                            <span>
-                              <Button
-                                onClick={() =>
-                                  handleViewDocument(doc.file_path)
-                                }
-                                color="inherit"
-                                disabled={!doc.file_path}
-                                sx={{ minWidth: "auto", p: 0 }}
-                              >
-                                <RemoveRedEyeTwoToneIcon />
-                              </Button>
-                            </span>
-                          </Tooltip>
-
-                          {/* ส่งอีกครั้ง */}
-                          <Tooltip title="ส่งอีกครั้ง">
-                            <span>
-                              <Button
-                                sx={{ minWidth: "auto", p: 0 }}
-                                onClick={() =>
-                                  handleOpenResubmitDialog(doc.document_id)
-                                }
-                                disabled={doc.status !== "rejected"}
-                              >
-                                <RefreshTwoToneIcon
-                                  color={
-                                    doc.status === "rejected"
-                                      ? "warning"
-                                      : "disabled"
-                                  }
-                                />
-                              </Button>
-                            </span>
-                          </Tooltip>
-
-                          {/* ยกเลิกการส่ง */}
-                          <Tooltip title="ยกเลิกการส่ง">
-                            <span>
-                              <Button
-                                sx={{ minWidth: "auto", p: 0 }}
-                                onClick={() =>
-                                  handleOpenCancelDialog(doc.document_id)
-                                }
-                                disabled={doc.status !== "pending"}
-                              >
-                                <DeleteForeverTwoToneIcon
-                                  color={
-                                    doc.status === "pending"
-                                      ? "error"
-                                      : "disabled"
-                                  }
-                                />
-                              </Button>
-                            </span>
-                          </Tooltip>
-                        </Box>
+                        <strong>จัดการเอกสาร</strong>
                       </TableCell>
-
                       <TableCell align="center">
-                        <Chip
-                          label={
-                            doc.status.charAt(0).toUpperCase() +
-                            doc.status.slice(1)
-                          }
-                          color={
-                            doc.status === "approved"
-                              ? "success"
-                              : doc.status === "rejected"
-                              ? "error"
-                              : "default"
-                          }
-                          sx={{
-                            width: "90px",
-                            textAlign: "center",
-                          }}
-                        />
+                        <strong>ผลการส่ง</strong>
                       </TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Paper>
+                  </TableHead>
+                  <TableBody>
+                    {sortedDocumentHistory.map((doc) => (
+                      <TableRow key={doc.document_id}>
+                        <TableCell>
+                          <Typography variant="subtitle1" fontWeight="bold">
+                            {doc.type_name}
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary">
+                            วันที่ส่ง: {new Date(doc.submitted_at).toLocaleString()}
+                          </Typography>
+                          {doc.status === "rejected" && (
+                            <Typography variant="body2" color="error">
+                              หมายเหตุ: {doc.reject_reason}
+                            </Typography>
+                          )}
+                        </TableCell>
+                        <TableCell align="center">
+                          <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 1 }}>
+                            {/* ดูเอกสาร */}
+                            <Tooltip title="ดูเอกสาร">
+                              <span>
+                                <Button
+                                  onClick={() => handleViewDocument(doc.file_path)}
+                                  color="inherit"
+                                  disabled={!doc.file_path}
+                                  sx={{ minWidth: "auto", p: 0 }}
+                                >
+                                  <RemoveRedEyeTwoToneIcon />
+                                </Button>
+                              </span>
+                            </Tooltip>
+
+                            {/* ส่งอีกครั้ง */}
+                            <Tooltip title="ส่งอีกครั้ง">
+                              <span>
+                                <Button
+                                  sx={{ minWidth: "auto", p: 0 }}
+                                  onClick={() => handleOpenResubmitDialog(doc.document_id)}
+                                  disabled={doc.status !== "rejected"}
+                                >
+                                  <RefreshTwoToneIcon color={doc.status === "rejected" ? "warning" : "disabled"} />
+                                </Button>
+                              </span>
+                            </Tooltip>
+
+                            {/* ยกเลิกการส่ง */}
+                            <Tooltip title="ยกเลิกการส่ง">
+                              <span>
+                                <Button
+                                  sx={{ minWidth: "auto", p: 0 }}
+                                  onClick={() => handleOpenCancelDialog(doc.document_id)}
+                                  disabled={doc.status !== "pending"}
+                                >
+                                  <DeleteForeverTwoToneIcon color={doc.status === "pending" ? "error" : "disabled"} />
+                                </Button>
+                              </span>
+                            </Tooltip>
+                          </Box>
+                        </TableCell>
+
+                        <TableCell align="center">
+                          <Chip
+                            label={doc.status.charAt(0).toUpperCase() + doc.status.slice(1)}
+                            color={
+                              doc.status === "approved"
+                                ? "success"
+                                : doc.status === "rejected"
+                                ? "error"
+                                : "default"
+                            }
+                            sx={{ width: "90px", textAlign: "center" }}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Paper>
+          </Grid>
         </Grid>
-      </Grid>
 
-      <Dialog open={openResubmitDialog} onClose={handleCloseResubmitDialog}>
-        <DialogTitle>Resubmit Document</DialogTitle>
-        <DialogContent>
-          <Button variant="contained" component="label">
-            Choose File
-            <input type="file" hidden onChange={handleFileChange} />
-          </Button>
-          {file && <Typography>{file.name}</Typography>}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseResubmitDialog} color="error">
-            Cancel
-          </Button>
-          <Button onClick={handleResubmit} color="primary">
-            Submit
-          </Button>
-        </DialogActions>
-      </Dialog>
-      {/* Cancel Dialog */}
-      <Dialog open={openCancelDialog} onClose={handleCloseCancelDialog}>
-        <DialogTitle>Confirm Cancel</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            คุณแน่ใจแล้วหรือว่าต้องการยกเลิกการส่งเอกสารนี้?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseCancelDialog} color="primary">
-            ไม่
-          </Button>
-          <Button onClick={handleCancelSubmission} color="error">
-            ใช่ ยกเลิกการส่ง
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog
-        open={openViewDialog}
-        onClose={handleCloseViewDialog}
-        maxWidth="lg"
-        maxHeight="lg"
-        fullWidth
-      >
-        <DialogContent>
-          {selectedFilePath ? (
-            <iframe
-              src={selectedFilePath}
-              width="100%"
-              height="1000px"
-              title="Document Viewer"
-              style={{ border: "none" }}
-            />
-          ) : (
-            <Typography variant="body2" color="textSecondary">
-              Document not available.
-            </Typography>
-          )}
-        </DialogContent>
-      </Dialog>
+        <Dialog open={openResubmitDialog} onClose={handleCloseResubmitDialog}>
+          <DialogTitle>Resubmit Document</DialogTitle>
+          <DialogContent>
+            <Button variant="contained" component="label">
+              Choose File
+              <input type="file" hidden onChange={handleFileChange} />
+            </Button>
+            {file && <Typography>{file.name}</Typography>}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseResubmitDialog} color="error">
+              Cancel
+            </Button>
+            <Button onClick={handleResubmit} color="primary">
+              Submit
+            </Button>
+          </DialogActions>
+        </Dialog>
+        {/* Cancel Dialog */}
+        <Dialog open={openCancelDialog} onClose={handleCloseCancelDialog}>
+          <DialogTitle>Confirm Cancel</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              คุณแน่ใจแล้วหรือว่าต้องการยกเลิกการส่งเอกสารนี้?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseCancelDialog} color="primary">
+              ไม่
+            </Button>
+            <Button onClick={handleCancelSubmission} color="error">
+              ใช่ ยกเลิกการส่ง
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <Dialog open={openViewDialog} onClose={handleCloseViewDialog} maxWidth="lg" maxHeight="lg" fullWidth>
+          <DialogContent>
+            {selectedFilePath ? (
+              <iframe
+                src={selectedFilePath}
+                width="100%"
+                height="1000px"
+                title="Document Viewer"
+                style={{ border: "none" }}
+              />
+            ) : (
+              <Typography variant="body2" color="textSecondary">
+                Document not available.
+              </Typography>
+            )}
+          </DialogContent>
+        </Dialog>
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-      >
-        <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
-      </Snackbar>
-    </Box>
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={3000}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+        >
+          <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
+        </Snackbar>
+      
+    
+      </>
+        
   );
 };
 

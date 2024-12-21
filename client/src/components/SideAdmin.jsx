@@ -184,7 +184,6 @@ const SideAdmin = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
             boxSizing: "border-box",
             backgroundColor: "#2d3a46",
             color: "#ffffff",
-            top: theme => theme.mixins.toolbar.minHeight, // เลื่อน Drawer ลงตาม AppBar
           },
         }}
         open

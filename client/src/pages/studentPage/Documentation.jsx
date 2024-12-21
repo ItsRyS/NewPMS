@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 import {
-  Box,
-  CssBaseline,
   Table,
   TableBody,
   TableCell,
@@ -53,17 +51,7 @@ const Documentation = () => {
   };
 
   return (
-    <Box sx={{ display: "flex" }}>
-      <CssBaseline />
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          bgcolor: "background.default",
-          p: 3,
-          minHeight: "100vh",
-        }}
-      >
+    <Paper elevation={3} sx={{ padding: 4, borderRadius: 3 }}>
         <Typography variant="h4" gutterBottom>
           Documentation
         </Typography>
@@ -101,7 +89,7 @@ const Documentation = () => {
             </TableBody>
           </Table>
         </TableContainer>
-      </Box>
+     
 
       {/* Dialog สำหรับแสดงเอกสาร */}
       <Dialog
@@ -145,7 +133,7 @@ const Documentation = () => {
           )}
         </DialogContent>
       </Dialog>
-    </Box>
+    </Paper>
   );
 };
 

@@ -169,6 +169,7 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
             boxSizing: "border-box",
             backgroundColor: "#2d3a46",
             color: "#ffffff",
+            
           },
         }}
         open

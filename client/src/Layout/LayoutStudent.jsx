@@ -28,8 +28,9 @@ const LayoutStudent = () => {
             flexGrow: 1,
             display: "flex",
             flexDirection: "column",
-            p: 2,
-            overflowY: "auto", // เพิ่ม scroll ถ้าเนื้อหายาวเกิน
+            marginLeft: { sm: "240px" },
+            padding: 2, 
+            overflowY: "auto", 
           }}
         >
           <Toolbar />
