@@ -26,6 +26,9 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  useMediaQuery,
+  useTheme,
+  IconButton,
 } from "@mui/material";
 import RemoveRedEyeTwoToneIcon from "@mui/icons-material/RemoveRedEyeTwoTone";
 import DeleteForeverTwoToneIcon from "@mui/icons-material/DeleteForeverTwoTone";
@@ -35,7 +38,7 @@ import ArrowUpwardTwoToneIcon from "@mui/icons-material/ArrowUpwardTwoTone";
 import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import api from "../../services/api";
-
+import CloseIcon from "@mui/icons-material/Close";
 const UploadProjectDocument = () => {
   const [documentTypes, setDocumentTypes] = useState([]);
   const [selectedType, setSelectedType] = useState("");
@@ -54,6 +57,9 @@ const UploadProjectDocument = () => {
     message: "",
     severity: "info",
   });
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down("sm")); // สำหรับหน้าจอขนาดเล็ก
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -520,19 +526,34 @@ const UploadProjectDocument = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
       <Dialog
         open={openViewDialog}
         onClose={handleCloseViewDialog}
+        fullScreen={fullScreen}
         maxWidth="lg"
-        maxHeight="lg"
         fullWidth
+        sx={{ "& .MuiDialog-paper": { width: "100%", height: "100%" } }} // แทน maxHeight เดิม
       >
-        <DialogContent>
+        <IconButton
+          onClick={handleCloseViewDialog}
+          sx={{ position: "absolute", top: 8, right: 8, zIndex: 1 }}
+        >
+          <CloseIcon />
+        </IconButton>
+        <DialogContent
+          sx={{
+            padding: 1,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
           {selectedFilePath ? (
             <iframe
               src={selectedFilePath}
               width="100%"
-              height="1000px"
+              height="100%"
               title="Document Viewer"
               style={{ border: "none" }}
             />

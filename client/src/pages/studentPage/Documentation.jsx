@@ -12,10 +12,10 @@ import {
   Dialog,
   DialogContent,
   IconButton,
-  CircularProgress,
+  CircularProgress,useMediaQuery, useTheme
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { useMediaQuery, useTheme } from "@mui/material";
+
 import api from "../../services/api"; // สำหรับการเชื่อมต่อ API
 
 const Documentation = () => {
@@ -25,7 +25,7 @@ const Documentation = () => {
   const [loading, setLoading] = useState(true);
 
   const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down("md")); // สำหรับหน้าจอขนาดเล็ก
+  const fullScreen = useMediaQuery(theme.breakpoints.down("sm")); // สำหรับหน้าจอขนาดเล็ก
 
   useEffect(() => {
     const fetchDocuments = async () => {
@@ -110,7 +110,7 @@ const Documentation = () => {
         </IconButton>
         <DialogContent
           sx={{
-            padding: 0,
+            padding: 1,
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
