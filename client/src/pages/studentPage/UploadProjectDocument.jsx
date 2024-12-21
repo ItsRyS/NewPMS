@@ -26,6 +26,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  
 } from "@mui/material";
 import RemoveRedEyeTwoToneIcon from "@mui/icons-material/RemoveRedEyeTwoTone";
 import DeleteForeverTwoToneIcon from "@mui/icons-material/DeleteForeverTwoTone";
@@ -232,8 +233,12 @@ const UploadProjectDocument = () => {
 
   return (
     <Box sx={{ p: 2, maxWidth: "1250px", mx: "auto" }}>
-
-      <Grid container spacing={4} alignItems={"stretch"} justifyContent={"center"}>
+      <Grid
+        container
+        spacing={4}
+        alignItems={"stretch"}
+        justifyContent={"center"}
+      >
         {/* Upload Section */}
         <Grid item xs={12} md={6}>
           <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
@@ -332,7 +337,7 @@ const UploadProjectDocument = () => {
         {/* Submission History */}
 
         <Grid item xs={12} md={6}>
-          <Paper elevation={3} sx={{ p: 3, borderRadius: 2,height: "100%", }}>
+          <Paper elevation={3} sx={{ p: 3, borderRadius: 2, height: "100%" }}>
             <Box sx={{ display: "flex", justifyContent: "space-between" }}>
               <Typography
                 variant="h6"
@@ -505,16 +510,15 @@ const UploadProjectDocument = () => {
         <DialogTitle>Confirm Cancel</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to cancel this document submission? This
-            action cannot be undone.
+            คุณแน่ใจแล้วหรือว่าต้องการยกเลิกการส่งเอกสารนี้?
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseCancelDialog} color="primary">
-            No
+            ไม่
           </Button>
           <Button onClick={handleCancelSubmission} color="error">
-            Yes, Cancel
+            ใช่ ยกเลิกการส่ง
           </Button>
         </DialogActions>
       </Dialog>
@@ -522,15 +526,15 @@ const UploadProjectDocument = () => {
         open={openViewDialog}
         onClose={handleCloseViewDialog}
         maxWidth="lg"
+        maxHeight="lg"
         fullWidth
       >
-        <DialogTitle>View Document</DialogTitle>
         <DialogContent>
           {selectedFilePath ? (
             <iframe
               src={selectedFilePath}
               width="100%"
-              height="500px"
+              height="1000px"
               title="Document Viewer"
               style={{ border: "none" }}
             />
@@ -540,11 +544,6 @@ const UploadProjectDocument = () => {
             </Typography>
           )}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseViewDialog} color="error">
-            Close
-          </Button>
-        </DialogActions>
       </Dialog>
 
       <Snackbar
