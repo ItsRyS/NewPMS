@@ -20,7 +20,7 @@ import {
   TextField,
   Snackbar,
   Alert,
-
+  Chip,
 } from "@mui/material";
 import api from "../../services/api";
 
@@ -38,11 +38,14 @@ const ViewProjectDocuments = () => {
     severity: "info",
   });
 
-  const fetchDocuments = async () => {
+  const fetchPendingDocuments = async () => {
     try {
       setLoading(true);
       const response = await api.get("/project-documents/all");
-      setDocuments(response.data);
+      const pendingDocs = response.data.filter(
+        (doc) => doc.status === "pending"
+      );
+      setDocuments(pendingDocs);
     } catch (error) {
       console.error("Error fetching documents:", error);
       setSnackbar({
@@ -56,7 +59,7 @@ const ViewProjectDocuments = () => {
   };
 
   useEffect(() => {
-    fetchDocuments();
+    fetchPendingDocuments();
   }, []);
 
   const handleViewDocument = (filePath, fileName, documentId) => {
@@ -81,7 +84,7 @@ const ViewProjectDocuments = () => {
         message: "Document approved successfully.",
         severity: "success",
       });
-      fetchDocuments();
+      fetchPendingDocuments();
     } catch (error) {
       console.error("Error approving document:", error);
       setSnackbar({
@@ -112,7 +115,7 @@ const ViewProjectDocuments = () => {
         severity: "success",
       });
       handleCloseRejectDialog();
-      fetchDocuments();
+      fetchPendingDocuments();
     } catch (error) {
       console.error("Error rejecting document:", error);
       setSnackbar({
@@ -148,66 +151,102 @@ const ViewProjectDocuments = () => {
       </Box>
     );
   }
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (documents.length === 0) {
+    return (
+      <Typography variant="h6" align="center" sx={{ mt: 4 }}>
+        ไม่มีเอกสารโครงงานที่ต้องการอนุมัติ
+      </Typography>
+    );
+  }
 
   return (
-    
     <Paper elevation={3} sx={{ padding: 4, borderRadius: 3 }}>
-        <Typography
-          variant="h4"
-          gutterBottom
-          sx={{ fontSize: { xs: "1.5rem", md: "2rem" }, textAlign: "center" }}
-        >
-          Submitted Project Documents
-        </Typography>
-  
-        <TableContainer
-          component={Paper}
-          sx={{
-            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)", // Subtle shadow for floating table
-            borderRadius: "8px", // Rounded corners for the table
-            overflow: "auto",
-           
-          }}
-        >
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Document ID</TableCell>
-                <TableCell>Project Name</TableCell>
-                <TableCell>Document Type</TableCell>
-                <TableCell>Submitted By</TableCell>
-                <TableCell>Submitted At</TableCell>
-                <TableCell>Action</TableCell>
+      <Typography
+        variant="h4"
+        gutterBottom
+        sx={{ fontSize: { xs: "1.5rem", md: "2rem" }, textAlign: "center" }}
+      >
+        Submitted Project Documents
+      </Typography>
+
+      <TableContainer
+        component={Paper}
+        sx={{
+          boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)", // Subtle shadow for floating table
+          borderRadius: "8px", // Rounded corners for the table
+          overflow: "auto",
+        }}
+      >
+        <Table>
+          <TableHead>
+            <TableRow>
+              {/* <TableCell>Document ID</TableCell> */}
+              <TableCell>ชื่อโครงงาน</TableCell>
+              <TableCell>แบบเอกสารที่ส่งมา</TableCell>
+              <TableCell>ส่งโดย</TableCell>
+              <TableCell>วันเวลาที่ส่ง</TableCell>
+              <TableCell>สถานะเอกสาร</TableCell>
+              <TableCell>ตรวจเอกสาร</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {documents.map((doc) => (
+              <TableRow key={doc.document_id}>
+                {/*<TableCell>{doc.document_id}</TableCell>/*/}
+                <TableCell>{doc.project_name}</TableCell>
+                <TableCell>{doc.type_name}</TableCell>
+                <TableCell>{doc.student_name}</TableCell>
+                <TableCell>
+                  {new Date(doc.submitted_at).toLocaleString()}
+                </TableCell>
+                <TableCell>
+                  <Chip
+                    label={doc.status}
+                    color={
+                      doc.status === "approved"
+                        ? "success"
+                        : doc.status === "rejected"
+                        ? "error"
+                        : "default"
+                    }
+                  />
+                </TableCell>
+                <TableCell>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() =>
+                      handleViewDocument(
+                        doc.file_path,
+                        doc.type_name,
+                        doc.document_id
+                      )
+                    }
+                  >
+                    ตรวจเอกสาร
+                  </Button>
+                </TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {documents.map((doc) => (
-                <TableRow key={doc.document_id}>
-                  <TableCell>{doc.document_id}</TableCell>
-                  <TableCell>{doc.project_name}</TableCell>
-                  <TableCell>{doc.type_name}</TableCell>
-                  <TableCell>{doc.student_name}</TableCell>
-                  <TableCell>
-                    {new Date(doc.submitted_at).toLocaleString()}
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() =>
-                        handleViewDocument(doc.file_path, doc.type_name, doc.document_id)
-                      }
-                    >
-                      View Document
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      
-  
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
       <Modal open={openModal} onClose={handleCloseModal}>
         <Box
           sx={{
@@ -216,11 +255,11 @@ const ViewProjectDocuments = () => {
             left: "50%",
             transform: "translate(-50%, -50%)",
             width: "90%",
-            height: "90%",
+            height: "calc(100vh - 32px)", // ใช้ 100% ของความสูง viewport ลบระยะห่างเล็กน้อย
             bgcolor: "background.paper",
-            boxShadow: "0px 16px 32px rgba(0, 0, 0, 0.3)", // Stronger shadow for modal
-            borderRadius: "16px", // Rounded corners
-            p: 2,
+            boxShadow: 24,
+            borderRadius: 2,
+            overflow: "hidden", // ป้องกันการเลื่อนเกินขอบ
           }}
         >
           <Typography variant="h6" gutterBottom>
@@ -230,12 +269,12 @@ const ViewProjectDocuments = () => {
             <iframe
               src={selectedDocument.url}
               width="100%"
-              height="80%"
+              height="85%" // ลดพื้นที่ iframe เพื่อเหลือให้ปุ่มด้านล่าง
               style={{ border: "none" }}
               title="Document Viewer"
             ></iframe>
           )}
-          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 1 }}>
             <Button
               variant="text"
               color="success"
@@ -244,7 +283,7 @@ const ViewProjectDocuments = () => {
                 handleCloseModal();
               }}
             >
-              Approve
+              อนุมัติ
             </Button>
             <Button
               variant="text"
@@ -254,21 +293,19 @@ const ViewProjectDocuments = () => {
                 handleCloseModal();
               }}
             >
-              Reject
+              ไม่อนุมัติ
             </Button>
             <Button variant="text" onClick={handleCloseModal}>
-              Close
+              ปิด
             </Button>
           </Box>
         </Box>
       </Modal>
-  
+
       <Dialog open={openRejectDialog} onClose={handleCloseRejectDialog}>
         <DialogTitle>Reject Document</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            Please provide a reason for rejecting this document.
-          </DialogContentText>
+          <DialogContentText>เหตูผลที่ไม่อนุมัติเอกสาร</DialogContentText>
           <TextField
             fullWidth
             multiline
@@ -280,14 +317,14 @@ const ViewProjectDocuments = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseRejectDialog} color="error">
-            Cancel
+            ปิด
           </Button>
           <Button onClick={handleReject} color="primary">
-            Submit
+            ส่ง
           </Button>
         </DialogActions>
       </Dialog>
-  
+
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
@@ -297,6 +334,6 @@ const ViewProjectDocuments = () => {
       </Snackbar>
     </Paper>
   );
-};  
+};
 
 export default ViewProjectDocuments;

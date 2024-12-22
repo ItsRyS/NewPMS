@@ -1,38 +1,36 @@
 import { useState, useEffect } from "react";
-import Container from "@mui/material/Container";
-import Box from "@mui/material/Box";
-import NavbarHome from "../../components/NavHome";
-import FooterHome from "../../components/FooterHome";
+import { Container, Box, TextField, MenuItem, Button, Modal, Typography, CircularProgress } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-import { TextField, MenuItem, Button, Modal } from "@mui/material";
 import { Worker, Viewer } from "@react-pdf-viewer/core";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/default-layout/lib/styles/index.css";
-import moment from "moment"; // Ensure moment is installed
-import api from "../../services/api"; // Axios instance
-import { Outlet } from "react-router-dom";
+import NavbarHome from "../../components/NavHome";
+import FooterHome from "../../components/FooterHome";
+import moment from "moment";
+import api from "../../services/api";
 
 const Home = () => {
   const [projects, setProjects] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchField, setSearchField] = useState("project_name_th");
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState("");
 
-  // Fetch projects from API
   useEffect(() => {
     const fetchProjects = async () => {
       try {
+        setLoading(true);
         const response = await api.get("/projects");
         const formattedProjects = response.data.map((project) => ({
           ...project,
-          project_create_time: moment(project.project_create_time).format(
-            "DD/MM/YYYY"
-          ),
+          project_create_time: moment(project.project_create_time).format("DD/MM/YYYY"),
         }));
         setProjects(formattedProjects);
       } catch (error) {
         console.error("Error fetching projects:", error.response?.data || error.message);
+      } finally {
+        setLoading(false);
       }
     };
     fetchProjects();
@@ -89,64 +87,38 @@ const Home = () => {
   ];
 
   const filteredProjects = projects.filter((project) =>
-    project[searchField]
-      ?.toString()
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
+    project[searchField]?.toString().toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <>
       <NavbarHome />
-      <Outlet />
-      <Container
-        maxWidth={false}
-        sx={{
-          paddingTop: "auto",
-          paddingBottom: "auto",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          minHeight: "95vh",
-          boxSizing: "border-box",
-        }}
-      >
-        <Box
-          sx={{
-            width: "100%",
-            backgroundColor: "#ffffff",
-            padding: "24px",
-            boxShadow: 10,
-            borderRadius: "12px",
-          }}
-        >
-          <Box sx={{ display: "flex", gap: "16px", marginBottom: "16px" }}>
-            <TextField
-              select
-              label="ค้นหาตาม"
-              value={searchField}
-              onChange={(e) => setSearchField(e.target.value)}
-              variant="outlined"
-              sx={{ width: 200 }}
-            >
-              <MenuItem value="project_name_th">ชื่อโครงการ (TH)</MenuItem>
-              <MenuItem value="project_name_eng">ชื่อโครงการ (EN)</MenuItem>
-              <MenuItem value="project_owner">เจ้าของโครงการ</MenuItem>
-              <MenuItem value="project_type">ประเภท</MenuItem>
-              <MenuItem value="project_status">สถานะ</MenuItem>
-            </TextField>
-
-            <TextField
-              type="text"
-              placeholder="ค้นหาข้อมูล"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              variant="outlined"
-              fullWidth
-            />
-          </Box>
-
-          <div style={{ height: 400, width: "100%" }}>
+      <Container sx={{ py: 4, minHeight: "90vh" ,marginTop: "70px"}}>
+        <Box sx={{ mb: 3, display: "flex", gap: 2 }}>
+          <TextField
+            select
+            label="ค้นหาตาม"
+            value={searchField}
+            onChange={(e) => setSearchField(e.target.value)}
+            sx={{ width: 200 }}
+          >
+            <MenuItem value="project_name_th">ชื่อโครงการ (TH)</MenuItem>
+            <MenuItem value="project_name_eng">ชื่อโครงการ (EN)</MenuItem>
+            <MenuItem value="project_owner">เจ้าของโครงการ</MenuItem>
+            <MenuItem value="project_type">ประเภท</MenuItem>
+            <MenuItem value="project_status">สถานะ</MenuItem>
+          </TextField>
+          <TextField
+            placeholder="ค้นหาข้อมูล"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            fullWidth
+          />
+        </Box>
+        <Box sx={{ height: 400 }}>
+          {loading ? (
+            <CircularProgress />
+          ) : (
             <DataGrid
               rows={filteredProjects}
               columns={columns}
@@ -155,10 +127,9 @@ const Home = () => {
               disableSelectionOnClick
               getRowId={(row) => row.project_id}
             />
-          </div>
+          )}
         </Box>
       </Container>
-
       <Modal open={open} onClose={handleClose}>
         <Box
           sx={{
@@ -174,11 +145,7 @@ const Home = () => {
           }}
         >
           <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
-            {selectedDocument ? (
-              <Viewer fileUrl={selectedDocument} />
-            ) : (
-              <p>No document selected</p>
-            )}
+            {selectedDocument ? <Viewer fileUrl={selectedDocument} /> : <Typography>ไม่มีเอกสาร</Typography>}
           </Worker>
         </Box>
       </Modal>

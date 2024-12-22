@@ -20,7 +20,9 @@ const ManageUser = lazy(() => import("../pages/adminPage/ManageUser"));
 const ReleaseProject = lazy(() => import("../pages/adminPage/ReleaseProject"));
 const UploadDoc = lazy(() => import("../pages/adminPage/UploadDoc"));
 const TeacherInfo = lazy(() => import("../pages/adminPage/TeacherInfo"));
-const ViewProjectDocuments = lazy(() => import("../pages/adminPage/ViewProjectDocuments"));
+const ViewProjectDocuments = lazy(() =>
+  import("../pages/adminPage/ViewProjectDocuments")
+);
 
 const Documentation = lazy(() => import("../pages/studentPage/Documentation"));
 const SendProject = lazy(() => import("../pages/studentPage/SendProject"));
@@ -137,7 +139,7 @@ const router = createBrowserRouter([
             <ViewProjectDocuments />
           </Suspense>
         ),
-      }
+      },
     ],
   },
   {

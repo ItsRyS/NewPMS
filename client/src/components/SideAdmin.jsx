@@ -12,6 +12,7 @@ import {
   Avatar,
   Button,
   Toolbar,
+  ListItem,
 } from "@mui/material";
 import { NavLink, useNavigate } from "react-router-dom";
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -59,7 +60,7 @@ const SideAdmin = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
 
   const drawerContent = (
     <>
-    <Toolbar />
+      <Toolbar />
       <Box
         sx={{
           display: "flex",
@@ -74,7 +75,7 @@ const SideAdmin = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
           sx={{
             color: "#ffffff",
             marginTop: 1,
-            display: { xs: "none", sm: "block" }, // ซ่อนชื่อผู้ใช้ในขนาด xs
+            display: { xs: "none", sm: "block" },
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
@@ -86,64 +87,85 @@ const SideAdmin = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
       </Box>
 
       <List>
-        <NavLink
-          to="/adminHome"
-          style={{ textDecoration: "none", color: "inherit" }}
-        >
-          <ListItemButton onClick={() => setTitle("หน้าหลัก")}>
-            <ListItemIcon>
-              <DashboardIcon sx={{ color: "#9CA3AF" }} />
-            </ListItemIcon>
-            <ListItemText primary="หน้าหลัก" />
-          </ListItemButton>
-        </NavLink>
+        <ListItem>
+          <ListItemText primary="หมวดจัดการ" sx={{ color: "#9CA3AF" }} />
+        </ListItem>
+        <List component="div" disablePadding>
+          {[
+            {
+              to: "/adminHome",
+              text: "หน้าหลัก",
+              icon: <DashboardIcon sx={{ color: "#9CA3AF" }} />,
+              title: "หน้าหลัก",
+            },
+            {
+              to: "/adminHome/manage-user",
+              text: "จัดการผู้ใช้",
+              icon: <PeopleIcon sx={{ color: "#9CA3AF" }} />,
+              title: "จัดการผู้ใช้",
+            },
+            {
+              to: "/adminHome/upload-doc",
+              text: "เพิ่มแบบฟอร์มเอกสาร",
+              icon: <CloudUploadIcon sx={{ color: "#9CA3AF" }} />,
+              title: "เพิ่มแบบฟอร์มเอกสาร",
+            },
+            {
+              to: "/adminHome/TeacherInfo",
+              text: "ข้อมูลอาจารย์",
+              icon: <PeopleIcon sx={{ color: "#9CA3AF" }} />,
+              title: "ข้อมูลอาจารย์",
+            },
+          ].map(({ to, text, icon, title }, index) => (
+            <NavLink
+              key={index}
+              to={to}
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
+              <ListItemButton onClick={() => setTitle(title)} sx={{ pl: 4 }}>
+                <ListItemIcon>{icon}</ListItemIcon>
+                <ListItemText primary={text} />
+              </ListItemButton>
+            </NavLink>
+          ))}
+        </List>
 
-        <NavLink
-          to="/adminHome/manage-user"
-          style={{ textDecoration: "none", color: "inherit" }}
-        >
-          <ListItemButton onClick={() => setTitle("จัดการผู้ใช้")}>
-            <ListItemIcon>
-              <PeopleIcon sx={{ color: "#9CA3AF" }} />
-            </ListItemIcon>
-            <ListItemText primary="จัดการผู้ใช้" />
-          </ListItemButton>
-        </NavLink>
-
-        <NavLink
-          to="/adminHome/CheckProject"
-          style={{ textDecoration: "none", color: "inherit" }}
-        >
-          <ListItemButton onClick={() => setTitle("อนุมัติโครงการ")}>
-            <ListItemIcon>
-              <CheckCircleIcon sx={{ color: "#9CA3AF" }} />
-            </ListItemIcon>
-            <ListItemText primary="อนุมัติโครงการ" />
-          </ListItemButton>
-        </NavLink>
-        <NavLink
-          to="/adminHome/upload-doc"
-          style={{ textDecoration: "none", color: "inherit" }}
-        >
-          <ListItemButton onClick={() => setTitle("แบบร่างเอกสาร")}>
-            <ListItemIcon>
-              <CloudUploadIcon sx={{ color: "#9CA3AF" }} />
-            </ListItemIcon>
-            <ListItemText primary="แบบร่างเอกสาร" />
-          </ListItemButton>
-        </NavLink>
-
-        <NavLink
-          to="/adminHome/ViewProjectDocuments"
-          style={{ textDecoration: "none", color: "inherit" }}
-        >
-          <ListItemButton onClick={() => setTitle("ตรวจเอกสาร")}>
-            <ListItemIcon>
-              <CloudUploadIcon sx={{ color: "#9CA3AF" }} />
-            </ListItemIcon>
-            <ListItemText primary="ตรวจเอกสาร" />
-          </ListItemButton>
-        </NavLink>
+        <ListItem>
+          <ListItemText primary="หมวดโครงงาน" sx={{ color: "#9CA3AF" }} />
+        </ListItem>
+        <List component="div" disablePadding>
+          {[
+            {
+              to: "/adminHome/CheckProject",
+              text: "อนุมัติโครงการ",
+              icon: <CheckCircleIcon sx={{ color: "#9CA3AF" }} />,
+              title: "อนุมัติโครงการ",
+            },
+            {
+              to: "/adminHome/ViewProjectDocuments",
+              text: "ตรวจเอกสาร",
+              icon: <CloudUploadIcon sx={{ color: "#9CA3AF" }} />,
+              title: "ตรวจเอกสาร",
+            },
+            {
+              to: "/adminHome/release-project",
+              text: "ปล่อยโครงการ",
+              icon: <CloudUploadIcon sx={{ color: "#9CA3AF" }} />,
+              title: "ปล่อยโครงการ",
+            },
+          ].map(({ to, text, icon, title }, index) => (
+            <NavLink
+              key={index}
+              to={to}
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
+              <ListItemButton onClick={() => setTitle(title)} sx={{ pl: 4 }}>
+                <ListItemIcon>{icon}</ListItemIcon>
+                <ListItemText primary={text} />
+              </ListItemButton>
+            </NavLink>
+          ))}
+        </List>
       </List>
 
       <Divider sx={{ borderColor: "#374151", mt: 2 }} />
@@ -170,7 +192,12 @@ const SideAdmin = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
         ModalProps={{ keepMounted: true }}
         sx={{
           display: { xs: "block", sm: "none" },
-          "& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth ,padding:1,overflowY:"auto"},
+          "& .MuiDrawer-paper": {
+            boxSizing: "border-box",
+            width: drawerWidth,
+            padding: 1,
+            overflowY: "auto",
+          },
         }}
       >
         {drawerContent}
