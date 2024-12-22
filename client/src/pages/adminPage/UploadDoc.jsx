@@ -40,7 +40,7 @@ const UploadDoc = () => {
     const fetchDocuments = async () => {
       try {
         const response = await api.get("/document");
-        setDocuments(response.data);
+        setDocuments(response.data); // รับข้อมูลใหม่ที่มี username
       } catch (error) {
         console.error("Error fetching documents:", error);
         setSnackbar({
@@ -55,7 +55,7 @@ const UploadDoc = () => {
       try {
         const response = await api.get("/auth/check-session");
         if (response.data.isAuthenticated) {
-          setUsername(response.data.user.username);
+          setUsername(response.data.user.user_id); // ตั้ง username
         }
       } catch (error) {
         console.error("Failed to fetch session info:", error);
@@ -91,13 +91,13 @@ const UploadDoc = () => {
       });
       return;
     }
-
+  
     const formData = new FormData();
     formData.append("file", file);
     formData.append("doc_title", docTitle);
     formData.append("doc_description", docDescription);
-    formData.append("uploaded_by", username);
-
+    formData.append("uploaded_by", username); // ส่ง user_id แทน username
+  
     try {
       const response = await api.post("/document/upload", formData);
       setSnackbar({
@@ -105,10 +105,10 @@ const UploadDoc = () => {
         message: response.data.message,
         severity: "success",
       });
-
+  
       const updatedDocuments = await api.get("/document");
       setDocuments(updatedDocuments.data);
-
+  
       setFile(null);
       setFileName("");
       setDocTitle("");
@@ -122,6 +122,7 @@ const UploadDoc = () => {
       });
     }
   };
+  
 
   const handleViewDocument = (docPath) => {
     if (!docPath) {
