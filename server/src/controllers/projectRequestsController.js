@@ -8,6 +8,28 @@ exports.createRequest = async (req, res) => {
   try {
     await connection.beginTransaction();
 
+    // ตรวจสอบว่ามีสมาชิกกลุ่มคนใดอยู่ในโครงการที่ pending หรือ approved หรือไม่
+    const [existingProjects] = await connection.query(
+      `
+      SELECT sp.student_id
+      FROM students_projects sp
+      JOIN project_requests pr ON sp.request_id = pr.request_id
+      WHERE sp.student_id IN (?) AND pr.status IN ('pending', 'approved')
+      `,
+      [groupMembers]
+    );
+
+    if (existingProjects.length > 0) {
+      const conflictingMembers = existingProjects.map((row) => row.student_id);
+      return res.status(400).json({
+        success: false,
+        message: `Members with IDs ${conflictingMembers.join(
+          ", "
+        )} are already part of a pending or approved project.`,
+      });
+    }
+
+    // สร้างคำร้องใหม่
     const [result] = await connection.query(
       `INSERT INTO project_requests (project_name, advisor_id, student_id, status, created_at, updated_at)
        VALUES (?, ?, ?, 'pending', NOW(), NOW())`,
@@ -34,6 +56,7 @@ exports.createRequest = async (req, res) => {
   }
 };
 
+
 // ดึงสถานะคำร้องโครงงานของนักเรียน
 exports.getStudentRequests = async (req, res) => {
   const { studentId } = req.query;
@@ -44,7 +67,13 @@ exports.getStudentRequests = async (req, res) => {
 
   try {
     const [results] = await db.query(
-      `SELECT request_id, project_name, status FROM project_requests WHERE student_id = ? ORDER BY created_at DESC`,
+      `
+      SELECT pr.request_id, pr.project_name, pr.status
+      FROM project_requests pr
+      LEFT JOIN students_projects sp ON pr.request_id = sp.request_id
+      WHERE sp.student_id = ?
+      ORDER BY pr.created_at DESC
+      `,
       [studentId]
     );
     res.status(200).json({ success: true, data: results });

@@ -53,12 +53,13 @@ const ProjectRequest = () => {
         );
         setProjectStatus(statuses);
 
-        const latestRequest = statuses[0];
-        setLatestStatus(latestRequest?.status || "");
+        const hasApproved = statuses.some((status) => status.status === "approved");
+      setLatestStatus(hasApproved ? "approved" : statuses[0]?.status || "");
+
         setCanSubmit(
           !(
-            latestRequest?.status === "pending" ||
-            latestRequest?.status === "approved"
+            statuses.some((status) => status.status === "pending") ||
+            hasApproved
           )
         );
       } catch (error) {
@@ -75,36 +76,36 @@ const ProjectRequest = () => {
     try {
       const sessionResponse = await api.get("/auth/check-session");
       const { user_id } = sessionResponse.data.user;
-
+  
       // ส่งคำขอใหม่ไปยังเซิร์ฟเวอร์
-      await api.post("/project-requests/create", {
+      const response = await api.post("/project-requests/create", {
         projectName,
         groupMembers,
         advisorId: selectedAdvisor,
         studentId: user_id,
       });
+      console.log("Response from server:", response.data);
 
       // ดึงสถานะล่าสุดหลังจากส่งคำขอสำเร็จ
       const updatedStatus = await api.get("/project-requests/status", {
         params: { studentId: user_id },
       });
-
-      // เรียงลำดับคำขอตามวันที่ล่าสุด
+  
       const statuses = updatedStatus.data.data.sort(
         (a, b) => new Date(b.created_at) - new Date(a.created_at)
       );
-
-      // อัพเดตสถานะใน UI
+  
       setProjectStatus(statuses);
-      setLatestStatus(statuses[0]?.status || ""); // อัพเดตสถานะล่าสุด
-      setCanSubmit(false); // ปิดการส่งคำขอใหม่จนกว่าสถานะจะเปลี่ยน
+      setLatestStatus(statuses[0]?.status || "");
+      setCanSubmit(false);
     } catch (error) {
-      console.error(
-        "Error submitting request:",
-        error.response?.data || error.message
-      );
+      console.error("Error submitting request:", error.response?.data || error.message);
+      if (error.response?.data?.message) {
+        alert(error.response.data.message); // แจ้งเตือนเมื่อมีสมาชิกอยู่ในโครงการที่ pending/approved
+      }
     }
   }, [projectName, groupMembers, selectedAdvisor]);
+  
 
   // Add group member
   const handleAddMember = useCallback(() => {
@@ -158,7 +159,7 @@ const ProjectRequest = () => {
         {!canSubmit &&
           (latestStatus === "approved" ? (
             <Alert severity="success" sx={{ marginBottom: 2 }}>
-              Congratulations! Your latest project request has been approved.
+              ยินดีด้วย! โครงการของคุณได้รับการอนุมัติแล้ว กรุณาไปยังหน้าส่งเอกสารเพื่อส่งโครงการของคุณ
             </Alert>
           ) : (
             <Alert severity="info" sx={{ marginBottom: 2 }}>
