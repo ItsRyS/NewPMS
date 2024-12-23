@@ -82,7 +82,7 @@ app.get("/", (req, res) => {
 app.use((req, res, next) => {
   const tabId = req.headers["x-tab-id"];
   if (tabId) {
-    console.log("Tab ID:", tabId);
+    //console.log("Tab ID:", tabId);
   }
   next();
 });
