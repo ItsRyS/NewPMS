@@ -95,3 +95,13 @@ exports.checkSession = (req, res) => {
     res.status(401).json({ isAuthenticated: false });
   }
 };
+exports.refreshSession = (req, res) => {
+  const tabId = req.headers["x-tab-id"];
+
+  if (req.session && req.session.tabs && req.session.tabs[tabId]) {
+      req.session.touch(); // ต่ออายุ Session
+      res.status(200).json({ success: true, message: "Session refreshed" });
+  } else {
+      res.status(401).json({ success: false, message: "Session expired" });
+  }
+};
