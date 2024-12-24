@@ -1,35 +1,34 @@
 import { Box, Typography, IconButton } from "@mui/material";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import EmailIcon from "@mui/icons-material/Email";
+
 const FooterHome = () => {
   return (
     <Box
       component="footer"
       sx={{
         display: "flex",
+        flexDirection: { xs: "column", sm: "row" }, // Stack on small screens
         alignItems: "center",
         justifyContent: "space-between", // Space between text and icons
         padding: "16px",
         backgroundColor: "#110f01",
+        color: "#f0f4f8",
         width: "100%",
-        maxWidth: "100vw",
-        position: "fixed", // Fix the position at the bottom
-        bottom: 0, // Position it at the bottom
-        left: 0,
         boxSizing: "border-box",
-        zIndex: 98,
+        mt: "auto", // Push footer to the bottom
       }}
     >
-      <Box>
-        <Typography variant="body2" color="#f0f4f8">
-          สงวนลิขสิทธิ์ © 2567 - ข้อมูลและเนื้อหาทั้งหมด - บริษัท ไลลาร์
-          เพอฟอร์ม จำกัด
-        </Typography>
-      </Box>
+      {/* Footer Text */}
+      <Typography variant="body2" align="center" sx={{ mb: { xs: 1, sm: 0 } }}>
+        สงวนลิขสิทธิ์ © 2567 - ข้อมูลและเนื้อหาทั้งหมด - บริษัท ไลลาร์ เพอฟอร์ม จำกัด
+      </Typography>
+
+      {/* Footer Icons */}
       <Box sx={{ display: "flex", gap: "8px" }}>
         <IconButton
-          href="https://github.com"
-          target="https://github.com/ItsRyS"
+          href="https://github.com/ItsRyS"
+          target="_blank"
           sx={{ color: "#f0f4f8" }}
         >
           <GitHubIcon />

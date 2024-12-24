@@ -1,16 +1,29 @@
-// F:\NewPMS\client\src\Layout\LayoutMain.jsx
 import { Outlet } from "react-router-dom";
 import { Suspense } from "react";
+import { Box } from "@mui/material";
 
 const LayoutMain = () => {
   return (
-    <div style={{ display: "flex" }}>
-      <div style={{ flex: 1 }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh", // Full height of the viewport
+      }}
+    >
+      {/* Navbar 
+      <NavbarHome />*/}
+
+      {/* Main Content */}
+      <Box sx={{ flex: 1, }}>
         <Suspense fallback={<div>Loading...</div>}>
           <Outlet />
         </Suspense>
-      </div>
-    </div>
+      </Box>
+
+      {/* Footer 
+      <FooterHome />*/}
+    </Box>
   );
 };
 

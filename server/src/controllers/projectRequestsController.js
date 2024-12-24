@@ -129,31 +129,31 @@ exports.getAllRequests = async (req, res) => {
   }
 };
 
-// อัปเดตสถานะคำร้อง
-exports.updateRequestStatus = async (req, res) => {
-  const { requestId, status } = req.body;
+// อัปเดตสถานะคำร้อง [ย้ายไป PUT /projects/update-status]
+// exports.updateRequestStatus = async (req, res) => {
+//   const { requestId, status } = req.body;
 
-  if (!requestId || !status) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Request ID and status are required." });
-  }
+//   if (!requestId || !status) {
+//     return res
+//       .status(400)
+//       .json({ success: false, message: "Request ID and status are required." });
+//   }
 
-  try {
-    const [result] = await db.query(
-      `UPDATE project_requests SET status = ?, updated_at = NOW() WHERE request_id = ?`,
-      [status, requestId]
-    );
+//   try {
+//     const [result] = await db.query(
+//       `UPDATE project_requests SET status = ?, updated_at = NOW() WHERE request_id = ?`,
+//       [status, requestId]
+//     );
 
-    if (result.affectedRows === 0) {
-      return res
-        .status(404)
-        .json({ success: false, error: "Request not found." });
-    }
+//     if (result.affectedRows === 0) {
+//       return res
+//         .status(404)
+//         .json({ success: false, error: "Request not found." });
+//     }
 
-    res.status(200).json({ success: true });
-  } catch (error) {
-    console.error("Error updating request status:", error.message);
-    res.status(500).json({ success: false, error: "Failed to update status." });
-  }
-};
+//     res.status(200).json({ success: true });
+//   } catch (error) {
+//     console.error("Error updating request status:", error.message);
+//     res.status(500).json({ success: false, error: "Failed to update status." });
+//   }
+//};

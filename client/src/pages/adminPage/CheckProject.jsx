@@ -37,7 +37,10 @@ const CheckProject = () => {
 
   const handleStatusUpdate = async (requestId, status) => {
     try {
-      await api.post("/project-requests/update-status", { requestId, status });
+      // เรียก Endpoint อัปเดตสถานะ
+      await api.put("/projects/update-status", { requestId, status });
+
+      // อัปเดตสถานะใน UI
       setRequests((prev) =>
         prev.map((request) =>
           request.request_id === requestId ? { ...request, status } : request
@@ -95,7 +98,7 @@ const CheckProject = () => {
       </Grid>
 
       {/* รายการคำร้อง */}
-      <Grid container spacing={2} sx={{ marginTop: 2 ,overflowX: "auto",}}>
+      <Grid container spacing={2} sx={{ marginTop: 2, overflowX: "auto" }}>
         {filteredRequests.length > 0 ? (
           filteredRequests.map((request) => (
             <Grid item xs={12} md={6} key={request.request_id}>
@@ -136,7 +139,7 @@ const CheckProject = () => {
                 <Box sx={{ marginTop: 2 }}>
                   <Button
                     variant="contained"
-                    color="white"
+                    color="success"
                     onClick={() =>
                       handleStatusUpdate(request.request_id, "approved")
                     }
@@ -147,7 +150,7 @@ const CheckProject = () => {
                   </Button>
                   <Button
                     variant="contained"
-                    color="white"
+                    color="error"
                     onClick={() =>
                       handleStatusUpdate(request.request_id, "rejected")
                     }

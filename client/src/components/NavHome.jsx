@@ -27,14 +27,15 @@ const menuItems = [
 const NavbarHome = () => {
   return (
     <AppBar
-      position="fixed"
-      sx={{
-        backgroundColor: "#01153e",
-        width: "100%",
-        zIndex: 99,
-        paddingX: 2,
-      }}
-    >
+  position="sticky" // ทำให้ Navbar ติดกับด้านบนเสมอ
+  sx={{
+    backgroundColor: "#01153e",
+    width: "100%",
+    zIndex: 99,
+    paddingX: 2,
+  }}
+>
+
       <Toolbar sx={{ justifyContent: "space-between" }}>
         {/* Logo */}
         <Box sx={{ display: "flex", alignItems: "center" }}>

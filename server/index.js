@@ -86,7 +86,10 @@ app.use((req, res, next) => {
   }
   next();
 });
-
+// Health Check Endpoint
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "OK", uptime: process.uptime() });
+});
 // Handle 404 Not Found
 app.use((req, res) => {
   res.status(404).json({ error: "Endpoint not found" });
