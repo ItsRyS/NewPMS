@@ -13,7 +13,9 @@ import {
 import api from "../../services/api";
 
 const ProjectRequest = () => {
-  const [projectName, setProjectName] = useState("");
+  const [projectNameTh, setProjectNameTh] = useState("");
+  const [projectNameEng, setProjectNameEng] = useState("");
+  const [projectType, setProjectType] = useState("");
   const [groupMembers, setGroupMembers] = useState([""]);
   const [advisors, setAdvisors] = useState([]);
   const [students, setStudents] = useState([]);
@@ -22,6 +24,7 @@ const ProjectRequest = () => {
   const [loading, setLoading] = useState(false);
   const [canSubmit, setCanSubmit] = useState(true);
   const [latestStatus, setLatestStatus] = useState("");
+  const [error, setError] = useState("");
 
   // Fetch all required data
   useEffect(() => {
@@ -53,8 +56,10 @@ const ProjectRequest = () => {
         );
         setProjectStatus(statuses);
 
-        const hasApproved = statuses.some((status) => status.status === "approved");
-      setLatestStatus(hasApproved ? "approved" : statuses[0]?.status || "");
+        const hasApproved = statuses.some(
+          (status) => status.status === "approved"
+        );
+        setLatestStatus(hasApproved ? "approved" : statuses[0]?.status || "");
 
         setCanSubmit(
           !(
@@ -71,58 +76,66 @@ const ProjectRequest = () => {
 
     fetchData();
   }, []);
-  // Submit new project request
+
   const handleSubmit = useCallback(async () => {
+    if (!projectNameTh || !projectNameEng) {
+      setError("กรุณากรอกชื่อโครงงานทั้งภาษาไทยและภาษาอังกฤษ");
+      return;
+    }
+    if (!selectedAdvisor) {
+      setError("กรุณาเลือกอาจารย์ที่ปรึกษา");
+      return;
+    }
+    if (!projectType) {
+      setError("กรุณาเลือกประเภทโครงงาน");
+      return;
+    }
+    if (groupMembers.length === 0) {
+      setError("กรุณาเพิ่มสมาชิกในกลุ่มอย่างน้อย 1 คน");
+      return;
+    }
+    setError("");
+
     try {
       const sessionResponse = await api.get("/auth/check-session");
       const { user_id } = sessionResponse.data.user;
-  
-      // ส่งคำขอใหม่ไปยังเซิร์ฟเวอร์
+
       const response = await api.post("/project-requests/create", {
-        projectName,
+        project_name: projectNameTh,
+        project_name_eng: projectNameEng,
+        project_type: projectType,
         groupMembers,
         advisorId: selectedAdvisor,
         studentId: user_id,
       });
-      console.log("Response from server:", response.data);
+      console.log("Request submitted:", response.data);
 
-      // ดึงสถานะล่าสุดหลังจากส่งคำขอสำเร็จ
       const updatedStatus = await api.get("/project-requests/status", {
         params: { studentId: user_id },
       });
-  
       const statuses = updatedStatus.data.data.sort(
         (a, b) => new Date(b.created_at) - new Date(a.created_at)
       );
-  
+
       setProjectStatus(statuses);
       setLatestStatus(statuses[0]?.status || "");
       setCanSubmit(false);
     } catch (error) {
-      console.error("Error submitting request:", error.response?.data || error.message);
+      console.error(
+        "Error submitting request:",
+        error.response?.data || error.message
+      );
       if (error.response?.data?.message) {
-        alert(error.response.data.message); // แจ้งเตือนเมื่อมีสมาชิกอยู่ในโครงการที่ pending/approved
+        setError(error.response.data.message);
       }
     }
-  }, [projectName, groupMembers, selectedAdvisor]);
-  
-
-  // Add group member
-  const handleAddMember = useCallback(() => {
-    if (groupMembers.length < 3) {
-      setGroupMembers([...groupMembers, ""]);
-    }
-  }, [groupMembers]);
-
-  // Remove group member
-  const handleRemoveMember = useCallback(
-    (index) => {
-      const updatedMembers = [...groupMembers];
-      updatedMembers.splice(index, 1);
-      setGroupMembers(updatedMembers);
-    },
-    [groupMembers]
-  );
+  }, [
+    projectNameTh,
+    projectNameEng,
+    projectType,
+    groupMembers,
+    selectedAdvisor,
+  ]);
 
   if (loading) {
     return (
@@ -140,7 +153,6 @@ const ProjectRequest = () => {
   return (
     <Box
       sx={{
-        
         borderRadius: 2,
         width: "100%",
         flexDirection: { xs: "column", md: "row" },
@@ -148,7 +160,6 @@ const ProjectRequest = () => {
         gap: 2,
       }}
     >
-      {/* Form Section */}
       <Paper
         elevation={3}
         sx={{ padding: 4, borderRadius: 3, width: "100%", maxWidth: 800 }}
@@ -156,25 +167,44 @@ const ProjectRequest = () => {
         <Typography variant="h5" gutterBottom>
           Request a Project
         </Typography>
-        {!canSubmit &&
-          (latestStatus === "approved" ? (
-            <Alert severity="success" sx={{ marginBottom: 2 }}>
-              ยินดีด้วย! โครงการของคุณได้รับการอนุมัติแล้ว กรุณาไปยังหน้าส่งเอกสารเพื่อส่งโครงการของคุณ
-            </Alert>
-          ) : (
-            <Alert severity="info" sx={{ marginBottom: 2 }}>
-              You already have a pending project request. Please wait for
-              approval or rejection before submitting a new request.
-            </Alert>
-          ))}
+        {error && <Alert severity="error">{error}</Alert>}
+        {!canSubmit && latestStatus === "approved" && (
+          <Alert severity="success" sx={{ marginBottom: 2 }}>
+            ยินดีด้วย! โครงการของคุณได้รับการอนุมัติแล้ว
+            กรุณาไปยังหน้าส่งเอกสารเพื่อส่งโครงการของคุณ
+          </Alert>
+        )}
         <TextField
           fullWidth
-          label="Project Name"
-          value={projectName}
-          onChange={(e) => setProjectName(e.target.value)}
+          label="ชื่อโครงงาน (ภาษาไทย)"
+          value={projectNameTh}
+          onChange={(e) => setProjectNameTh(e.target.value)}
           sx={{ marginBottom: 2 }}
           disabled={!canSubmit}
         />
+        <TextField
+          fullWidth
+          label="ชื่อโครงงาน (ภาษาอังกฤษ)"
+          value={projectNameEng}
+          onChange={(e) => setProjectNameEng(e.target.value)}
+          sx={{ marginBottom: 2 }}
+          disabled={!canSubmit}
+        />
+        <TextField
+          select
+          fullWidth
+          label="ประเภทโครงงาน"
+          value={projectType}
+          onChange={(e) => setProjectType(e.target.value)}
+          sx={{ marginBottom: 2 }}
+          disabled={!canSubmit}
+        >
+          <MenuItem value="IoT">IoT</MenuItem>
+          <MenuItem value="AI">AI</MenuItem>
+          <MenuItem value="Software">Software</MenuItem>
+        </TextField>
+
+        {/* Group Members */}
         {groupMembers.map((member, index) => (
           <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
             <Grid item xs={10}>
@@ -202,7 +232,11 @@ const ProjectRequest = () => {
                 <Button
                   variant="contained"
                   color="secondary"
-                  onClick={() => handleRemoveMember(index)}
+                  onClick={() =>
+                    setGroupMembers((prev) =>
+                      prev.filter((_, i) => i !== index)
+                    )
+                  }
                   disabled={!canSubmit}
                 >
                   Remove
@@ -214,13 +248,14 @@ const ProjectRequest = () => {
         {groupMembers.length < 3 && (
           <Button
             variant="outlined"
-            onClick={handleAddMember}
+            onClick={() => setGroupMembers([...groupMembers, ""])}
             sx={{ marginBottom: 2 }}
             disabled={!canSubmit}
           >
             Add Member
           </Button>
         )}
+        {/* Advisor */}
         <TextField
           select
           fullWidth
