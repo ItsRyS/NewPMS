@@ -9,6 +9,7 @@ import {
   Modal,
   Typography,
   CircularProgress,
+  Paper,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { Worker, Viewer } from "@react-pdf-viewer/core";
@@ -62,22 +63,47 @@ const Home = () => {
   };
 
   const columns = [
-    { field: "project_name_th", headerName: "ชื่อโครงการ (TH)", flex: 1 },
-    { field: "project_name_eng", headerName: "ชื่อโครงการ (EN)", flex: 1 },
+    {
+      field: "project_name_th",
+      headerName: "ชื่อโครงการ (TH)",
+      flex: 1,
+      minWidth: 150,
+    },
+    {
+      field: "project_name_eng",
+      headerName: "ชื่อโครงการ (EN)",
+      flex: 1,
+      minWidth: 150,
+    },
     {
       field: "team_members",
       headerName: "สมาชิกในทีม",
       flex: 1,
+      minWidth: 200,
       renderCell: (params) => (
-        <Typography>{params.row.team_members || "ไม่มีสมาชิก"}</Typography>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.2}}>
+          {params.row.team_members
+            ? params.row.team_members
+                .split(", ")
+                .map((member, index) => (
+                  <Typography key={index}>{member}</Typography>
+                ))
+            : "ไม่มีสมาชิก"}
+        </Box>
       ),
     },
-    { field: "project_advisor", headerName: "ที่ปรึกษา", flex: 0.5 },
-    { field: "project_type", headerName: "ประเภท", flex: 0.5 },
+    {
+      field: "project_advisor",
+      headerName: "ที่ปรึกษา",
+      flex: 0.5,
+      minWidth: 120,
+    },
+    { field: "project_type", headerName: "ประเภท", flex: 0.5, minWidth: 100 },
     {
       field: "project_status",
       headerName: "สถานะ",
       flex: 0.3,
+      minWidth: 100,
       headerAlign: "center",
       align: "center",
     },
@@ -85,6 +111,7 @@ const Home = () => {
       field: "project_create_time",
       headerName: "วันที่สร้าง",
       flex: 0.3,
+      minWidth: 120,
       headerAlign: "center",
       align: "center",
     },
@@ -92,6 +119,7 @@ const Home = () => {
       field: "view_document",
       headerName: "รายละเอียดเอกสาร",
       flex: 0.5,
+      minWidth: 150,
       headerAlign: "center",
       align: "center",
       renderCell: (params) => (
@@ -156,7 +184,7 @@ const Home = () => {
           </Grid>
 
           {/* DataGrid Section */}
-          <Box sx={{ height: 500 }}>
+          <Paper elevation={3} sx={{ height: 500, p: 2 }}>
             {loading ? (
               <Box
                 sx={{
@@ -178,7 +206,7 @@ const Home = () => {
                 getRowId={(row) => row.project_id}
               />
             )}
-          </Box>
+          </Paper>
         </Container>
 
         {/* PDF Viewer Modal */}

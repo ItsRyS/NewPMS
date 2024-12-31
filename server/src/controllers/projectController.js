@@ -27,8 +27,7 @@ exports.updateRequestStatus = async (req, res) => {
         .json({ success: false, message: "Request not found." });
     }
 
-    // If status is approved, move to project_release
-    let newProjectId = null;
+    // Handle approved status: Move to project_release
     if (status === "approved") {
       const [projectData] = await connection.query(
         `
@@ -60,12 +59,28 @@ exports.updateRequestStatus = async (req, res) => {
         ]
       );
 
-      newProjectId = insertResult.insertId;
+      const newProjectId = insertResult.insertId;
 
       // Update students_projects to reference new project_id
       await connection.query(
         `UPDATE students_projects SET project_id = ? WHERE request_id = ?`,
         [newProjectId, requestId]
+      );
+    }
+
+    // Handle rejected status: Remove from project_release
+    if (status === "rejected") {
+      await connection.query(
+        `DELETE FROM project_release WHERE project_id IN (
+          SELECT project_id FROM students_projects WHERE request_id = ?
+        )`,
+        [requestId]
+      );
+
+      // Optionally clean up students_projects if needed
+      await connection.query(
+        `DELETE FROM students_projects WHERE request_id = ?`,
+        [requestId]
       );
     }
 
@@ -81,6 +96,7 @@ exports.updateRequestStatus = async (req, res) => {
     connection.release();
   }
 };
+
 
 
 
