@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -29,19 +29,19 @@ import {
   useMediaQuery,
   useTheme,
   IconButton,
-} from "@mui/material";
-import RemoveRedEyeTwoToneIcon from "@mui/icons-material/RemoveRedEyeTwoTone";
-import DeleteForeverTwoToneIcon from "@mui/icons-material/DeleteForeverTwoTone";
-import RefreshTwoToneIcon from "@mui/icons-material/RefreshTwoTone";
-import ArrowDownwardTwoToneIcon from "@mui/icons-material/ArrowDownwardTwoTone";
-import ArrowUpwardTwoToneIcon from "@mui/icons-material/ArrowUpwardTwoTone";
-import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
-import AssignmentIcon from "@mui/icons-material/Assignment";
-import api from "../../services/api";
-import CloseIcon from "@mui/icons-material/Close";
+} from '@mui/material';
+import RemoveRedEyeTwoToneIcon from '@mui/icons-material/RemoveRedEyeTwoTone';
+import DeleteForeverTwoToneIcon from '@mui/icons-material/DeleteForeverTwoTone';
+import RefreshTwoToneIcon from '@mui/icons-material/RefreshTwoTone';
+import ArrowDownwardTwoToneIcon from '@mui/icons-material/ArrowDownwardTwoTone';
+import ArrowUpwardTwoToneIcon from '@mui/icons-material/ArrowUpwardTwoTone';
+import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import api from '../../services/api';
+import CloseIcon from '@mui/icons-material/Close';
 const UploadProjectDocument = () => {
   const [documentTypes, setDocumentTypes] = useState([]);
-  const [selectedType, setSelectedType] = useState("");
+  const [selectedType, setSelectedType] = useState('');
   const [file, setFile] = useState(null);
   const [approvedProject, setApprovedProject] = useState(null);
   const [documentHistory, setDocumentHistory] = useState([]);
@@ -50,15 +50,15 @@ const UploadProjectDocument = () => {
   const [currentDocumentId, setCurrentDocumentId] = useState(null);
   const [openCancelDialog, setOpenCancelDialog] = useState(false);
   const [openViewDialog, setOpenViewDialog] = useState(false);
-  const [selectedFilePath, setSelectedFilePath] = useState("");
-  const [sortOrder, setSortOrder] = useState("desc");
+  const [selectedFilePath, setSelectedFilePath] = useState('');
+  const [sortOrder, setSortOrder] = useState('desc');
   const [snackbar, setSnackbar] = useState({
     open: false,
-    message: "",
-    severity: "info",
+    message: '',
+    severity: 'info',
   });
   const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down("sm")); // สำหรับหน้าจอขนาดเล็ก
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm')); // สำหรับหน้าจอขนาดเล็ก
 
   useEffect(() => {
     fetchData();
@@ -66,18 +66,18 @@ const UploadProjectDocument = () => {
 
   const fetchData = async () => {
     try {
-      const sessionResponse = await api.get("/auth/check-session");
+      const sessionResponse = await api.get('/auth/check-session');
       const studentId = sessionResponse.data.user.user_id;
 
       const [typesResponse, requestsResponse] = await Promise.all([
-        api.get("/document-types/types"),
+        api.get('/document-types/types'),
         api.get(`/project-requests/status?studentId=${studentId}`),
       ]);
 
       setDocumentTypes(typesResponse.data);
 
       const approvedRequest = requestsResponse.data.data.find(
-        (request) => request.status === "approved"
+        (request) => request.status === 'approved'
       );
 
       setApprovedProject(approvedRequest || null);
@@ -93,7 +93,7 @@ const UploadProjectDocument = () => {
         setDocumentTypes(typesResponse.data);
       }
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error('Error fetching data:', error);
     }
   };
   const handleViewDocument = (filePath) => {
@@ -101,12 +101,12 @@ const UploadProjectDocument = () => {
       setSelectedFilePath(`http://localhost:5000/${filePath}`);
       setOpenViewDialog(true);
     } else {
-      console.error("Invalid file path:", filePath);
+      console.error('Invalid file path:', filePath);
     }
   };
 
   const handleCloseViewDialog = () => {
-    setSelectedFilePath("");
+    setSelectedFilePath('');
     setOpenViewDialog(false);
   };
 
@@ -118,35 +118,35 @@ const UploadProjectDocument = () => {
     if (!file || !selectedType || !approvedProject) {
       setSnackbar({
         open: true,
-        message: "Please fill all fields.",
-        severity: "error",
+        message: 'Please fill all fields.',
+        severity: 'error',
       });
       return;
     }
 
     const formData = new FormData();
-    formData.append("file", file);
-    formData.append("type_id", selectedType);
-    formData.append("request_id", approvedProject.request_id);
+    formData.append('file', file);
+    formData.append('type_id', selectedType);
+    formData.append('request_id', approvedProject.request_id);
 
     try {
       setLoading(true);
-      await api.post("/project-documents/upload", formData);
+      await api.post('/project-documents/upload', formData);
       setSnackbar({
         open: true,
-        message: "Document uploaded successfully.",
-        severity: "success",
+        message: 'Document uploaded successfully.',
+        severity: 'success',
       });
 
-      setSelectedType("");
+      setSelectedType('');
       setFile(null);
       fetchData();
     } catch (error) {
-      console.error("Error uploading document:", error);
+      console.error('Error uploading document:', error);
       setSnackbar({
         open: true,
-        message: "Failed to upload document.",
-        severity: "error",
+        message: 'Failed to upload document.',
+        severity: 'error',
       });
     } finally {
       setLoading(false);
@@ -158,17 +158,17 @@ const UploadProjectDocument = () => {
       await api.delete(`/project-documents/delete/${currentDocumentId}`);
       setSnackbar({
         open: true,
-        message: "Document submission canceled successfully.",
-        severity: "success",
+        message: 'Document submission canceled successfully.',
+        severity: 'success',
       });
       fetchData();
       handleCloseCancelDialog();
     } catch (error) {
-      console.error("Error canceling submission:", error);
+      console.error('Error canceling submission:', error);
       setSnackbar({
         open: true,
-        message: "Failed to cancel document submission.",
-        severity: "error",
+        message: 'Failed to cancel document submission.',
+        severity: 'error',
       });
     } finally {
       setLoading(false);
@@ -178,14 +178,14 @@ const UploadProjectDocument = () => {
     if (!file) {
       setSnackbar({
         open: true,
-        message: "Please select a file to resubmit.",
-        severity: "error",
+        message: 'Please select a file to resubmit.',
+        severity: 'error',
       });
       return;
     }
 
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append('file', file);
 
     try {
       setLoading(true);
@@ -195,17 +195,17 @@ const UploadProjectDocument = () => {
       );
       setSnackbar({
         open: true,
-        message: "Document resubmitted successfully.",
-        severity: "success",
+        message: 'Document resubmitted successfully.',
+        severity: 'success',
       });
       fetchData();
       handleCloseResubmitDialog();
     } catch (error) {
-      console.error("Error resubmitting document:", error);
+      console.error('Error resubmitting document:', error);
       setSnackbar({
         open: true,
-        message: "Failed to resubmit document.",
-        severity: "error",
+        message: 'Failed to resubmit document.',
+        severity: 'error',
       });
     } finally {
       setLoading(false);
@@ -231,7 +231,7 @@ const UploadProjectDocument = () => {
   };
 
   const sortedDocumentHistory = [...documentHistory].sort((a, b) =>
-    sortOrder === "desc"
+    sortOrder === 'desc'
       ? new Date(b.submitted_at) - new Date(a.submitted_at)
       : new Date(a.submitted_at) - new Date(b.submitted_at)
   );
@@ -242,8 +242,8 @@ const UploadProjectDocument = () => {
       <Grid
         container
         spacing={4}
-        alignItems={"stretch"}
-        justifyContent={"center"}
+        alignItems={'stretch'}
+        justifyContent={'center'}
       >
         {/* Upload Section */}
         <Grid item xs={12} md={6}>
@@ -255,7 +255,7 @@ const UploadProjectDocument = () => {
             <Divider sx={{ mb: 2 }} />
 
             {/* Document Upload Form */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
               <FormControl fullWidth>
                 <InputLabel>Document Type</InputLabel>
                 <Select
@@ -279,9 +279,9 @@ const UploadProjectDocument = () => {
             {/* Selected File Information */}
             <Typography
               variant="body2"
-              sx={{ mb: 2, color: file ? "text.primary" : "text.secondary" }}
+              sx={{ mb: 2, color: file ? 'text.primary' : 'text.secondary' }}
             >
-              {file ? `ไฟล์ที่เลือก: ${file.name}` : "ยังไม่ได้เลือกเอกสาร"}
+              {file ? `ไฟล์ที่เลือก: ${file.name}` : 'ยังไม่ได้เลือกเอกสาร'}
             </Typography>
 
             {/* Submit Button */}
@@ -293,7 +293,7 @@ const UploadProjectDocument = () => {
               fullWidth
               sx={{ mb: 3 }}
             >
-              {loading ? <CircularProgress size={24} /> : "Upload Document"}
+              {loading ? <CircularProgress size={24} /> : 'Upload Document'}
             </Button>
 
             {/* Required Documents Section */}
@@ -312,22 +312,22 @@ const UploadProjectDocument = () => {
                       component="li"
                       key={type.type_id}
                       sx={{
-                        display: "flex",
-                        alignItems: "center",
+                        display: 'flex',
+                        alignItems: 'center',
                         gap: 1,
                         color:
-                          type.status === "approved"
-                            ? "success.main"
-                            : "text.secondary",
+                          type.status === 'approved'
+                            ? 'success.main'
+                            : 'text.secondary',
                       }}
                     >
                       {/* Icon ตามสถานะ */}
-                      {type.status === "approved" ? (
+                      {type.status === 'approved' ? (
                         <AssignmentTurnedInIcon
-                          sx={{ color: "success.main" }}
+                          sx={{ color: 'success.main' }}
                         />
                       ) : (
-                        <AssignmentIcon sx={{ color: "text.secondary" }} />
+                        <AssignmentIcon sx={{ color: 'text.secondary' }} />
                       )}
 
                       {/* ชื่อเอกสาร */}
@@ -342,30 +342,30 @@ const UploadProjectDocument = () => {
 
         {/* Submission History */}
         <Grid item xs={12} md={6}>
-          <Paper elevation={3} sx={{ p: 3, borderRadius: 2, height: "100%" }}>
-            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+          <Paper elevation={3} sx={{ p: 3, borderRadius: 2, height: '100%' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
               <Typography
                 variant="h6"
-                sx={{ textAlign: "center", fontWeight: "bold" }}
+                sx={{ textAlign: 'center', fontWeight: 'bold' }}
               >
                 ประวัติการส่งเอกสาร
               </Typography>
               <Button
                 onClick={() =>
-                  setSortOrder((prev) => (prev === "desc" ? "asc" : "desc"))
+                  setSortOrder((prev) => (prev === 'desc' ? 'asc' : 'desc'))
                 }
                 startIcon={
-                  sortOrder === "desc" ? (
+                  sortOrder === 'desc' ? (
                     <ArrowDownwardTwoToneIcon />
                   ) : (
                     <ArrowUpwardTwoToneIcon />
                   )
                 }
               >
-                {sortOrder === "desc" ? "ใหม่ไปเก่า" : "เก่าไปใหม่"}
+                {sortOrder === 'desc' ? 'ใหม่ไปเก่า' : 'เก่าไปใหม่'}
               </Button>
             </Box>
-            <TableContainer sx={{ maxHeight: 550, overflowY: "auto" }}>
+            <TableContainer sx={{ maxHeight: 550, overflowY: 'auto' }}>
               <Table stickyHeader>
                 <TableHead>
                   <TableRow>
@@ -388,10 +388,10 @@ const UploadProjectDocument = () => {
                           {doc.type_name}
                         </Typography>
                         <Typography variant="body2" color="textSecondary">
-                          วันที่ส่ง:{" "}
+                          วันที่ส่ง:{' '}
                           {new Date(doc.submitted_at).toLocaleString()}
                         </Typography>
-                        {doc.status === "rejected" && (
+                        {doc.status === 'rejected' && (
                           <Typography variant="body2" color="error">
                             หมายเหตุ: {doc.reject_reason}
                           </Typography>
@@ -400,9 +400,9 @@ const UploadProjectDocument = () => {
                       <TableCell align="center">
                         <Box
                           sx={{
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
                             gap: 1,
                           }}
                         >
@@ -415,7 +415,7 @@ const UploadProjectDocument = () => {
                                 }
                                 color="inherit"
                                 disabled={!doc.file_path}
-                                sx={{ minWidth: "auto", p: 0 }}
+                                sx={{ minWidth: 'auto', p: 0 }}
                               >
                                 <RemoveRedEyeTwoToneIcon />
                               </Button>
@@ -426,17 +426,17 @@ const UploadProjectDocument = () => {
                           <Tooltip title="ส่งอีกครั้ง">
                             <span>
                               <Button
-                                sx={{ minWidth: "auto", p: 0 }}
+                                sx={{ minWidth: 'auto', p: 0 }}
                                 onClick={() =>
                                   handleOpenResubmitDialog(doc.document_id)
                                 }
-                                disabled={doc.status !== "rejected"}
+                                disabled={doc.status !== 'rejected'}
                               >
                                 <RefreshTwoToneIcon
                                   color={
-                                    doc.status === "rejected"
-                                      ? "warning"
-                                      : "disabled"
+                                    doc.status === 'rejected'
+                                      ? 'warning'
+                                      : 'disabled'
                                   }
                                 />
                               </Button>
@@ -447,17 +447,17 @@ const UploadProjectDocument = () => {
                           <Tooltip title="ยกเลิกการส่ง">
                             <span>
                               <Button
-                                sx={{ minWidth: "auto", p: 0 }}
+                                sx={{ minWidth: 'auto', p: 0 }}
                                 onClick={() =>
                                   handleOpenCancelDialog(doc.document_id)
                                 }
-                                disabled={doc.status !== "pending"}
+                                disabled={doc.status !== 'pending'}
                               >
                                 <DeleteForeverTwoToneIcon
                                   color={
-                                    doc.status === "pending"
-                                      ? "error"
-                                      : "disabled"
+                                    doc.status === 'pending'
+                                      ? 'error'
+                                      : 'disabled'
                                   }
                                 />
                               </Button>
@@ -473,13 +473,13 @@ const UploadProjectDocument = () => {
                             doc.status.slice(1)
                           }
                           color={
-                            doc.status === "approved"
-                              ? "success"
-                              : doc.status === "rejected"
-                                ? "error"
-                                : "default"
+                            doc.status === 'approved'
+                              ? 'success'
+                              : doc.status === 'rejected'
+                                ? 'error'
+                                : 'default'
                           }
-                          sx={{ width: "90px", textAlign: "center" }}
+                          sx={{ width: '90px', textAlign: 'center' }}
                         />
                       </TableCell>
                     </TableRow>
@@ -533,20 +533,20 @@ const UploadProjectDocument = () => {
         fullScreen={fullScreen}
         maxWidth="lg"
         fullWidth
-        sx={{ "& .MuiDialog-paper": { width: "100%", height: "100%" } }} // แทน maxHeight เดิม
+        sx={{ '& .MuiDialog-paper': { width: '100%', height: '100%' } }} // แทน maxHeight เดิม
       >
         <IconButton
           onClick={handleCloseViewDialog}
-          sx={{ position: "absolute", top: 8, right: 8, zIndex: 1 }}
+          sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1 }}
         >
           <CloseIcon />
         </IconButton>
         <DialogContent
           sx={{
             padding: 1,
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
           }}
         >
           {selectedFilePath ? (
@@ -555,7 +555,7 @@ const UploadProjectDocument = () => {
               width="100%"
               height="100%"
               title="Document Viewer"
-              style={{ border: "none" }}
+              style={{ border: 'none' }}
             />
           ) : (
             <Typography variant="body2" color="textSecondary">

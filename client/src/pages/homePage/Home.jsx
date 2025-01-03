@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import {
   Container,
   Grid,
@@ -10,39 +10,39 @@ import {
   Typography,
   CircularProgress,
   Paper,
-} from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
-import { Worker, Viewer } from "@react-pdf-viewer/core";
-import "@react-pdf-viewer/core/lib/styles/index.css";
-import "@react-pdf-viewer/default-layout/lib/styles/index.css";
-import NavbarHome from "../../components/NavHome";
-import FooterHome from "../../components/FooterHome";
-import moment from "moment";
-import api from "../../services/api";
+} from '@mui/material';
+import { DataGrid } from '@mui/x-data-grid';
+import { Worker, Viewer } from '@react-pdf-viewer/core';
+import '@react-pdf-viewer/core/lib/styles/index.css';
+import '@react-pdf-viewer/default-layout/lib/styles/index.css';
+import NavbarHome from '../../components/NavHome';
+import FooterHome from '../../components/FooterHome';
+import moment from 'moment';
+import api from '../../services/api';
 
 const Home = () => {
   const [projects, setProjects] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchField, setSearchField] = useState("project_name_th");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchField, setSearchField] = useState('project_name_th');
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
-  const [selectedDocument, setSelectedDocument] = useState("");
+  const [selectedDocument, setSelectedDocument] = useState('');
 
   useEffect(() => {
     const fetchProjects = async () => {
       try {
         setLoading(true);
-        const response = await api.get("/projects");
+        const response = await api.get('/projects');
         const formattedProjects = response.data.data.map((project) => ({
           ...project,
           project_create_time: moment(project.project_create_time).format(
-            "DD/MM/YYYY"
+            'DD/MM/YYYY'
           ),
         }));
         setProjects(formattedProjects);
       } catch (error) {
         console.error(
-          "Error fetching projects:",
+          'Error fetching projects:',
           error.response?.data || error.message
         );
       } finally {
@@ -59,69 +59,69 @@ const Home = () => {
 
   const handleClose = () => {
     setOpen(false);
-    setSelectedDocument("");
+    setSelectedDocument('');
   };
 
   const columns = [
     {
-      field: "project_name_th",
-      headerName: "ชื่อโครงการ (TH)",
+      field: 'project_name_th',
+      headerName: 'ชื่อโครงการ (TH)',
       flex: 1,
       minWidth: 150,
     },
     {
-      field: "project_name_eng",
-      headerName: "ชื่อโครงการ (EN)",
+      field: 'project_name_eng',
+      headerName: 'ชื่อโครงการ (EN)',
       flex: 1,
       minWidth: 150,
     },
     {
-      field: "team_members",
-      headerName: "สมาชิกในทีม",
+      field: 'team_members',
+      headerName: 'สมาชิกในทีม',
       flex: 1,
       minWidth: 200,
       renderCell: (params) => (
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.2 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.2 }}>
           {params.row.team_members
             ? params.row.team_members
-                .split(", ")
+                .split(', ')
                 .map((member, index) => (
                   <Typography key={index}>{member}</Typography>
                 ))
-            : "ไม่มีสมาชิก"}
+            : 'ไม่มีสมาชิก'}
         </Box>
       ),
     },
     {
-      field: "project_advisor",
-      headerName: "ที่ปรึกษา",
+      field: 'project_advisor',
+      headerName: 'ที่ปรึกษา',
       flex: 0.5,
       minWidth: 120,
     },
-    { field: "project_type", headerName: "ประเภท", flex: 0.5, minWidth: 100 },
+    { field: 'project_type', headerName: 'ประเภท', flex: 0.5, minWidth: 100 },
     {
-      field: "project_status",
-      headerName: "สถานะ",
+      field: 'project_status',
+      headerName: 'สถานะ',
       flex: 0.3,
       minWidth: 100,
-      headerAlign: "center",
-      align: "center",
+      headerAlign: 'center',
+      align: 'center',
     },
     {
-      field: "project_create_time",
-      headerName: "วันที่สร้าง",
+      field: 'project_create_time',
+      headerName: 'วันที่สร้าง',
       flex: 0.3,
       minWidth: 120,
-      headerAlign: "center",
-      align: "center",
+      headerAlign: 'center',
+      align: 'center',
     },
     {
-      field: "view_document",
-      headerName: "รายละเอียดเอกสาร",
+      field: 'view_document',
+      headerName: 'รายละเอียดเอกสาร',
       flex: 0.5,
       minWidth: 150,
-      headerAlign: "center",
-      align: "center",
+      headerAlign: 'center',
+      align: 'center',
       renderCell: (params) => (
         <Button
           variant="contained"
@@ -149,12 +149,12 @@ const Home = () => {
       <NavbarHome />
       <Box
         sx={{
-          display: "flex",
-          flexDirection: "column",
-          minHeight: "100vh",
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: '100vh',
         }}
       >
-        <Container sx={{ py: 4, marginTop: "70px", flex: 1 }}>
+        <Container sx={{ py: 4, marginTop: '70px', flex: 1 }}>
           {/* Search Section */}
           <Grid container spacing={2} sx={{ mb: 3 }}>
             <Grid item xs={12} md={4}>
@@ -188,10 +188,10 @@ const Home = () => {
             {loading ? (
               <Box
                 sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  height: "100%",
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  height: '100%',
                 }}
               >
                 <CircularProgress />
@@ -213,13 +213,13 @@ const Home = () => {
         <Modal open={open} onClose={handleClose}>
           <Box
             sx={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              width: "80%",
-              height: "80%",
-              bgcolor: "background.paper",
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '80%',
+              height: '80%',
+              bgcolor: 'background.paper',
               boxShadow: 24,
               p: 4,
             }}

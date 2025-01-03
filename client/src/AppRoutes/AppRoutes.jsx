@@ -1,43 +1,42 @@
-import { lazy, Suspense } from "react";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { lazy, Suspense } from 'react';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 // ใช้ React.lazy สำหรับ Dynamic Import
-const Home = lazy(() => import("../pages/homePage/Home"));
-const SignIn = lazy(() => import("../pages/homePage/SignIn"));
-const SignUp = lazy(() => import("../pages/homePage/SignUp"));
-const TeacherPage = lazy(() => import("../pages/homePage/TeacherPage"));
-const NotFound = lazy(() => import("../components/NotFound"));
+const Home = lazy(() => import('../pages/homePage/Home'));
+const SignIn = lazy(() => import('../pages/homePage/SignIn'));
+const SignUp = lazy(() => import('../pages/homePage/SignUp'));
+const TeacherPage = lazy(() => import('../pages/homePage/TeacherPage'));
+const NotFound = lazy(() => import('../components/NotFound'));
 
-const LayoutMain = lazy(() => import("../Layout/LayoutMain"));
-const LayoutAdmin = lazy(() => import("../Layout/LayoutAdmin"));
-const LayoutStudent = lazy(() => import("../Layout/LayoutStudent"));
+const LayoutMain = lazy(() => import('../Layout/LayoutMain'));
+const LayoutAdmin = lazy(() => import('../Layout/LayoutAdmin'));
+const LayoutStudent = lazy(() => import('../Layout/LayoutStudent'));
 
-const AdminHome = lazy(() => import("../pages/adminPage/AdminHome"));
-const StudentHome = lazy(() => import("../pages/studentPage/StudentHome"));
+const AdminHome = lazy(() => import('../pages/adminPage/AdminHome'));
+const StudentHome = lazy(() => import('../pages/studentPage/StudentHome'));
 
-const CheckProject = lazy(() => import("../pages/adminPage/CheckProject"));
-const ManageUser = lazy(() => import("../pages/adminPage/ManageUser"));
-const ReleaseProject = lazy(() => import("../pages/adminPage/ReleaseProject"));
-const UploadDoc = lazy(() => import("../pages/adminPage/UploadDoc"));
-const TeacherInfo = lazy(() => import("../pages/adminPage/TeacherInfo"));
+const CheckProject = lazy(() => import('../pages/adminPage/CheckProject'));
+const ManageUser = lazy(() => import('../pages/adminPage/ManageUser'));
+const ReleaseProject = lazy(() => import('../pages/adminPage/ReleaseProject'));
+const UploadDoc = lazy(() => import('../pages/adminPage/UploadDoc'));
+const TeacherInfo = lazy(() => import('../pages/adminPage/TeacherInfo'));
 const ViewProjectDocuments = lazy(
-  () => import("../pages/adminPage/ViewProjectDocuments")
+  () => import('../pages/adminPage/ViewProjectDocuments')
 );
 
-const Documentation = lazy(() => import("../pages/studentPage/Documentation"));
-const SendProject = lazy(() => import("../pages/studentPage/SendProject"));
+const Documentation = lazy(() => import('../pages/studentPage/Documentation'));
+const SendProject = lazy(() => import('../pages/studentPage/SendProject'));
 const ProjectRequest = lazy(
-  () => import("../pages/studentPage/ProjectRequest")
+  () => import('../pages/studentPage/ProjectRequest')
 );
 const UploadProjectDocument = lazy(
-  () => import("../pages/studentPage/UploadProjectDocument")
+  () => import('../pages/studentPage/UploadProjectDocument')
 );
 // สร้าง Router โดยใช้ Lazy Components
 const router = createBrowserRouter([
   {
-    future: { v7_startTransition: true, 
-      v7_relativeSplatsPath: true },
-    path: "/",
+    future: { v7_startTransition: true, v7_relativeSplatsPath: true },
+    path: '/',
     element: (
       <Suspense fallback={<div>Loading...</div>}>
         <LayoutMain />
@@ -53,7 +52,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "SignIn",
+        path: 'SignIn',
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <SignIn />
@@ -61,7 +60,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "SignUp",
+        path: 'SignUp',
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <SignUp />
@@ -69,7 +68,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "TeacherPage",
+        path: 'TeacherPage',
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <TeacherPage />
@@ -79,7 +78,7 @@ const router = createBrowserRouter([
     ],
   },
   {
-    path: "/adminHome",
+    path: '/adminHome',
     element: (
       <Suspense fallback={<div>Loading...</div>}>
         <LayoutAdmin />
@@ -95,7 +94,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "CheckProject",
+        path: 'CheckProject',
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <CheckProject />
@@ -103,7 +102,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "manage-user",
+        path: 'manage-user',
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <ManageUser />
@@ -111,7 +110,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "release-project",
+        path: 'release-project',
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <ReleaseProject />
@@ -119,7 +118,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "upload-doc",
+        path: 'upload-doc',
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <UploadDoc />
@@ -127,7 +126,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "TeacherInfo",
+        path: 'TeacherInfo',
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <TeacherInfo />
@@ -135,7 +134,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "ViewProjectDocuments",
+        path: 'ViewProjectDocuments',
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <ViewProjectDocuments />
@@ -145,7 +144,7 @@ const router = createBrowserRouter([
     ],
   },
   {
-    path: "/studentHome",
+    path: '/studentHome',
     element: (
       <Suspense fallback={<div>Loading...</div>}>
         <LayoutStudent />
@@ -161,7 +160,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "Documentation",
+        path: 'Documentation',
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <Documentation />
@@ -169,7 +168,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "projectRequest",
+        path: 'projectRequest',
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <ProjectRequest />
@@ -177,7 +176,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "SendProject",
+        path: 'SendProject',
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <SendProject />
@@ -185,7 +184,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "UploadProjectDocument",
+        path: 'UploadProjectDocument',
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <UploadProjectDocument />
@@ -196,7 +195,7 @@ const router = createBrowserRouter([
     ],
   },
   {
-    path: "*",
+    path: '*',
     element: (
       <Suspense fallback={<div>Loading...</div>}>
         <NotFound />

@@ -1,7 +1,5 @@
-const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
-const db = require("../config/db");
+const fs = require('fs');
+const db = require('../config/db');
 
 // อัปโหลดเอกสาร
 exports.uploadDocument = async (req, res) => {
@@ -9,29 +7,29 @@ exports.uploadDocument = async (req, res) => {
   const file_path = req.file ? req.file.path : null;
 
   if (!file_path) {
-    return res.status(400).json({ message: "File upload failed." });
+    return res.status(400).json({ message: 'File upload failed.' });
   }
 
   try {
     await db.query(
-      "INSERT INTO project_documents (request_id, type_id, file_path) VALUES (?, ?, ?)",
+      'INSERT INTO project_documents (request_id, type_id, file_path) VALUES (?, ?, ?)',
       [request_id, type_id, file_path]
     );
-    res.status(200).json({ message: "Document uploaded successfully." });
+    res.status(200).json({ message: 'Document uploaded successfully.' });
   } catch (error) {
-    console.error("Error uploading document:", error.message);
-    res.status(500).json({ message: "Database error." });
+    console.error('Error uploading document:', error.message);
+    res.status(500).json({ message: 'Database error.' });
   }
 };
 
 // ดึงข้อมูลประเภทเอกสาร
 exports.getDocumentTypes = async (req, res) => {
   try {
-    const [results] = await db.query("SELECT * FROM document_types");
+    const [results] = await db.query('SELECT * FROM document_types');
     res.status(200).json(results);
   } catch (error) {
-    console.error("Error fetching document types:", error.message);
-    res.status(500).json({ message: "Failed to fetch document types." });
+    console.error('Error fetching document types:', error.message);
+    res.status(500).json({ message: 'Failed to fetch document types.' });
   }
 };
 
@@ -52,10 +50,10 @@ exports.getDocumentTypesWithStatus = async (req, res) => {
     );
     res.status(200).json(results);
   } catch (error) {
-    console.error("Error fetching document types with status:", error.message);
+    console.error('Error fetching document types with status:', error.message);
     res
       .status(500)
-      .json({ message: "Failed to fetch document types with status." });
+      .json({ message: 'Failed to fetch document types with status.' });
   }
 };
 
@@ -80,8 +78,8 @@ exports.getAllDocuments = async (req, res) => {
     `);
     res.status(200).json(documents);
   } catch (error) {
-    console.error("Error fetching project documents:", error.message);
-    res.status(500).json({ message: "Failed to fetch documents." });
+    console.error('Error fetching project documents:', error.message);
+    res.status(500).json({ message: 'Failed to fetch documents.' });
   }
 };
 
@@ -105,8 +103,8 @@ exports.getDocumentHistory = async (req, res) => {
     );
     res.status(200).json(documents);
   } catch (error) {
-    console.error("Error fetching document history:", error.message);
-    res.status(500).json({ message: "Failed to fetch document history." });
+    console.error('Error fetching document history:', error.message);
+    res.status(500).json({ message: 'Failed to fetch document history.' });
   }
 };
 
@@ -116,12 +114,12 @@ exports.deleteDocument = async (req, res) => {
 
   try {
     const [document] = await db.query(
-      "SELECT file_path FROM project_documents WHERE document_id = ?",
+      'SELECT file_path FROM project_documents WHERE document_id = ?',
       [documentId]
     );
 
     if (!document || document.length === 0) {
-      return res.status(404).json({ message: "Document not found." });
+      return res.status(404).json({ message: 'Document not found.' });
     }
 
     const filePath = document[0].file_path;
@@ -130,13 +128,13 @@ exports.deleteDocument = async (req, res) => {
       fs.unlinkSync(filePath);
     }
 
-    await db.query("DELETE FROM project_documents WHERE document_id = ?", [
+    await db.query('DELETE FROM project_documents WHERE document_id = ?', [
       documentId,
     ]);
-    res.status(200).json({ message: "Document deleted successfully." });
+    res.status(200).json({ message: 'Document deleted successfully.' });
   } catch (error) {
-    console.error("Error deleting document:", error.message);
-    res.status(500).json({ message: "Failed to delete document." });
+    console.error('Error deleting document:', error.message);
+    res.status(500).json({ message: 'Failed to delete document.' });
   }
 };
 
@@ -151,13 +149,13 @@ exports.approveDocument = async (req, res) => {
     );
 
     if (result.affectedRows > 0) {
-      res.status(200).json({ message: "Document approved successfully." });
+      res.status(200).json({ message: 'Document approved successfully.' });
     } else {
-      res.status(404).json({ message: "Document not found." });
+      res.status(404).json({ message: 'Document not found.' });
     }
   } catch (error) {
-    console.error("Error approving document:", error.message);
-    res.status(500).json({ message: "Failed to approve document." });
+    console.error('Error approving document:', error.message);
+    res.status(500).json({ message: 'Failed to approve document.' });
   }
 };
 
@@ -173,13 +171,13 @@ exports.rejectDocument = async (req, res) => {
     );
 
     if (result.affectedRows > 0) {
-      res.status(200).json({ message: "Document rejected successfully." });
+      res.status(200).json({ message: 'Document rejected successfully.' });
     } else {
-      res.status(404).json({ message: "Document not found." });
+      res.status(404).json({ message: 'Document not found.' });
     }
   } catch (error) {
-    console.error("Error rejecting document:", error.message);
-    res.status(500).json({ message: "Failed to reject document." });
+    console.error('Error rejecting document:', error.message);
+    res.status(500).json({ message: 'Failed to reject document.' });
   }
 };
 
@@ -189,7 +187,7 @@ exports.resubmitDocument = async (req, res) => {
   const file_path = req.file ? req.file.path : null;
 
   if (!file_path) {
-    return res.status(400).json({ message: "File upload failed." });
+    return res.status(400).json({ message: 'File upload failed.' });
   }
 
   const connection = await db.getConnection();
@@ -198,12 +196,12 @@ exports.resubmitDocument = async (req, res) => {
     await connection.beginTransaction();
 
     const [documentDetails] = await connection.query(
-      "SELECT request_id, type_id, file_path FROM project_documents WHERE document_id = ?",
+      'SELECT request_id, type_id, file_path FROM project_documents WHERE document_id = ?',
       [id]
     );
 
     if (!documentDetails || documentDetails.length === 0) {
-      return res.status(404).json({ message: "Document not found." });
+      return res.status(404).json({ message: 'Document not found.' });
     }
 
     const { request_id, type_id, file_path: oldFilePath } = documentDetails[0];
@@ -213,7 +211,7 @@ exports.resubmitDocument = async (req, res) => {
     }
 
     await connection.query(
-      "DELETE FROM project_documents WHERE document_id = ?",
+      'DELETE FROM project_documents WHERE document_id = ?',
       [id]
     );
 
@@ -223,11 +221,11 @@ exports.resubmitDocument = async (req, res) => {
     );
 
     await connection.commit();
-    res.status(200).json({ message: "Document resubmitted successfully." });
+    res.status(200).json({ message: 'Document resubmitted successfully.' });
   } catch (error) {
     await connection.rollback();
-    console.error("Error resubmitting document:", error.message);
-    res.status(500).json({ message: "Failed to resubmit document." });
+    console.error('Error resubmitting document:', error.message);
+    res.status(500).json({ message: 'Failed to resubmit document.' });
   } finally {
     connection.release();
   }

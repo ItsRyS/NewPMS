@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import {
   Table,
   TableBody,
@@ -18,20 +18,20 @@ import {
   InputLabel,
   Select,
   MenuItem,
-} from "@mui/material";
-import api from "../../services/api"; // Axios instance
+} from '@mui/material';
+import api from '../../services/api'; // Axios instance
 
 const TeacherInfo = () => {
   const [teachers, setTeachers] = useState([]);
   const [form, setForm] = useState({
-    teacher_name: "",
-    teacher_phone: "",
-    teacher_email: "",
-    teacher_position: "",
-    teacher_expert: "",
+    teacher_name: '',
+    teacher_phone: '',
+    teacher_email: '',
+    teacher_position: '',
+    teacher_expert: '',
     teacher_image: null,
   });
-  const [selectedFileName, setSelectedFileName] = useState("");
+  const [selectedFileName, setSelectedFileName] = useState('');
   const [isEdit, setIsEdit] = useState(false);
   const [editId, setEditId] = useState(null);
   const [viewTeacher, setViewTeacher] = useState(null);
@@ -45,10 +45,10 @@ const TeacherInfo = () => {
 
   const fetchTeachers = async () => {
     try {
-      const { data } = await api.get("/teacher");
+      const { data } = await api.get('/teacher');
       setTeachers(data);
     } catch (error) {
-      console.error("Failed to fetch teachers:", error);
+      console.error('Failed to fetch teachers:', error);
     }
   };
 
@@ -59,7 +59,7 @@ const TeacherInfo = () => {
 
   const confirmDeleteTeacher = async () => {
     if (!teacherToDelete || !teacherToDelete.teacher_id) {
-      console.error("Teacher ID is undefined. Cannot delete.");
+      console.error('Teacher ID is undefined. Cannot delete.');
       setConfirmDelete(false);
       return;
     }
@@ -70,7 +70,7 @@ const TeacherInfo = () => {
       setConfirmDelete(false);
       setTeacherToDelete(null);
     } catch (error) {
-      console.error("Failed to delete teacher:", error);
+      console.error('Failed to delete teacher:', error);
     }
   };
 
@@ -83,7 +83,7 @@ const TeacherInfo = () => {
       teacher_expert: teacher.teacher_expert,
       teacher_image: teacher.teacher_image || null,
     });
-    setSelectedFileName(teacher.teacher_image ? teacher.teacher_image : "");
+    setSelectedFileName(teacher.teacher_image ? teacher.teacher_image : '');
     setIsEdit(true);
     setEditId(teacher.teacher_id);
     setOpenForm(true);
@@ -99,14 +99,14 @@ const TeacherInfo = () => {
 
   const handleOpenForm = () => {
     setForm({
-      teacher_name: "",
-      teacher_phone: "",
-      teacher_email: "",
-      teacher_position: "",
-      teacher_expert: "",
+      teacher_name: '',
+      teacher_phone: '',
+      teacher_email: '',
+      teacher_position: '',
+      teacher_expert: '',
       teacher_image: null,
     });
-    setSelectedFileName("");
+    setSelectedFileName('');
     setIsEdit(false);
     setOpenForm(true);
   };
@@ -127,32 +127,32 @@ const TeacherInfo = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
-    formData.append("teacher_name", form.teacher_name || "");
-    formData.append("teacher_phone", form.teacher_phone || "");
-    formData.append("teacher_email", form.teacher_email || "");
-    formData.append("teacher_position", form.teacher_position || "");
-    formData.append("teacher_expert", form.teacher_expert || "");
+    formData.append('teacher_name', form.teacher_name || '');
+    formData.append('teacher_phone', form.teacher_phone || '');
+    formData.append('teacher_email', form.teacher_email || '');
+    formData.append('teacher_position', form.teacher_position || '');
+    formData.append('teacher_expert', form.teacher_expert || '');
 
     if (form.teacher_image instanceof File) {
-      formData.append("teacher_image", form.teacher_image);
+      formData.append('teacher_image', form.teacher_image);
     } else if (isEdit && selectedFileName) {
-      formData.append("teacher_image", selectedFileName);
+      formData.append('teacher_image', selectedFileName);
     }
 
     try {
       if (isEdit) {
         await api.put(`/teacher/${editId}`, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
+          headers: { 'Content-Type': 'multipart/form-data' },
         });
       } else {
-        await api.post("/teacher", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
+        await api.post('/teacher', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
         });
       }
       fetchTeachers();
       handleCloseForm();
     } catch (error) {
-      console.error("Failed to submit form:", error.response?.data || error);
+      console.error('Failed to submit form:', error.response?.data || error);
     }
   };
 
@@ -191,7 +191,7 @@ const TeacherInfo = () => {
                     <img
                       src={`http://localhost:5000/upload/pic/${teacher.teacher_image}`}
                       alt={teacher.teacher_name}
-                      style={{ width: 50, height: 50, objectFit: "cover" }}
+                      style={{ width: 50, height: 50, objectFit: 'cover' }}
                     />
                   ) : (
                     <span>No Image</span>
@@ -256,7 +256,7 @@ const TeacherInfo = () => {
               <img
                 src={`http://localhost:5000/upload/pic/${viewTeacher.teacher_image}`}
                 alt={viewTeacher.teacher_name}
-                style={{ width: 100, height: 100, objectFit: "cover" }}
+                style={{ width: 100, height: 100, objectFit: 'cover' }}
               />
             )}
           </DialogContent>
@@ -268,7 +268,7 @@ const TeacherInfo = () => {
 
       {/* Form Dialog */}
       <Dialog open={openForm} onClose={handleCloseForm}>
-        <DialogTitle>{isEdit ? "Edit Teacher" : "Add New Teacher"}</DialogTitle>
+        <DialogTitle>{isEdit ? 'Edit Teacher' : 'Add New Teacher'}</DialogTitle>
         <DialogContent>
           <form onSubmit={handleSubmit}>
             <TextField
@@ -328,7 +328,7 @@ const TeacherInfo = () => {
               type="file"
               accept="image/*"
               onChange={handleFileChange}
-              style={{ marginTop: "15px" }}
+              style={{ marginTop: '15px' }}
             />
             <p>{selectedFileName}</p>
             <DialogActions>
@@ -336,7 +336,7 @@ const TeacherInfo = () => {
                 Cancel
               </Button>
               <Button type="submit" color="primary">
-                {isEdit ? "Update" : "Create"}
+                {isEdit ? 'Update' : 'Create'}
               </Button>
             </DialogActions>
           </form>

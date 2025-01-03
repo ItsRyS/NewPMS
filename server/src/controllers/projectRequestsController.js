@@ -1,4 +1,4 @@
-const db = require("../config/db");
+const db = require('../config/db');
 
 // สร้างคำร้องโครงงานใหม่
 exports.createRequest = async (req, res) => {
@@ -15,7 +15,7 @@ exports.createRequest = async (req, res) => {
   if (!project_name || !project_name_eng || !project_type) {
     return res.status(400).json({
       success: false,
-      message: "Project name (TH/EN) and type are required.",
+      message: 'Project name (TH/EN) and type are required.',
     });
   }
 
@@ -39,7 +39,7 @@ exports.createRequest = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: `Members with IDs ${conflictingMembers.join(
-          ", "
+          ', '
         )} are already part of a pending or approved project.`,
       });
     }
@@ -68,8 +68,8 @@ exports.createRequest = async (req, res) => {
     res.status(200).json({ success: true, requestId });
   } catch (error) {
     await connection.rollback();
-    console.error("Error creating project request:", error.message);
-    res.status(500).json({ success: false, error: "Failed to save data." });
+    console.error('Error creating project request:', error.message);
+    res.status(500).json({ success: false, error: 'Failed to save data.' });
   } finally {
     connection.release();
   }
@@ -82,7 +82,7 @@ exports.getStudentRequests = async (req, res) => {
   if (!studentId) {
     return res
       .status(400)
-      .json({ success: false, error: "Student ID is required." });
+      .json({ success: false, error: 'Student ID is required.' });
   }
 
   try {
@@ -97,10 +97,10 @@ exports.getStudentRequests = async (req, res) => {
     );
     res.status(200).json({ success: true, data: results });
   } catch (error) {
-    console.error("Error fetching student requests:", error.message);
+    console.error('Error fetching student requests:', error.message);
     res
       .status(500)
-      .json({ success: false, error: "Failed to fetch requests." });
+      .json({ success: false, error: 'Failed to fetch requests.' });
   }
 };
 
@@ -122,10 +122,10 @@ exports.getAllRequests = async (req, res) => {
     );
     res.status(200).json(projects);
   } catch (error) {
-    console.error("Error fetching project requests:", error.message);
+    console.error('Error fetching project requests:', error.message);
     res
       .status(500)
-      .json({ success: false, error: "Failed to fetch requests." });
+      .json({ success: false, error: 'Failed to fetch requests.' });
   }
 };
 

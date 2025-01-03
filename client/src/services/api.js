@@ -1,17 +1,17 @@
-import axios from "axios";
+import axios from 'axios';
 
 // สร้าง instance ของ Axios
 const api = axios.create({
-  baseURL: "http://localhost:5000/api", // ตั้งค่าฐาน URL สำหรับ API
+  baseURL: 'http://localhost:5000/api', // ตั้งค่าฐาน URL สำหรับ API
   withCredentials: true, // เปิดใช้งาน cookie สำหรับการร้องขอ
 });
 
 // Interceptor สำหรับใส่ Tab ID ลงใน Headers ของทุกคำขอ
 api.interceptors.request.use(
   (config) => {
-    const tabId = sessionStorage.getItem("tabId"); // ดึง tabId จาก sessionStorage
+    const tabId = sessionStorage.getItem('tabId'); // ดึง tabId จาก sessionStorage
     if (tabId) {
-      config.headers["x-tab-id"] = tabId; // เพิ่ม tabId ลงใน Headers
+      config.headers['x-tab-id'] = tabId; // เพิ่ม tabId ลงใน Headers
     }
     return config;
   },
@@ -35,7 +35,7 @@ api.interceptors.response.use(
       originalRequest._retry = true; // ป้องกันการวนลูปคำขอ
 
       try {
-        await api.get("/auth/refresh-session"); // เรียก API เพื่อ Refresh Session
+        await api.get('/auth/refresh-session'); // เรียก API เพื่อ Refresh Session
         return api(originalRequest); // ส่งคำขอเดิมอีกครั้ง
       } catch (refreshError) {
         return Promise.reject(refreshError); // ส่งคืนข้อผิดพลาดถ้า Refresh ล้มเหลว

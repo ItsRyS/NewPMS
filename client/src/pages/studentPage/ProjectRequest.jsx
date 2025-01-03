@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from 'react';
 import {
   Grid,
   Typography,
@@ -9,22 +9,22 @@ import {
   CircularProgress,
   Alert,
   Paper,
-} from "@mui/material";
-import api from "../../services/api";
+} from '@mui/material';
+import api from '../../services/api';
 
 const ProjectRequest = () => {
-  const [projectNameTh, setProjectNameTh] = useState("");
-  const [projectNameEng, setProjectNameEng] = useState("");
-  const [projectType, setProjectType] = useState("");
-  const [groupMembers, setGroupMembers] = useState([""]);
+  const [projectNameTh, setProjectNameTh] = useState('');
+  const [projectNameEng, setProjectNameEng] = useState('');
+  const [projectType, setProjectType] = useState('');
+  const [groupMembers, setGroupMembers] = useState(['']);
   const [advisors, setAdvisors] = useState([]);
   const [students, setStudents] = useState([]);
-  const [selectedAdvisor, setSelectedAdvisor] = useState("");
+  const [selectedAdvisor, setSelectedAdvisor] = useState('');
   const [projectStatus, setProjectStatus] = useState([]);
   const [loading, setLoading] = useState(false);
   const [canSubmit, setCanSubmit] = useState(true);
-  const [latestStatus, setLatestStatus] = useState("");
-  const [error, setError] = useState("");
+  const [latestStatus, setLatestStatus] = useState('');
+  const [error, setError] = useState('');
 
   // Fetch all required data
   useEffect(() => {
@@ -33,13 +33,13 @@ const ProjectRequest = () => {
         setLoading(true);
         const [advisorResponse, studentResponse, sessionResponse] =
           await Promise.all([
-            api.get("/teacher"),
-            api.get("/users"),
-            api.get("/auth/check-session"),
+            api.get('/teacher'),
+            api.get('/users'),
+            api.get('/auth/check-session'),
           ]);
 
         const studentUsers = studentResponse.data.filter(
-          (user) => user.role === "student"
+          (user) => user.role === 'student'
         );
         setAdvisors(advisorResponse.data);
         setStudents(studentUsers);
@@ -48,7 +48,7 @@ const ProjectRequest = () => {
         setGroupMembers([user_id]);
 
         // ดึงสถานะคำขอล่าสุด
-        const statusResponse = await api.get("/project-requests/status", {
+        const statusResponse = await api.get('/project-requests/status', {
           params: { studentId: user_id },
         });
         const statuses = statusResponse.data.data.sort(
@@ -57,18 +57,18 @@ const ProjectRequest = () => {
         setProjectStatus(statuses);
 
         const hasApproved = statuses.some(
-          (status) => status.status === "approved"
+          (status) => status.status === 'approved'
         );
-        setLatestStatus(hasApproved ? "approved" : statuses[0]?.status || "");
+        setLatestStatus(hasApproved ? 'approved' : statuses[0]?.status || '');
 
         setCanSubmit(
           !(
-            statuses.some((status) => status.status === "pending") ||
+            statuses.some((status) => status.status === 'pending') ||
             hasApproved
           )
         );
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }
@@ -79,28 +79,28 @@ const ProjectRequest = () => {
 
   const handleSubmit = useCallback(async () => {
     if (!projectNameTh || !projectNameEng) {
-      setError("กรุณากรอกชื่อโครงงานทั้งภาษาไทยและภาษาอังกฤษ");
+      setError('กรุณากรอกชื่อโครงงานทั้งภาษาไทยและภาษาอังกฤษ');
       return;
     }
     if (!selectedAdvisor) {
-      setError("กรุณาเลือกอาจารย์ที่ปรึกษา");
+      setError('กรุณาเลือกอาจารย์ที่ปรึกษา');
       return;
     }
     if (!projectType) {
-      setError("กรุณาเลือกประเภทโครงงาน");
+      setError('กรุณาเลือกประเภทโครงงาน');
       return;
     }
     if (groupMembers.length === 0) {
-      setError("กรุณาเพิ่มสมาชิกในกลุ่มอย่างน้อย 1 คน");
+      setError('กรุณาเพิ่มสมาชิกในกลุ่มอย่างน้อย 1 คน');
       return;
     }
-    setError("");
+    setError('');
 
     try {
-      const sessionResponse = await api.get("/auth/check-session");
+      const sessionResponse = await api.get('/auth/check-session');
       const { user_id } = sessionResponse.data.user;
 
-      const response = await api.post("/project-requests/create", {
+      const response = await api.post('/project-requests/create', {
         project_name: projectNameTh,
         project_name_eng: projectNameEng,
         project_type: projectType,
@@ -108,9 +108,9 @@ const ProjectRequest = () => {
         advisorId: selectedAdvisor,
         studentId: user_id,
       });
-      console.log("Request submitted:", response.data);
+      console.log('Request submitted:', response.data);
 
-      const updatedStatus = await api.get("/project-requests/status", {
+      const updatedStatus = await api.get('/project-requests/status', {
         params: { studentId: user_id },
       });
       const statuses = updatedStatus.data.data.sort(
@@ -118,11 +118,11 @@ const ProjectRequest = () => {
       );
 
       setProjectStatus(statuses);
-      setLatestStatus(statuses[0]?.status || "");
+      setLatestStatus(statuses[0]?.status || '');
       setCanSubmit(false);
     } catch (error) {
       console.error(
-        "Error submitting request:",
+        'Error submitting request:',
         error.response?.data || error.message
       );
       if (error.response?.data?.message) {
@@ -154,21 +154,21 @@ const ProjectRequest = () => {
     <Box
       sx={{
         borderRadius: 2,
-        width: "100%",
-        flexDirection: { xs: "column", md: "row" },
-        display: "flex",
+        width: '100%',
+        flexDirection: { xs: 'column', md: 'row' },
+        display: 'flex',
         gap: 2,
       }}
     >
       <Paper
         elevation={3}
-        sx={{ padding: 4, borderRadius: 3, width: "100%", maxWidth: 800 }}
+        sx={{ padding: 4, borderRadius: 3, width: '100%', maxWidth: 800 }}
       >
         <Typography variant="h5" gutterBottom>
           Request a Project
         </Typography>
         {error && <Alert severity="error">{error}</Alert>}
-        {!canSubmit && latestStatus === "approved" && (
+        {!canSubmit && latestStatus === 'approved' && (
           <Alert severity="success" sx={{ marginBottom: 2 }}>
             ยินดีด้วย! โครงการของคุณได้รับการอนุมัติแล้ว
             กรุณาไปยังหน้าส่งเอกสารเพื่อส่งโครงการของคุณ
@@ -212,7 +212,7 @@ const ProjectRequest = () => {
                 select
                 fullWidth
                 label={`Group Member ${index + 1}`}
-                value={groupMembers[index] || ""}
+                value={groupMembers[index] || ''}
                 onChange={(e) => {
                   const updatedMembers = [...groupMembers];
                   updatedMembers[index] = e.target.value;
@@ -248,7 +248,7 @@ const ProjectRequest = () => {
         {groupMembers.length < 3 && (
           <Button
             variant="outlined"
-            onClick={() => setGroupMembers([...groupMembers, ""])}
+            onClick={() => setGroupMembers([...groupMembers, ''])}
             sx={{ marginBottom: 2 }}
             disabled={!canSubmit}
           >
@@ -283,12 +283,12 @@ const ProjectRequest = () => {
       {/* Status Section */}
       <Paper
         elevation={3}
-        sx={{ padding: 4, borderRadius: 3, width: "100%", maxWidth: 800 }}
+        sx={{ padding: 4, borderRadius: 3, width: '100%', maxWidth: 800 }}
       >
         <Typography variant="h6" gutterBottom>
           Document Status
         </Typography>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {projectStatus.map((status, index) => (
             <Box
               key={status.request_id}
@@ -296,22 +296,22 @@ const ProjectRequest = () => {
                 padding: 2,
                 borderRadius: 2,
                 backgroundColor:
-                  status.status === "pending"
-                    ? "#9e9e9e"
-                    : status.status === "approved"
-                      ? "#4caf50"
-                      : "#f44336",
-                color: "#fff",
-                border: index === 0 ? "2px solid #000" : "none", // เน้นคำขอล่าสุด
+                  status.status === 'pending'
+                    ? '#9e9e9e'
+                    : status.status === 'approved'
+                      ? '#4caf50'
+                      : '#f44336',
+                color: '#fff',
+                border: index === 0 ? '2px solid #000' : 'none', // เน้นคำขอล่าสุด
               }}
             >
               <Typography variant="body1">
                 <strong>
-                  {index === 0 ? "Latest Request:" : ""} {status.project_name}
+                  {index === 0 ? 'Latest Request:' : ''} {status.project_name}
                 </strong>
               </Typography>
               <Typography variant="body2">
-                Status:{" "}
+                Status:{' '}
                 {status.status.charAt(0).toUpperCase() + status.status.slice(1)}
               </Typography>
             </Box>

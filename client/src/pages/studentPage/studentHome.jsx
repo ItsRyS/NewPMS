@@ -1,6 +1,6 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import api from "../../services/api"; // Import API configuration
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from '../../services/api'; // Import API configuration
 
 function StudentHome() {
   const navigate = useNavigate();
@@ -8,17 +8,17 @@ function StudentHome() {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const tabId = sessionStorage.getItem("tabId"); // ดึง tabId จาก sessionStorage
-        const response = await api.get("/auth/check-session", {
-          headers: { "x-tab-id": tabId }, // ส่ง tabId ใน Header
+        const tabId = sessionStorage.getItem('tabId'); // ดึง tabId จาก sessionStorage
+        const response = await api.get('/auth/check-session', {
+          headers: { 'x-tab-id': tabId }, // ส่ง tabId ใน Header
         });
 
         if (!response.data.isAuthenticated) {
-          navigate("/SignIn"); // ถ้า session หมดอายุหรือไม่ถูกต้องให้ redirect
+          navigate('/SignIn'); // ถ้า session หมดอายุหรือไม่ถูกต้องให้ redirect
         }
       } catch (error) {
-        console.error("Session check failed:", error);
-        navigate("/SignIn"); // Redirect กรณีเกิดข้อผิดพลาด
+        console.error('Session check failed:', error);
+        navigate('/SignIn'); // Redirect กรณีเกิดข้อผิดพลาด
       }
     };
 

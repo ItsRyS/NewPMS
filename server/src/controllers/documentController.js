@@ -1,6 +1,5 @@
-const path = require("path");
-const db = require("../config/db");
-const fs = require("fs");
+const db = require('../config/db');
+const fs = require('fs');
 
 // อัปโหลดเอกสาร
 exports.uploadDocument = async (req, res) => {
@@ -8,16 +7,16 @@ exports.uploadDocument = async (req, res) => {
   const doc_path = req.file ? req.file.path : null;
 
   if (!doc_title || !doc_description || !uploaded_by || !doc_path) {
-    return res.status(400).json({ message: "All fields are required." });
+    return res.status(400).json({ message: 'All fields are required.' });
   }
 
   try {
     const [userExists] = await db.query(
-      "SELECT user_id FROM users WHERE user_id = ?",
+      'SELECT user_id FROM users WHERE user_id = ?',
       [uploaded_by]
     );
     if (userExists.length === 0) {
-      return res.status(400).json({ message: "Invalid uploaded_by user ID." });
+      return res.status(400).json({ message: 'Invalid uploaded_by user ID.' });
     }
 
     const [result] = await db.query(
@@ -27,12 +26,12 @@ exports.uploadDocument = async (req, res) => {
     );
     res
       .status(200)
-      .json({ message: "File uploaded successfully", doc_id: result.insertId });
+      .json({ message: 'File uploaded successfully', doc_id: result.insertId });
   } catch (error) {
-    console.error("Error inserting document:", error.message);
+    console.error('Error inserting document:', error.message);
     res
       .status(500)
-      .json({ message: "Database insertion failed", error: error.message });
+      .json({ message: 'Database insertion failed', error: error.message });
   }
 };
 
@@ -53,10 +52,10 @@ exports.getDocuments = async (req, res) => {
     `);
     res.status(200).json(results);
   } catch (error) {
-    console.error("Error fetching documents:", error.message);
+    console.error('Error fetching documents:', error.message);
     res
       .status(500)
-      .json({ message: "Failed to retrieve documents", error: error.message });
+      .json({ message: 'Failed to retrieve documents', error: error.message });
   }
 };
 
@@ -70,7 +69,7 @@ exports.deleteDocument = async (req, res) => {
       [id]
     );
     if (results.length === 0) {
-      return res.status(404).json({ message: "Document not found" });
+      return res.status(404).json({ message: 'Document not found' });
     }
 
     const filePath = results[0].doc_path;
@@ -81,11 +80,11 @@ exports.deleteDocument = async (req, res) => {
     }
 
     await db.query(`DELETE FROM document_forms WHERE doc_id = ?`, [id]);
-    res.status(200).json({ message: "Document deleted successfully" });
+    res.status(200).json({ message: 'Document deleted successfully' });
   } catch (error) {
-    console.error("Error deleting document:", error.message);
+    console.error('Error deleting document:', error.message);
     res
       .status(500)
-      .json({ message: "Failed to delete document", error: error.message });
+      .json({ message: 'Failed to delete document', error: error.message });
   }
 };

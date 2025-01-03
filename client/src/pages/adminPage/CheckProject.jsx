@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import {
   Button,
   Typography,
@@ -9,22 +9,22 @@ import {
   Select,
   FormControl,
   InputLabel,
-} from "@mui/material";
-import api from "../../services/api";
+} from '@mui/material';
+import api from '../../services/api';
 
 const CheckProject = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filterStatus, setFilterStatus] = useState("all"); // เก็บสถานะที่ต้องการกรอง
+  const [filterStatus, setFilterStatus] = useState('all'); // เก็บสถานะที่ต้องการกรอง
 
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const response = await api.get("/project-requests/all");
+        const response = await api.get('/project-requests/all');
         setRequests(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
         console.error(
-          "Error fetching project requests:",
+          'Error fetching project requests:',
           error.response?.data || error.message
         );
       } finally {
@@ -38,7 +38,7 @@ const CheckProject = () => {
   const handleStatusUpdate = async (requestId, status) => {
     try {
       // เรียก Endpoint อัปเดตสถานะ
-      await api.put("/projects/update-status", { requestId, status });
+      await api.put('/projects/update-status', { requestId, status });
 
       // อัปเดตสถานะใน UI
       setRequests((prev) =>
@@ -47,13 +47,13 @@ const CheckProject = () => {
         )
       );
     } catch (error) {
-      console.error("Error updating status:", error);
+      console.error('Error updating status:', error);
     }
   };
 
   // ฟังก์ชันสำหรับกรองสถานะ
   const filteredRequests =
-    filterStatus === "all"
+    filterStatus === 'all'
       ? requests
       : requests.filter((request) => request.status === filterStatus);
 
@@ -63,7 +63,7 @@ const CheckProject = () => {
         container
         justifyContent="center"
         alignItems="center"
-        style={{ height: "100vh" }}
+        style={{ height: '100vh' }}
       >
         <Typography>Loading...</Typography>
       </Grid>
@@ -98,7 +98,7 @@ const CheckProject = () => {
       </Grid>
 
       {/* รายการคำร้อง */}
-      <Grid container spacing={2} sx={{ marginTop: 2, overflowX: "auto" }}>
+      <Grid container spacing={2} sx={{ marginTop: 2, overflowX: 'auto' }}>
         {filteredRequests.length > 0 ? (
           filteredRequests.map((request) => (
             <Grid item xs={12} md={6} key={request.request_id}>
@@ -107,32 +107,32 @@ const CheckProject = () => {
                 sx={{
                   padding: 2,
                   backgroundColor:
-                    request.status === "approved"
-                      ? "SpringGreen"
-                      : request.status === "rejected"
-                        ? "salmon"
-                        : "lightgray",
-                  color: "white",
+                    request.status === 'approved'
+                      ? 'SpringGreen'
+                      : request.status === 'rejected'
+                        ? 'salmon'
+                        : 'lightgray',
+                  color: 'white',
                 }}
               >
                 <Typography
                   variant="h4"
                   gutterBottom
                   sx={{
-                    textDecoration: "underline",
-                    fontWeight: "bold",
+                    textDecoration: 'underline',
+                    fontWeight: 'bold',
                   }}
                 >
                   {request.project_name}
                 </Typography>
                 <Typography>
-                  <strong>Advisor:</strong> {request.teacher_name || "N/A"}
+                  <strong>Advisor:</strong> {request.teacher_name || 'N/A'}
                 </Typography>
                 <Typography>
-                  <strong>Students:</strong> {request.students || "N/A"}
+                  <strong>Students:</strong> {request.students || 'N/A'}
                 </Typography>
                 <Typography>
-                  <strong>Status:</strong>{" "}
+                  <strong>Status:</strong>{' '}
                   {request.status.charAt(0).toUpperCase() +
                     request.status.slice(1)}
                 </Typography>
@@ -141,9 +141,9 @@ const CheckProject = () => {
                     variant="contained"
                     color="success"
                     onClick={() =>
-                      handleStatusUpdate(request.request_id, "approved")
+                      handleStatusUpdate(request.request_id, 'approved')
                     }
-                    disabled={request.status === "approved"}
+                    disabled={request.status === 'approved'}
                     sx={{ marginRight: 1 }}
                   >
                     Approve
@@ -152,9 +152,9 @@ const CheckProject = () => {
                     variant="contained"
                     color="error"
                     onClick={() =>
-                      handleStatusUpdate(request.request_id, "rejected")
+                      handleStatusUpdate(request.request_id, 'rejected')
                     }
-                    disabled={request.status === "rejected"}
+                    disabled={request.status === 'rejected'}
                   >
                     Reject
                   </Button>

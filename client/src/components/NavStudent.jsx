@@ -1,6 +1,6 @@
-import PropTypes from "prop-types";
-import { AppBar, Toolbar, Typography, IconButton } from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
+import PropTypes from 'prop-types';
+import { AppBar, Toolbar, Typography, IconButton } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
 
 const NavStudent = ({ handleDrawerToggle, title }) => {
   return (
@@ -8,9 +8,9 @@ const NavStudent = ({ handleDrawerToggle, title }) => {
       position="fixed"
       sx={{
         zIndex: (theme) => theme.zIndex.drawer + 1,
-        backgroundColor: "#01153e",
-        color: "#fff",
-        width: "100%",
+        backgroundColor: '#01153e',
+        color: '#fff',
+        width: '100%',
       }}
     >
       <Toolbar>
@@ -18,7 +18,7 @@ const NavStudent = ({ handleDrawerToggle, title }) => {
           edge="start"
           color="inherit"
           aria-label="menu"
-          sx={{ mr: 2, display: { sm: "none" } }}
+          sx={{ mr: 2, display: { sm: 'none' } }}
           onClick={handleDrawerToggle}
         >
           <MenuIcon />

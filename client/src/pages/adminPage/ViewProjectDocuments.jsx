@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 import {
   Box,
   Typography,
@@ -21,8 +21,8 @@ import {
   Snackbar,
   Alert,
   Chip,
-} from "@mui/material";
-import api from "../../services/api";
+} from '@mui/material';
+import api from '../../services/api';
 
 const ViewProjectDocuments = () => {
   const [documents, setDocuments] = useState([]);
@@ -30,28 +30,28 @@ const ViewProjectDocuments = () => {
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [openRejectDialog, setOpenRejectDialog] = useState(false);
-  const [rejectReason, setRejectReason] = useState("");
+  const [rejectReason, setRejectReason] = useState('');
   const [currentDocumentId, setCurrentDocumentId] = useState(null);
   const [snackbar, setSnackbar] = useState({
     open: false,
-    message: "",
-    severity: "info",
+    message: '',
+    severity: 'info',
   });
 
   const fetchPendingDocuments = async () => {
     try {
       setLoading(true);
-      const response = await api.get("/project-documents/all");
+      const response = await api.get('/project-documents/all');
       const pendingDocs = response.data.filter(
-        (doc) => doc.status === "pending"
+        (doc) => doc.status === 'pending'
       );
       setDocuments(pendingDocs);
     } catch (error) {
-      console.error("Error fetching documents:", error);
+      console.error('Error fetching documents:', error);
       setSnackbar({
         open: true,
-        message: "Failed to load documents.",
-        severity: "error",
+        message: 'Failed to load documents.',
+        severity: 'error',
       });
     } finally {
       setLoading(false);
@@ -81,16 +81,16 @@ const ViewProjectDocuments = () => {
       await api.post(`/project-documents/approve/${documentId}`);
       setSnackbar({
         open: true,
-        message: "Document approved successfully.",
-        severity: "success",
+        message: 'Document approved successfully.',
+        severity: 'success',
       });
       fetchPendingDocuments();
     } catch (error) {
-      console.error("Error approving document:", error);
+      console.error('Error approving document:', error);
       setSnackbar({
         open: true,
-        message: "Failed to approve document.",
-        severity: "error",
+        message: 'Failed to approve document.',
+        severity: 'error',
       });
     }
   };
@@ -99,8 +99,8 @@ const ViewProjectDocuments = () => {
     if (!rejectReason.trim()) {
       setSnackbar({
         open: true,
-        message: "Please provide a reason for rejection.",
-        severity: "warning",
+        message: 'Please provide a reason for rejection.',
+        severity: 'warning',
       });
       return;
     }
@@ -111,17 +111,17 @@ const ViewProjectDocuments = () => {
       });
       setSnackbar({
         open: true,
-        message: "Document rejected successfully.",
-        severity: "success",
+        message: 'Document rejected successfully.',
+        severity: 'success',
       });
       handleCloseRejectDialog();
       fetchPendingDocuments();
     } catch (error) {
-      console.error("Error rejecting document:", error);
+      console.error('Error rejecting document:', error);
       setSnackbar({
         open: true,
-        message: "Failed to reject document.",
-        severity: "error",
+        message: 'Failed to reject document.',
+        severity: 'error',
       });
     }
   };
@@ -133,7 +133,7 @@ const ViewProjectDocuments = () => {
 
   const handleCloseRejectDialog = () => {
     setOpenRejectDialog(false);
-    setRejectReason("");
+    setRejectReason('');
     setCurrentDocumentId(null);
   };
 
@@ -141,10 +141,10 @@ const ViewProjectDocuments = () => {
     return (
       <Box
         sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          minHeight: "100vh",
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '100vh',
         }}
       >
         <CircularProgress />
@@ -155,10 +155,10 @@ const ViewProjectDocuments = () => {
     return (
       <Box
         sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          minHeight: "100vh",
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '100vh',
         }}
       >
         <CircularProgress />
@@ -179,7 +179,7 @@ const ViewProjectDocuments = () => {
       <Typography
         variant="h4"
         gutterBottom
-        sx={{ fontSize: { xs: "1.5rem", md: "2rem" }, textAlign: "center" }}
+        sx={{ fontSize: { xs: '1.5rem', md: '2rem' }, textAlign: 'center' }}
       >
         Submitted Project Documents
       </Typography>
@@ -187,9 +187,9 @@ const ViewProjectDocuments = () => {
       <TableContainer
         component={Paper}
         sx={{
-          boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)", // Subtle shadow for floating table
-          borderRadius: "8px", // Rounded corners for the table
-          overflow: "auto",
+          boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)', // Subtle shadow for floating table
+          borderRadius: '8px', // Rounded corners for the table
+          overflow: 'auto',
         }}
       >
         <Table>
@@ -218,11 +218,11 @@ const ViewProjectDocuments = () => {
                   <Chip
                     label={doc.status}
                     color={
-                      doc.status === "approved"
-                        ? "success"
-                        : doc.status === "rejected"
-                          ? "error"
-                          : "default"
+                      doc.status === 'approved'
+                        ? 'success'
+                        : doc.status === 'rejected'
+                          ? 'error'
+                          : 'default'
                     }
                   />
                 </TableCell>
@@ -250,16 +250,16 @@ const ViewProjectDocuments = () => {
       <Modal open={openModal} onClose={handleCloseModal}>
         <Box
           sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: "90%",
-            height: "calc(100vh - 32px)", // ใช้ 100% ของความสูง viewport ลบระยะห่างเล็กน้อย
-            bgcolor: "background.paper",
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '90%',
+            height: 'calc(100vh - 32px)', // ใช้ 100% ของความสูง viewport ลบระยะห่างเล็กน้อย
+            bgcolor: 'background.paper',
             boxShadow: 24,
             borderRadius: 2,
-            overflow: "hidden", // ป้องกันการเลื่อนเกินขอบ
+            overflow: 'hidden', // ป้องกันการเลื่อนเกินขอบ
           }}
         >
           <Typography variant="h6" gutterBottom>
@@ -270,11 +270,11 @@ const ViewProjectDocuments = () => {
               src={selectedDocument.url}
               width="100%"
               height="85%" // ลดพื้นที่ iframe เพื่อเหลือให้ปุ่มด้านล่าง
-              style={{ border: "none" }}
+              style={{ border: 'none' }}
               title="Document Viewer"
             ></iframe>
           )}
-          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 1 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
             <Button
               variant="text"
               color="success"

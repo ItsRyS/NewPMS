@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from 'react-router-dom';
 
 const NotFound = () => {
   return (
@@ -16,27 +16,27 @@ const NotFound = () => {
 
 const styles = {
   container: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    flexDirection: "column",
-    height: "100vh",
-    textAlign: "center",
-    backgroundColor: "#f4f4f9",
-    color: "#333",
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'column',
+    height: '100vh',
+    textAlign: 'center',
+    backgroundColor: '#f4f4f9',
+    color: '#333',
   },
   heading: {
-    fontSize: "3rem",
-    marginBottom: "20px",
+    fontSize: '3rem',
+    marginBottom: '20px',
   },
   message: {
-    fontSize: "1.25rem",
-    marginBottom: "20px",
+    fontSize: '1.25rem',
+    marginBottom: '20px',
   },
   link: {
-    fontSize: "1rem",
-    color: "#007bff",
-    textDecoration: "none",
+    fontSize: '1rem',
+    color: '#007bff',
+    textDecoration: 'none',
   },
 };
 

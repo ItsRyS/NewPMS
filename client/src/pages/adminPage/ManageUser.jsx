@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
+import { useEffect, useState } from 'react';
+import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
 import {
   Box,
   Button,
@@ -16,11 +16,11 @@ import {
   Typography,
   useMediaQuery,
   Paper,
-} from "@mui/material";
-import { useTheme } from "@mui/system";
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import EditIcon from "@mui/icons-material/Edit";
-import api from "../../services/api";
+} from '@mui/material';
+import { useTheme } from '@mui/system';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import EditIcon from '@mui/icons-material/Edit';
+import api from '../../services/api';
 
 const ManageUser = () => {
   const [users, setUsers] = useState([]);
@@ -28,29 +28,29 @@ const ManageUser = () => {
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
   const [form, setForm] = useState({
-    username: "",
-    email: "",
-    password: "",
-    role: "",
+    username: '',
+    email: '',
+    password: '',
+    role: '',
   });
   const [errors, setErrors] = useState({});
-  const [searchField, setSearchField] = useState("username");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchField, setSearchField] = useState('username');
+  const [searchQuery, setSearchQuery] = useState('');
   const [editUser, setEditUser] = useState(null);
 
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // Fetch Users
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await api.get("/users");
+        const response = await api.get('/users');
         setUsers(response.data);
         setFilteredUsers(response.data);
         setLoading(false);
       } catch (error) {
-        console.error("Failed to fetch users", error);
+        console.error('Failed to fetch users', error);
       }
     };
     fetchUsers();
@@ -70,8 +70,8 @@ const ManageUser = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!form.username) newErrors.username = "Username is required";
-    if (!form.email) newErrors.email = "Email is required";
+    if (!form.username) newErrors.username = 'Username is required';
+    if (!form.email) newErrors.email = 'Email is required';
     return newErrors;
   };
 
@@ -79,8 +79,8 @@ const ManageUser = () => {
     setEditUser(user);
     setForm(
       user
-        ? { ...user, password: "" }
-        : { username: "", email: "", password: "", role: "" }
+        ? { ...user, password: '' }
+        : { username: '', email: '', password: '', role: '' }
     );
     setErrors({});
     setOpenDialog(true);
@@ -98,34 +98,34 @@ const ManageUser = () => {
       if (editUser) {
         await api.put(`/users/${editUser.user_id}`, form);
       } else {
-        await api.post("/users", form);
+        await api.post('/users', form);
       }
       setOpenDialog(false);
-      setUsers(await api.get("/users").then((res) => res.data));
+      setUsers(await api.get('/users').then((res) => res.data));
     } catch (error) {
-      console.error("Failed to save user", error);
+      console.error('Failed to save user', error);
     }
   };
 
   const deleteUser = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this user?")) return;
+    if (!window.confirm('Are you sure you want to delete this user?')) return;
     try {
       await api.delete(`/users/${id}`);
       setUsers(users.filter((user) => user.user_id !== id));
     } catch (error) {
-      console.error("Failed to delete user", error);
+      console.error('Failed to delete user', error);
     }
   };
 
   const columns = [
-    { field: "user_id", headerName: "ID", flex: 0.2 },
-    { field: "username", headerName: "Username", flex: 1 },
-    { field: "email", headerName: "Email", flex: 1 },
-    { field: "role", headerName: "Role", flex: 0.5 },
+    { field: 'user_id', headerName: 'ID', flex: 0.2 },
+    { field: 'username', headerName: 'Username', flex: 1 },
+    { field: 'email', headerName: 'Email', flex: 1 },
+    { field: 'role', headerName: 'Role', flex: 0.5 },
     {
-      field: "actions",
-      type: "actions",
-      headerName: "Actions",
+      field: 'actions',
+      type: 'actions',
+      headerName: 'Actions',
       flex: 0.8,
       getActions: (params) => [
         <GridActionsCellItem
@@ -152,14 +152,14 @@ const ManageUser = () => {
         alignItems="center"
         mb={2}
       >
-        <Typography variant={isMobile ? "h6" : "h5"}>Manage Users</Typography>
+        <Typography variant={isMobile ? 'h6' : 'h5'}>Manage Users</Typography>
         <Button variant="contained" onClick={() => handleOpenDialog()}>
           Add User
         </Button>
       </Box>
       <Box
         display="flex"
-        flexDirection={{ xs: "column", md: "row" }}
+        flexDirection={{ xs: 'column', md: 'row' }}
         gap={2}
         mb={2}
       >
@@ -192,7 +192,7 @@ const ManageUser = () => {
         />
       )}
       <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>{editUser ? "Edit User" : "Add User"}</DialogTitle>
+        <DialogTitle>{editUser ? 'Edit User' : 'Add User'}</DialogTitle>
         <DialogContent>
           <TextField
             fullWidth

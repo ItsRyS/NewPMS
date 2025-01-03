@@ -1,4 +1,4 @@
-const db = require("../config/db");
+const db = require('../config/db');
 
 // Update request status and move approved projects to project_release
 exports.updateRequestStatus = async (req, res) => {
@@ -7,7 +7,7 @@ exports.updateRequestStatus = async (req, res) => {
   if (!requestId || !status) {
     return res
       .status(400)
-      .json({ success: false, message: "Request ID and status are required." });
+      .json({ success: false, message: 'Request ID and status are required.' });
   }
 
   const connection = await db.getConnection();
@@ -24,11 +24,11 @@ exports.updateRequestStatus = async (req, res) => {
       await connection.rollback();
       return res
         .status(404)
-        .json({ success: false, message: "Request not found." });
+        .json({ success: false, message: 'Request not found.' });
     }
 
     // Handle approved status: Move to project_release
-    if (status === "approved") {
+    if (status === 'approved') {
       const [projectData] = await connection.query(
         `
         SELECT 
@@ -69,7 +69,7 @@ exports.updateRequestStatus = async (req, res) => {
     }
 
     // Handle rejected status: Remove from project_release
-    if (status === "rejected") {
+    if (status === 'rejected') {
       await connection.query(
         `DELETE FROM project_release WHERE project_id IN (
           SELECT project_id FROM students_projects WHERE request_id = ?
@@ -87,11 +87,11 @@ exports.updateRequestStatus = async (req, res) => {
     await connection.commit();
     res
       .status(200)
-      .json({ success: true, message: "Status updated successfully." });
+      .json({ success: true, message: 'Status updated successfully.' });
   } catch (error) {
     await connection.rollback();
-    console.error("Error updating request status:", error.message);
-    res.status(500).json({ success: false, error: "Failed to update status." });
+    console.error('Error updating request status:', error.message);
+    res.status(500).json({ success: false, error: 'Failed to update status.' });
   } finally {
     connection.release();
   }
@@ -125,14 +125,14 @@ exports.getApprovedProjects = async (req, res) => {
     if (projects.length === 0) {
       return res
         .status(404)
-        .json({ success: false, message: "No projects found." });
+        .json({ success: false, message: 'No projects found.' });
     }
 
     res.status(200).json({ success: true, data: projects });
   } catch (error) {
-    console.error("Error fetching projects:", error.message);
+    console.error('Error fetching projects:', error.message);
     res
       .status(500)
-      .json({ success: false, error: "Failed to fetch projects." });
+      .json({ success: false, error: 'Failed to fetch projects.' });
   }
 };
