@@ -1,6 +1,6 @@
 import js from "@eslint/js";
 import globals from "globals";
-import prettier from "eslint-config-prettier"; // Import Prettier Config
+import prettier from "eslint-config-prettier";
 
 export default [
   { ignores: ["dist", "node_modules"] },
@@ -13,7 +13,7 @@ export default [
     },
     rules: {
       ...js.configs.recommended.rules,
+      ...prettier.rules // เพิ่มกฎของ Prettier โดยตรง
     },
-    extends: [prettier], // ปิดกฎที่ขัดแย้งกับ Prettier
   },
 ];
