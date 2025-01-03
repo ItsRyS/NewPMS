@@ -8,7 +8,9 @@ const storage = multer.diskStorage({
     cb(null, "./upload/pic"); // เก็บในโฟลเดอร์ pic
   },
   filename: (req, file, cb) => {
-    const originalName = Buffer.from(file.originalname, "latin1").toString("utf8");
+    const originalName = Buffer.from(file.originalname, "latin1").toString(
+      "utf8"
+    );
     const uniqueSuffix = Date.now();
     const sanitizedName = originalName
       .normalize("NFD")
@@ -19,7 +21,6 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage });
-
 
 exports.uploadMiddleware = upload.single("teacher_image");
 
@@ -80,12 +81,10 @@ exports.createTeacher = async (req, res) => {
         teacher_image,
       ]
     );
-    res
-      .status(201)
-      .json({
-        message: "Teacher created successfully",
-        teacherId: result.insertId,
-      });
+    res.status(201).json({
+      message: "Teacher created successfully",
+      teacherId: result.insertId,
+    });
   } catch (error) {
     console.error("Error creating teacher:", error.message);
     res.status(500).json({ error: "Database insert failed" });

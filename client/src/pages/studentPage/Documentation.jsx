@@ -12,7 +12,9 @@ import {
   Dialog,
   DialogContent,
   IconButton,
-  CircularProgress,useMediaQuery, useTheme
+  CircularProgress,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
@@ -52,44 +54,43 @@ const Documentation = () => {
 
   return (
     <Paper elevation={3} sx={{ padding: 4, borderRadius: 3 }}>
-        <Typography variant="h4" gutterBottom>
-          Documentation
-        </Typography>
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Title</TableCell>
-                <TableCell>Description</TableCell>
-                <TableCell>Uploaded By</TableCell>
-                <TableCell>Upload Date</TableCell>
-                <TableCell>Action</TableCell>
+      <Typography variant="h4" gutterBottom>
+        Documentation
+      </Typography>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Title</TableCell>
+              <TableCell>Description</TableCell>
+              <TableCell>Uploaded By</TableCell>
+              <TableCell>Upload Date</TableCell>
+              <TableCell>Action</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {documents.map((doc) => (
+              <TableRow key={doc.doc_id}>
+                <TableCell>{doc.doc_title}</TableCell>
+                <TableCell>{doc.doc_description}</TableCell>
+                <TableCell>{doc.uploaded_by}</TableCell>
+                <TableCell>
+                  {new Date(doc.upload_date).toLocaleDateString()}
+                </TableCell>
+                <TableCell>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => handleOpenDialog(doc)}
+                  >
+                    View
+                  </Button>
+                </TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {documents.map((doc) => (
-                <TableRow key={doc.doc_id}>
-                  <TableCell>{doc.doc_title}</TableCell>
-                  <TableCell>{doc.doc_description}</TableCell>
-                  <TableCell>{doc.uploaded_by}</TableCell>
-                  <TableCell>
-                    {new Date(doc.upload_date).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => handleOpenDialog(doc)}
-                    >
-                      View
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-     
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
       {/* Dialog สำหรับแสดงเอกสาร */}
       <Dialog
@@ -127,7 +128,7 @@ const Documentation = () => {
                 border: "none",
                 display: loading ? "none" : "block", // ซ่อน iframe จนกว่าจะโหลดเสร็จ
               }}
-              sandbox="allow-scripts allow-same-origin" // เพิ่มความปลอดภัย
+              sandbox="allow-scripts allow-same-origin allow-downloads" // เพิ่มความปลอดภัย
               title={selectedDocument.doc_title}
             />
           )}

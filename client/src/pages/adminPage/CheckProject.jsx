@@ -110,8 +110,8 @@ const CheckProject = () => {
                     request.status === "approved"
                       ? "SpringGreen"
                       : request.status === "rejected"
-                      ? "salmon"
-                      : "lightgray",
+                        ? "salmon"
+                        : "lightgray",
                   color: "white",
                 }}
               >

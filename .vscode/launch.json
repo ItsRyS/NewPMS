@@ -1,0 +1,30 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch Vite React App",
+      "type": "firefox",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/src",
+      "firefoxExecutable": "C:\\Program Files\\Firefox Developer Edition\\firefox.exe",
+      "pathMappings": [
+        {
+          "url": "http://localhost:5173/src",
+          "path": "${workspaceFolder}/client/src"
+        },
+        {
+          "url": "http://localhost:5173",
+          "path": "${workspaceFolder}"
+        }
+      ]
+    },
+    {
+      "name": "Attach to Running Firefox",
+      "type": "firefox",
+      "request": "attach",
+      "host": "localhost",
+      "port": 6000
+    }
+  ]
+}

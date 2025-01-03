@@ -27,21 +27,19 @@ const menuItems = [
 const NavbarHome = () => {
   return (
     <AppBar
-  position="sticky" // ทำให้ Navbar ติดกับด้านบนเสมอ
-  sx={{
-    backgroundColor: "#01153e",
-    width: "100%",
-    zIndex: 99,
-    paddingX: 2,
-  }}
->
-
+      position="sticky" // ทำให้ Navbar ติดกับด้านบนเสมอ
+      sx={{
+        backgroundColor: "#01153e",
+        width: "100%",
+        zIndex: 99,
+        paddingX: 2,
+      }}
+    >
       <Toolbar sx={{ justifyContent: "space-between" }}>
         {/* Logo */}
         <Box sx={{ display: "flex", alignItems: "center" }}>
           <Link to="/" style={{ textDecoration: "none" }}>
             {" "}
-            
             <img
               src="/it_logo2.svg"
               alt="IT-PMS Logo"

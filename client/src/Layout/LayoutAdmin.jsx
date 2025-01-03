@@ -30,11 +30,11 @@ const LayoutAdmin = () => {
             display: "flex",
             flexDirection: "column",
             marginLeft: { sm: "240px" },
-            padding: 2, 
-            overflowY: "auto", 
+            padding: 2,
+            overflowY: "auto",
           }}
         >
-          <Toolbar /> 
+          <Toolbar />
           <Suspense fallback={<div>Loading...</div>}>
             <Outlet />
           </Suspense>

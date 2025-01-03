@@ -1,8 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  DataGrid,
-  GridActionsCellItem,
-} from "@mui/x-data-grid";
+import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
 import {
   Box,
   Button,
@@ -30,7 +27,12 @@ const ManageUser = () => {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
-  const [form, setForm] = useState({ username: "", email: "", password: "", role: "" });
+  const [form, setForm] = useState({
+    username: "",
+    email: "",
+    password: "",
+    role: "",
+  });
   const [errors, setErrors] = useState({});
   const [searchField, setSearchField] = useState("username");
   const [searchQuery, setSearchQuery] = useState("");
@@ -58,7 +60,10 @@ const ManageUser = () => {
   useEffect(() => {
     setFilteredUsers(
       users.filter((user) =>
-        user[searchField]?.toString().toLowerCase().includes(searchQuery.toLowerCase())
+        user[searchField]
+          ?.toString()
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase())
       )
     );
   }, [users, searchField, searchQuery]);
@@ -72,7 +77,11 @@ const ManageUser = () => {
 
   const handleOpenDialog = (user = null) => {
     setEditUser(user);
-    setForm(user ? { ...user, password: "" } : { username: "", email: "", password: "", role: "" });
+    setForm(
+      user
+        ? { ...user, password: "" }
+        : { username: "", email: "", password: "", role: "" }
+    );
     setErrors({});
     setOpenDialog(true);
   };
@@ -136,15 +145,30 @@ const ManageUser = () => {
   ];
 
   return (
-      <Paper elevation={3} sx={{ padding: 4, borderRadius: 3 }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} >
+    <Paper elevation={3} sx={{ padding: 4, borderRadius: 3 }}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
         <Typography variant={isMobile ? "h6" : "h5"}>Manage Users</Typography>
-        <Button variant="contained" onClick={() => handleOpenDialog()}>Add User</Button>
+        <Button variant="contained" onClick={() => handleOpenDialog()}>
+          Add User
+        </Button>
       </Box>
-      <Box display="flex" flexDirection={{ xs: "column", md: "row" }} gap={2} mb={2}>
+      <Box
+        display="flex"
+        flexDirection={{ xs: "column", md: "row" }}
+        gap={2}
+        mb={2}
+      >
         <FormControl fullWidth>
           <InputLabel>Search By</InputLabel>
-          <Select value={searchField} onChange={(e) => setSearchField(e.target.value)}>
+          <Select
+            value={searchField}
+            onChange={(e) => setSearchField(e.target.value)}
+          >
             <MenuItem value="username">Username</MenuItem>
             <MenuItem value="email">Email</MenuItem>
             <MenuItem value="role">Role</MenuItem>
@@ -160,7 +184,12 @@ const ManageUser = () => {
       {loading ? (
         <CircularProgress />
       ) : (
-        <DataGrid rows={filteredUsers} columns={columns} autoHeight getRowId={(row) => row.user_id} />
+        <DataGrid
+          rows={filteredUsers}
+          columns={columns}
+          autoHeight
+          getRowId={(row) => row.user_id}
+        />
       )}
       <Dialog open={openDialog} onClose={handleCloseDialog}>
         <DialogTitle>{editUser ? "Edit User" : "Add User"}</DialogTitle>
@@ -204,11 +233,12 @@ const ManageUser = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button variant="contained" onClick={handleSubmit}>Save</Button>
+          <Button variant="contained" onClick={handleSubmit}>
+            Save
+          </Button>
         </DialogActions>
       </Dialog>
-      </Paper>
-   
+    </Paper>
   );
 };
 

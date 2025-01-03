@@ -20,21 +20,23 @@ const ManageUser = lazy(() => import("../pages/adminPage/ManageUser"));
 const ReleaseProject = lazy(() => import("../pages/adminPage/ReleaseProject"));
 const UploadDoc = lazy(() => import("../pages/adminPage/UploadDoc"));
 const TeacherInfo = lazy(() => import("../pages/adminPage/TeacherInfo"));
-const ViewProjectDocuments = lazy(() =>
-  import("../pages/adminPage/ViewProjectDocuments")
+const ViewProjectDocuments = lazy(
+  () => import("../pages/adminPage/ViewProjectDocuments")
 );
 
 const Documentation = lazy(() => import("../pages/studentPage/Documentation"));
 const SendProject = lazy(() => import("../pages/studentPage/SendProject"));
-const ProjectRequest = lazy(() =>
-  import("../pages/studentPage/ProjectRequest")
+const ProjectRequest = lazy(
+  () => import("../pages/studentPage/ProjectRequest")
 );
-const UploadProjectDocument = lazy(() =>
-  import("../pages/studentPage/UploadProjectDocument")
+const UploadProjectDocument = lazy(
+  () => import("../pages/studentPage/UploadProjectDocument")
 );
 // สร้าง Router โดยใช้ Lazy Components
 const router = createBrowserRouter([
   {
+    future: { v7_startTransition: true, 
+      v7_relativeSplatsPath: true },
     path: "/",
     element: (
       <Suspense fallback={<div>Loading...</div>}>

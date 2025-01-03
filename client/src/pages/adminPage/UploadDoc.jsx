@@ -91,13 +91,13 @@ const UploadDoc = () => {
       });
       return;
     }
-  
+
     const formData = new FormData();
     formData.append("file", file);
     formData.append("doc_title", docTitle);
     formData.append("doc_description", docDescription);
     formData.append("uploaded_by", username); // ส่ง user_id แทน username
-  
+
     try {
       const response = await api.post("/document/upload", formData);
       setSnackbar({
@@ -105,10 +105,10 @@ const UploadDoc = () => {
         message: response.data.message,
         severity: "success",
       });
-  
+
       const updatedDocuments = await api.get("/document");
       setDocuments(updatedDocuments.data);
-  
+
       setFile(null);
       setFileName("");
       setDocTitle("");
@@ -122,7 +122,6 @@ const UploadDoc = () => {
       });
     }
   };
-  
 
   const handleViewDocument = (docPath) => {
     if (!docPath) {
@@ -161,120 +160,118 @@ const UploadDoc = () => {
   };
 
   return (
-    
-      <Paper elevation={3} sx={{ padding: 4, borderRadius: 3 }}>
-        <Grid container spacing={4}>
-          {/* Upload Section */}
-          <Grid item xs={12} md={6}>
-            <Box>
-              <Typography variant="h5" sx={{ mb: 2 }}>
-                Upload Document
-              </Typography>
-              <TextField
-                label="Document Title"
-                variant="outlined"
-                fullWidth
-                value={docTitle}
-                onChange={(e) => setDocTitle(e.target.value)}
-                sx={{ mb: 2 }}
-              />
-              <TextField
-                label="Document Description"
-                variant="outlined"
-                fullWidth
-                multiline
-                rows={3}
-                value={docDescription}
-                onChange={(e) => setDocDescription(e.target.value)}
-                sx={{ mb: 2 }}
-              />
-              <Button
-                variant="contained"
-                component="label"
-                sx={{ mb: 2, display: "block" }}
-              >
-                Select File
-                <input
-                  type="file"
-                  hidden
-                  accept=".pdf"
-                  onChange={handleFileChange}
-                />
-              </Button>
-              {fileName && (
-                <Typography variant="body2" sx={{ mb: 2 }}>
-                  Selected File: {fileName}
-                </Typography>
-              )}
-              <Button
-                variant="contained"
-                color="primary"
-                fullWidth
-                onClick={handleUpload}
-              >
-                Upload Document
-              </Button>
-            </Box>
-          </Grid>
-
-          {/* Document List Section */}
-          <Grid item xs={12} md={6}>
+    <Paper elevation={3} sx={{ padding: 4, borderRadius: 3 }}>
+      <Grid container spacing={4}>
+        {/* Upload Section */}
+        <Grid item xs={12} md={6}>
+          <Box>
             <Typography variant="h5" sx={{ mb: 2 }}>
-              Document List
+              Upload Document
             </Typography>
-            {documents.length === 0 ? (
-              <Typography variant="body2" color="textSecondary">
-                No documents found.
+            <TextField
+              label="Document Title"
+              variant="outlined"
+              fullWidth
+              value={docTitle}
+              onChange={(e) => setDocTitle(e.target.value)}
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              label="Document Description"
+              variant="outlined"
+              fullWidth
+              multiline
+              rows={3}
+              value={docDescription}
+              onChange={(e) => setDocDescription(e.target.value)}
+              sx={{ mb: 2 }}
+            />
+            <Button
+              variant="contained"
+              component="label"
+              sx={{ mb: 2, display: "block" }}
+            >
+              Select File
+              <input
+                type="file"
+                hidden
+                accept=".pdf"
+                onChange={handleFileChange}
+              />
+            </Button>
+            {fileName && (
+              <Typography variant="body2" sx={{ mb: 2 }}>
+                Selected File: {fileName}
               </Typography>
-            ) : (
-              <Box sx={{ maxHeight: 400, overflowY: "auto" }}>
-                {documents.map((doc) => (
-                  <Paper
-                    key={doc.doc_id}
-                    elevation={2}
-                    sx={{
-                      padding: 2,
-                      mb: 2,
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      "&:hover": { backgroundColor: "#f1f1f1" },
-                    }}
-                  >
-                    <Box>
-                      <Typography variant="h6">{doc.doc_title}</Typography>
-                      <Typography variant="body2">
-                        {doc.doc_description}
-                      </Typography>
-                      <Typography variant="caption" color="textSecondary">
-                        Uploaded by: {doc.uploaded_by} |{" "}
-                        {new Date(doc.upload_date).toLocaleString()}
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Button
-                        variant="outlined"
-                        color="primary"
-                        onClick={() => handleViewDocument(doc.doc_path)}
-                        sx={{ mr: 2 }}
-                      >
-                        View
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        color="error"
-                        onClick={() => handleDeleteDocument(doc.doc_id)}
-                      >
-                        Delete
-                      </Button>
-                    </Box>
-                  </Paper>
-                ))}
-              </Box>
             )}
-          </Grid>
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
+              onClick={handleUpload}
+            >
+              Upload Document
+            </Button>
+          </Box>
         </Grid>
-      
+
+        {/* Document List Section */}
+        <Grid item xs={12} md={6}>
+          <Typography variant="h5" sx={{ mb: 2 }}>
+            Document List
+          </Typography>
+          {documents.length === 0 ? (
+            <Typography variant="body2" color="textSecondary">
+              No documents found.
+            </Typography>
+          ) : (
+            <Box sx={{ maxHeight: 400, overflowY: "auto" }}>
+              {documents.map((doc) => (
+                <Paper
+                  key={doc.doc_id}
+                  elevation={2}
+                  sx={{
+                    padding: 2,
+                    mb: 2,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    "&:hover": { backgroundColor: "#f1f1f1" },
+                  }}
+                >
+                  <Box>
+                    <Typography variant="h6">{doc.doc_title}</Typography>
+                    <Typography variant="body2">
+                      {doc.doc_description}
+                    </Typography>
+                    <Typography variant="caption" color="textSecondary">
+                      Uploaded by: {doc.uploaded_by} |{" "}
+                      {new Date(doc.upload_date).toLocaleString()}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      onClick={() => handleViewDocument(doc.doc_path)}
+                      sx={{ mr: 2 }}
+                    >
+                      View
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      onClick={() => handleDeleteDocument(doc.doc_id)}
+                    >
+                      Delete
+                    </Button>
+                  </Box>
+                </Paper>
+              ))}
+            </Box>
+          )}
+        </Grid>
+      </Grid>
 
       {/* PDF Viewer Dialog */}
       <Dialog
@@ -334,8 +331,7 @@ const UploadDoc = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
-      </Paper>
-    
+    </Paper>
   );
 };
 

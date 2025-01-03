@@ -1,9 +1,5 @@
-
-
 const SendProject = () => {
-  return (
-    <div>SendProject</div>
-  )
-}
+  return <div>SendProject</div>;
+};
 
-export default SendProject
+export default SendProject;

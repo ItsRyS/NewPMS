@@ -29,8 +29,8 @@ const LayoutStudent = () => {
             display: "flex",
             flexDirection: "column",
             marginLeft: { sm: "240px" },
-            padding: 2, 
-            overflowY: "auto", 
+            padding: 2,
+            overflowY: "auto",
           }}
         >
           <Toolbar />

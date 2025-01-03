@@ -10,7 +10,9 @@ exports.login = async (req, res) => {
   }
 
   try {
-    const [userResult] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
+    const [userResult] = await db.query("SELECT * FROM users WHERE email = ?", [
+      email,
+    ]);
     const user = userResult[0];
 
     if (!user) {
@@ -52,7 +54,10 @@ exports.register = async (req, res) => {
 
   try {
     // ตรวจสอบว่า email ซ้ำหรือไม่
-    const [existingUser] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
+    const [existingUser] = await db.query(
+      "SELECT * FROM users WHERE email = ?",
+      [email]
+    );
     if (existingUser.length > 0) {
       return res.status(409).json({ error: "อีเมลนี้ถูกใช้ไปแล้ว" });
     }
@@ -62,7 +67,12 @@ exports.register = async (req, res) => {
       "INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)",
       [username, email, hashedPassword, "student"]
     );
-    res.status(201).json({ message: "User registered successfully", userId: result.insertId });
+    res
+      .status(201)
+      .json({
+        message: "User registered successfully",
+        userId: result.insertId,
+      });
   } catch (error) {
     console.error("Failed to register user:", error.message);
     res.status(500).json({ error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" });
@@ -90,7 +100,9 @@ exports.checkSession = (req, res) => {
   const tabId = req.headers["x-tab-id"];
 
   if (req.session && req.session.tabs && req.session.tabs[tabId]) {
-    res.status(200).json({ isAuthenticated: true, user: req.session.tabs[tabId] });
+    res
+      .status(200)
+      .json({ isAuthenticated: true, user: req.session.tabs[tabId] });
   } else {
     res.status(401).json({ isAuthenticated: false });
   }
@@ -99,9 +111,9 @@ exports.refreshSession = (req, res) => {
   const tabId = req.headers["x-tab-id"];
 
   if (req.session && req.session.tabs && req.session.tabs[tabId]) {
-      req.session.touch(); // ต่ออายุ Session
-      res.status(200).json({ success: true, message: "Session refreshed" });
+    req.session.touch(); // ต่ออายุ Session
+    res.status(200).json({ success: true, message: "Session refreshed" });
   } else {
-      res.status(401).json({ success: false, message: "Session expired" });
+    res.status(401).json({ success: false, message: "Session expired" });
   }
 };

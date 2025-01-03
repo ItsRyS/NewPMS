@@ -476,8 +476,8 @@ const UploadProjectDocument = () => {
                             doc.status === "approved"
                               ? "success"
                               : doc.status === "rejected"
-                              ? "error"
-                              : "default"
+                                ? "error"
+                                : "default"
                           }
                           sx={{ width: "90px", textAlign: "center" }}
                         />

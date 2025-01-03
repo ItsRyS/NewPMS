@@ -1,6 +1,10 @@
 import * as React from "react";
 import PropTypes from "prop-types";
-import { ThemeProvider, createTheme, responsiveFontSizes } from "@mui/material/styles";
+import {
+  ThemeProvider,
+  createTheme,
+  responsiveFontSizes,
+} from "@mui/material/styles";
 import { useMediaQuery } from "@mui/material";
 
 // แก้ไขตำแหน่ง import colorSchemes

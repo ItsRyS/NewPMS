@@ -221,8 +221,8 @@ const ViewProjectDocuments = () => {
                       doc.status === "approved"
                         ? "success"
                         : doc.status === "rejected"
-                        ? "error"
-                        : "default"
+                          ? "error"
+                          : "default"
                     }
                   />
                 </TableCell>

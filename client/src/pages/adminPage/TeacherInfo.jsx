@@ -237,11 +237,21 @@ const TeacherInfo = () => {
         <Dialog open={!!viewTeacher} onClose={handleCloseView}>
           <DialogTitle>Teacher Details</DialogTitle>
           <DialogContent>
-            <p><strong>Name:</strong> {viewTeacher.teacher_name}</p>
-            <p><strong>Phone:</strong> {viewTeacher.teacher_phone}</p>
-            <p><strong>Email:</strong> {viewTeacher.teacher_email}</p>
-            <p><strong>Position:</strong> {viewTeacher.teacher_position}</p>
-            <p><strong>Expertise:</strong> {viewTeacher.teacher_expert}</p>
+            <p>
+              <strong>Name:</strong> {viewTeacher.teacher_name}
+            </p>
+            <p>
+              <strong>Phone:</strong> {viewTeacher.teacher_phone}
+            </p>
+            <p>
+              <strong>Email:</strong> {viewTeacher.teacher_email}
+            </p>
+            <p>
+              <strong>Position:</strong> {viewTeacher.teacher_position}
+            </p>
+            <p>
+              <strong>Expertise:</strong> {viewTeacher.teacher_expert}
+            </p>
             {viewTeacher.teacher_image && (
               <img
                 src={`http://localhost:5000/upload/pic/${viewTeacher.teacher_image}`}

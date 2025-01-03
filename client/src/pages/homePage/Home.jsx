@@ -81,7 +81,7 @@ const Home = () => {
       flex: 1,
       minWidth: 200,
       renderCell: (params) => (
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.2}}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.2 }}>
           {params.row.team_members
             ? params.row.team_members
                 .split(", ")

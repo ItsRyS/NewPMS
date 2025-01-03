@@ -299,8 +299,8 @@ const ProjectRequest = () => {
                   status.status === "pending"
                     ? "#9e9e9e"
                     : status.status === "approved"
-                    ? "#4caf50"
-                    : "#f44336",
+                      ? "#4caf50"
+                      : "#f44336",
                 color: "#fff",
                 border: index === 0 ? "2px solid #000" : "none", // เน้นคำขอล่าสุด
               }}

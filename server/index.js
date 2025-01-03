@@ -98,7 +98,9 @@ app.use((req, res) => {
 // Global Error Handler
 app.use((err, req, res, next) => {
   console.error("Error stack:", err.stack); // แสดง Stack Error
-  res.status(500).json({ error: "An unexpected error occurred", details: err.message });
+  res
+    .status(500)
+    .json({ error: "An unexpected error occurred", details: err.message });
 });
 
 // Start Server

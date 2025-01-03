@@ -27,7 +27,11 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     // ตรวจสอบสถานะ 401 Unauthorized และยังไม่ได้ลองคำขอนี้ใหม่
-    if (error.response && error.response.status === 401 && !originalRequest._retry) {
+    if (
+      error.response &&
+      error.response.status === 401 &&
+      !originalRequest._retry
+    ) {
       originalRequest._retry = true; // ป้องกันการวนลูปคำขอ
 
       try {

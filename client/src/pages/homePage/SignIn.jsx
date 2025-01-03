@@ -41,7 +41,6 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
 }));
 
 export default function SignIn() {
-  
   const [emailError, setEmailError] = React.useState(false);
   const [emailErrorMessage, setEmailErrorMessage] = React.useState("");
   const [passwordError, setPasswordError] = React.useState(false);
@@ -81,7 +80,8 @@ export default function SignIn() {
     } catch (error) {
       console.error("Sign-in error:", error);
       setServerError(
-        error.response?.data?.error || "Sign-in failed. Please check your credentials."
+        error.response?.data?.error ||
+        "Sign-in failed. Please check your credentials."
       );
     }
   };
@@ -89,115 +89,117 @@ export default function SignIn() {
   const validateInputs = () => {
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
-    let isValid = true;
 
-    if (!email || !/\S+@\S+\.\S+/.test(email)) {
-      setEmailError(true);
-      setEmailErrorMessage("Please enter a valid email address.");
-      isValid = false;
-    } else {
-      setEmailError(false);
-      setEmailErrorMessage("");
-    }
+    const isEmailValid = email && /\S+@\S+\.\S+/.test(email);
+    const isPasswordValid = password && password.length >= 6;
 
-    if (!password || password.length < 6) {
-      setPasswordError(true);
-      setPasswordErrorMessage("Password must be at least 6 characters long.");
-      isValid = false;
-    } else {
-      setPasswordError(false);
-      setPasswordErrorMessage("");
-    }
+    setEmailError(!isEmailValid);
+    setEmailErrorMessage(
+      !isEmailValid ? "Please enter a valid email address." : ""
+    );
 
-    return isValid;
+    setPasswordError(!isPasswordValid);
+    setPasswordErrorMessage(
+      !isPasswordValid ? "Password must be at least 6 characters long." : ""
+    );
+
+    return isEmailValid && isPasswordValid;
   };
 
   return (
     <>
       <CssBaseline />
-      <SignInContainer direction="column" justifyContent="space-between">
-        <Card variant="outlined">
-          <Box
-            sx={{
-              width: "200px",
-              height: "80px",
-            }}
-          >
-            <img
-              src="/it_logo.png"
-              alt="IT-PMS Logo"
-              style={{ width: "100%", height: "100%", objectFit: "scale-down" }}
-            />
-          </Box>
+      <SignInContainer
+  direction="column"
+  justifyContent="space-between"
+  sx={{ height: "100vh", overflow: "auto" }}
+>
+  <Card variant="outlined" sx={{ minHeight: "400px" }}>
+    <Box
+      sx={{
+        width: "200px",
+        height: "80px",
+        margin: "0 auto",
+      }}
+    >
+      <img
+        src="/it_logo.png"
+        alt="IT-PMS Logo"
+        style={{ width: "100%", height: "100%", objectFit: "scale-down" }}
+      />
+    </Box>
 
-          <Typography
-            component="h1"
-            variant="h4"
-            sx={{ fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
-          >
-            Sign in
-          </Typography>
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            noValidate
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              width: "100%",
-              gap: 2,
-            }}
-          >
-            {serverError && (
-              <Typography color="error">{serverError}</Typography>
-            )}
-            <FormControl>
-              <FormLabel htmlFor="email">Email</FormLabel>
-              <TextField
-                error={emailError}
-                helperText={emailErrorMessage}
-                id="email"
-                type="email"
-                name="email"
-                placeholder="your@email.com"
-                autoComplete="email"
-                autoFocus
-                required
-                fullWidth
-                variant="outlined"
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel htmlFor="password">Password</FormLabel>
-              <TextField
-                error={passwordError}
-                helperText={passwordErrorMessage}
-                name="password"
-                placeholder="••••••"
-                type="password"
-                id="password"
-                autoComplete="current-password"
-                required
-                fullWidth
-                variant="outlined"
-              />
-            </FormControl>
-            <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
-              label="Remember me"
-            />
-            <Button type="submit" fullWidth variant="contained">
-              Sign in
-            </Button>
-            <Typography sx={{ textAlign: "center" }}>
-              Don&apos;t have an account?{" "}
-              <Link href="SignUp" variant="body2">
-                Sign up
-              </Link>
-            </Typography>
-          </Box>
-        </Card>
-      </SignInContainer>
+    <Typography
+      component="h1"
+      variant="h4"
+      sx={{ fontSize: "clamp(2rem, 10vw, 2.15rem)", textAlign: "center" }}
+    >
+      Sign in
+    </Typography>
+    <Box
+      component="form"
+      onSubmit={handleSubmit}
+      noValidate
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        width: "100%",
+        gap: 2,
+      }}
+    >
+      {serverError && (
+        <Typography color="error" sx={{ textAlign: "center" }}>
+          {serverError}
+        </Typography>
+      )}
+      <FormControl>
+        <FormLabel htmlFor="email">Email</FormLabel>
+        <TextField
+          error={emailError}
+          helperText={emailErrorMessage}
+          id="email"
+          type="email"
+          name="email"
+          placeholder="your@email.com"
+          autoComplete="email"
+          autoFocus
+          required
+          fullWidth
+          variant="outlined"
+        />
+      </FormControl>
+      <FormControl>
+        <FormLabel htmlFor="password">Password</FormLabel>
+        <TextField
+          error={passwordError}
+          helperText={passwordErrorMessage}
+          name="password"
+          placeholder="••••••"
+          type="password"
+          id="password"
+          autoComplete="current-password"
+          required
+          fullWidth
+          variant="outlined"
+        />
+      </FormControl>
+      <FormControlLabel
+        control={<Checkbox value="remember" color="primary" />}
+        label="Remember me"
+      />
+      <Button type="submit" fullWidth variant="contained">
+        Sign in
+      </Button>
+      <Typography sx={{ textAlign: "center" }}>
+        Don&apos;t have an account?{" "}
+        <Link href="SignUp" variant="body2">
+          Sign up
+        </Link>
+      </Typography>
+    </Box>
+  </Card>
+</SignInContainer>
+
     </>
   );
 }

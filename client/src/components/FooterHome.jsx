@@ -21,7 +21,8 @@ const FooterHome = () => {
     >
       {/* Footer Text */}
       <Typography variant="body2" align="center" sx={{ mb: { xs: 1, sm: 0 } }}>
-        สงวนลิขสิทธิ์ © 2567 - ข้อมูลและเนื้อหาทั้งหมด - บริษัท ไลลาร์ เพอฟอร์ม จำกัด
+        สงวนลิขสิทธิ์ © 2567 - ข้อมูลและเนื้อหาทั้งหมด - บริษัท ไลลาร์ เพอฟอร์ม
+        จำกัด
       </Typography>
 
       {/* Footer Icons */}

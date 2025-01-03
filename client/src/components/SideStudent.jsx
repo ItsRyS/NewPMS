@@ -55,14 +55,13 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
 
   const drawerContent = (
     <>
-    <Toolbar />
+      <Toolbar />
       <Box
         sx={{
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           padding: 2,
-          
         }}
       >
         <Avatar alt={username} src="https://i.pravatar.cc/300" />
@@ -155,7 +154,12 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
         ModalProps={{ keepMounted: true }}
         sx={{
           display: { xs: "block", sm: "none" },
-          "& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth,padding:1,overflowY:"auto" },
+          "& .MuiDrawer-paper": {
+            boxSizing: "border-box",
+            width: drawerWidth,
+            padding: 1,
+            overflowY: "auto",
+          },
         }}
       >
         {drawerContent}
@@ -169,7 +173,6 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
             boxSizing: "border-box",
             backgroundColor: "#2d3a46",
             color: "#ffffff",
-            
           },
         }}
         open

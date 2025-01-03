@@ -1,16 +1,8 @@
-
 import PropTypes from "prop-types";
-import {
-  AppBar,
-  Toolbar,
-  Typography,
-  IconButton,
-} from "@mui/material";
+import { AppBar, Toolbar, Typography, IconButton } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 
 const NavAdmin = ({ handleDrawerToggle, title }) => {
-
-
   return (
     <AppBar
       position="fixed"

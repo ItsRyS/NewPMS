@@ -97,9 +97,6 @@ exports.updateRequestStatus = async (req, res) => {
   }
 };
 
-
-
-
 // Fetch approved and ongoing projects
 exports.getApprovedProjects = async (req, res) => {
   try {
@@ -126,13 +123,16 @@ exports.getApprovedProjects = async (req, res) => {
     );
 
     if (projects.length === 0) {
-      return res.status(404).json({ success: false, message: "No projects found." });
+      return res
+        .status(404)
+        .json({ success: false, message: "No projects found." });
     }
 
     res.status(200).json({ success: true, data: projects });
   } catch (error) {
     console.error("Error fetching projects:", error.message);
-    res.status(500).json({ success: false, error: "Failed to fetch projects." });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to fetch projects." });
   }
 };
-

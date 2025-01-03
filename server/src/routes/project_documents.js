@@ -6,7 +6,9 @@ const projectDocumentsController = require("../controllers/projectDocumentsContr
 const storage = multer.diskStorage({
   destination: "upload/project-documents",
   filename: (req, file, cb) => {
-    const originalName = Buffer.from(file.originalname, "latin1").toString("utf8");
+    const originalName = Buffer.from(file.originalname, "latin1").toString(
+      "utf8"
+    );
     const uniqueSuffix = Date.now();
     const sanitizedName = originalName
       .normalize("NFD")
@@ -18,17 +20,26 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-
-
 // เส้นทางสำหรับการจัดการเอกสารโครงงาน
-router.post("/upload", upload.single("file"), projectDocumentsController.uploadDocument); // อัปโหลดเอกสาร
+router.post(
+  "/upload",
+  upload.single("file"),
+  projectDocumentsController.uploadDocument
+); // อัปโหลดเอกสาร
 router.get("/all", projectDocumentsController.getAllDocuments); // ดึงข้อมูลเอกสารทั้งหมด
 router.get("/types", projectDocumentsController.getDocumentTypes); // ดึงประเภทเอกสาร
 router.get("/history", projectDocumentsController.getDocumentHistory); // ดึงประวัติเอกสาร
 router.delete("/delete/:documentId", projectDocumentsController.deleteDocument); // ลบเอกสาร
 router.post("/approve/:id", projectDocumentsController.approveDocument); // อนุมัติเอกสาร
 router.post("/reject/:id", projectDocumentsController.rejectDocument); // ปฏิเสธเอกสาร
-router.post("/resubmit/:id", upload.single("file"), projectDocumentsController.resubmitDocument); // ส่งเอกสารใหม่
-router.get("/types-with-status", projectDocumentsController.getDocumentTypesWithStatus);
+router.post(
+  "/resubmit/:id",
+  upload.single("file"),
+  projectDocumentsController.resubmitDocument
+); // ส่งเอกสารใหม่
+router.get(
+  "/types-with-status",
+  projectDocumentsController.getDocumentTypesWithStatus
+);
 
 module.exports = router;

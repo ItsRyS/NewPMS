@@ -15,7 +15,7 @@ const LayoutMain = () => {
       <NavbarHome />*/}
 
       {/* Main Content */}
-      <Box sx={{ flex: 1, }}>
+      <Box sx={{ flex: 1 }}>
         <Suspense fallback={<div>Loading...</div>}>
           <Outlet />
         </Suspense>

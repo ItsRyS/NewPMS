@@ -9,7 +9,9 @@ const storage = multer.diskStorage({
     cb(null, "upload/Document");
   },
   filename: (req, file, cb) => {
-    const originalName = Buffer.from(file.originalname, "latin1").toString("utf8");
+    const originalName = Buffer.from(file.originalname, "latin1").toString(
+      "utf8"
+    );
     const uniqueSuffix = Date.now();
     const sanitizedName = originalName
       .normalize("NFD")
@@ -21,12 +23,13 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-
-
 // Routes
-router.post("/upload", upload.single("file"), documentController.uploadDocument);
+router.post(
+  "/upload",
+  upload.single("file"),
+  documentController.uploadDocument
+);
 router.get("/", documentController.getDocuments);
 router.delete("/:id", documentController.deleteDocument);
-
 
 module.exports = router;
