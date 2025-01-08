@@ -21,33 +21,36 @@ const ProjectRequest = () => {
   const [students, setStudents] = useState([]);
   const [selectedAdvisor, setSelectedAdvisor] = useState('');
   const [projectStatus, setProjectStatus] = useState([]);
+  const [projectTypes, setProjectTypes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [canSubmit, setCanSubmit] = useState(true);
   const [latestStatus, setLatestStatus] = useState('');
   const [error, setError] = useState('');
 
-  // Fetch all required data
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [advisorResponse, studentResponse, sessionResponse] =
+        const [advisorResponse, studentResponse, sessionResponse, projectTypeResponse] =
           await Promise.all([
             api.get('/teacher'),
             api.get('/users'),
             api.get('/auth/check-session'),
+            api.get('/projects/project-types'),
           ]);
-
+  
+        console.log('Project Types Response:', projectTypeResponse.data); // เพิ่ม log ตรงนี้
+  
         const studentUsers = studentResponse.data.filter(
           (user) => user.role === 'student'
         );
         setAdvisors(advisorResponse.data);
         setStudents(studentUsers);
-
+        setProjectTypes(projectTypeResponse.data.data); // ตรวจสอบว่าข้อมูลถูกต้อง
+  
         const { user_id } = sessionResponse.data.user;
         setGroupMembers([user_id]);
-
-        // ดึงสถานะคำขอล่าสุด
+  
         const statusResponse = await api.get('/project-requests/status', {
           params: { studentId: user_id },
         });
@@ -55,12 +58,12 @@ const ProjectRequest = () => {
           (a, b) => new Date(b.created_at) - new Date(a.created_at)
         );
         setProjectStatus(statuses);
-
+  
         const hasApproved = statuses.some(
           (status) => status.status === 'approved'
         );
         setLatestStatus(hasApproved ? 'approved' : statuses[0]?.status || '');
-
+  
         setCanSubmit(
           !(
             statuses.some((status) => status.status === 'pending') ||
@@ -73,7 +76,7 @@ const ProjectRequest = () => {
         setLoading(false);
       }
     };
-
+  
     fetchData();
   }, []);
 
@@ -199,10 +202,18 @@ const ProjectRequest = () => {
           sx={{ marginBottom: 2 }}
           disabled={!canSubmit}
         >
-          <MenuItem value="IoT">IoT</MenuItem>
-          <MenuItem value="AI">AI</MenuItem>
-          <MenuItem value="Software">Software</MenuItem>
+          {projectTypes.length > 0 ? (
+            projectTypes.map((type) => (
+              <MenuItem key={type.project_type_id} value={type.project_type_name}>
+                {type.project_type_name}
+              </MenuItem>
+            ))
+          ) : (
+            <MenuItem disabled>Loading...</MenuItem>
+          )}
         </TextField>
+
+
 
         {/* Group Members */}
         {groupMembers.map((member, index) => (
@@ -302,7 +313,7 @@ const ProjectRequest = () => {
                       ? '#4caf50'
                       : '#f44336',
                 color: '#fff',
-                border: index === 0 ? '2px solid #000' : 'none', // เน้นคำขอล่าสุด
+                border: index === 0 ? '2px solid #000' : 'none',
               }}
             >
               <Typography variant="body1">

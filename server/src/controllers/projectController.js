@@ -136,3 +136,27 @@ exports.getApprovedProjects = async (req, res) => {
       .json({ success: false, error: 'Failed to fetch projects.' });
   }
 };
+
+// Fetch project types for project request form
+exports.getProjectTypes = async (req, res) => {
+  try {
+    const [projectTypes] = await db.query(
+      `SELECT project_type_id, project_type_name FROM project_types ORDER BY project_type_name ASC`
+    );
+
+    if (projectTypes.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: 'No project types found.' });
+    }
+
+    res.status(200).json({ success: true, data: projectTypes });
+  } catch (error) {
+    console.error('Error fetching project types:', error.message);
+    res
+      .status(500)
+      .json({ success: false, error: 'Failed to fetch project types.' });
+  }
+};
+
+

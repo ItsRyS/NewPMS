@@ -96,7 +96,7 @@ app.use((req, res) => {
 });
 
 // Global Error Handler
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   console.error("Error stack:", err.stack); // แสดง Stack Error
   res
     .status(500)

@@ -7,5 +7,6 @@ router.put('/update-status', projectController.updateRequestStatus);
 
 // Endpoint for fetching approved and ongoing projects
 router.get('/', projectController.getApprovedProjects);
+router.get('/project-types', projectController.getProjectTypes);
 
 module.exports = router;
