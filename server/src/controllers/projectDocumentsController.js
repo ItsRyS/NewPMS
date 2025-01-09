@@ -3,6 +3,9 @@ const db = require('../config/db');
 
 // อัปโหลดเอกสาร
 exports.uploadDocument = async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: 'กรุณาอัพโหลดไฟล์ PDF เท่านั้น' });
+  }
   const { request_id, type_id } = req.body;
   const file_path = req.file ? req.file.path : null;
 
@@ -15,10 +18,10 @@ exports.uploadDocument = async (req, res) => {
       'INSERT INTO project_documents (request_id, type_id, file_path) VALUES (?, ?, ?)',
       [request_id, type_id, file_path]
     );
-    res.status(200).json({ message: 'Document uploaded successfully.' });
+    res.status(200).json({ message: 'อัพโหลดเอกสารสำเร็จ' });
   } catch (error) {
     console.error('Error uploading document:', error.message);
-    res.status(500).json({ message: 'Database error.' });
+    res.status(500).json({ message: 'เกิดข้อผิดพลาดในการบันทึกเอกสาร' });
   }
 };
 
