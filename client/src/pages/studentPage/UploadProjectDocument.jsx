@@ -60,6 +60,14 @@ const UploadProjectDocument = () => {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm')); // สำหรับหน้าจอขนาดเล็ก
 
+  const handleApiError = useCallback((error, defaultMessage) => {
+    console.error('API Error:', error);
+    const message =
+      error.response?.data?.message || defaultMessage || 'เกิดข้อผิดพลาด';
+    showSnackbar(message, 'error');
+  }, []); // Dependency array ว่าง เพราะไม่มีตัวแปรใดที่ handleApiError ต้องพึ่งพา
+  
+  
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
@@ -100,7 +108,8 @@ const UploadProjectDocument = () => {
     } finally {
       setLoading(false);
     }
-  }, []); // ใส่ dependency array เป็นค่าว่าง เพื่อให้ฟังก์ชันถูกสร้างเพียงครั้งเดียว
+  }, [handleApiError]);
+   
   
   useEffect(() => {
     fetchData();
@@ -111,13 +120,8 @@ const showSnackbar = (message, severity = 'info') => {
   setSnackbar({ open: true, message, severity });
 };
 
-// Error handler สำหรับ API errors
-const handleApiError = (error, defaultMessage) => {
-  console.error('API Error:', error);
-  const message =
-    error.response?.data?.message || defaultMessage || 'เกิดข้อผิดพลาด';
-  showSnackbar(message, 'error');
-};
+
+
   const handleViewDocument = (filePath) => {
     if (filePath) {
       setSelectedFilePath(`http://localhost:5000/${filePath}`);
