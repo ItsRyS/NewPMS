@@ -104,7 +104,7 @@ export default function SignUp() {
 
       if (response.status === 201) {
         alert('Sign up successful! Redirecting to sign in.');
-        navigate('/signin');
+        navigate('/SignIn');
       }
     } catch (error) {
       const message = error.response?.data?.error || 'Connection failed.';

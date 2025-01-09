@@ -65,7 +65,8 @@ const router = createBrowserRouter([
             <SignUp />
           </Suspense>
         ),
-      },
+      }
+      ,
       {
         path: 'TeacherPage',
         element: (
