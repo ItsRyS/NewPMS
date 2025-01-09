@@ -27,8 +27,8 @@ function StudentHome() {
 
   return (
     <div>
-      <h1>Student Home</h1>
-      {/* เนื้อหาสำหรับ Student */}
+      <h1>Student Home page</h1>
+      
     </div>
   );
 }
