@@ -6,7 +6,6 @@ const Home = lazy(() => import('../pages/homePage/Home'));
 const SignIn = lazy(() => import('../pages/homePage/SignIn'));
 const SignUp = lazy(() => import('../pages/homePage/SignUp'));
 const TeacherPage = lazy(() => import('../pages/homePage/TeacherPage'));
-const NotFound = lazy(() => import('../components/NotFound'));
 
 const LayoutMain = lazy(() => import('../Layout/LayoutMain'));
 const LayoutAdmin = lazy(() => import('../Layout/LayoutAdmin'));
@@ -194,14 +193,7 @@ const router = createBrowserRouter([
       // Add more routes here
     ],
   },
-  {
-    path: '*',
-    element: (
-      <Suspense fallback={<div>Loading...</div>}>
-        <NotFound />
-      </Suspense>
-    ),
-  },
+  
 ]);
 
 const AppRoutes = () => {
