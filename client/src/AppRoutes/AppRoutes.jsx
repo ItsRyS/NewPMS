@@ -51,7 +51,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: 'SignIn',
+        path: 'signin',
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <SignIn />
@@ -59,7 +59,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: 'SignUp',
+        path: 'signup',
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <SignUp />
