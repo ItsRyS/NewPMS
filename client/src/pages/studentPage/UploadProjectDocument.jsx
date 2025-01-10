@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect,useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -55,47 +55,73 @@ const UploadProjectDocument = () => {
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
-    severity: 'info',
+    severity: 'success',
   });
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm')); // สำหรับหน้าจอขนาดเล็ก
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
+  const handleApiError = useCallback((error, defaultMessage) => {
+    console.error('API Error:', error);
+    const message =
+      error.response?.data?.message || defaultMessage || 'เกิดข้อผิดพลาด';
+    showSnackbar(message, 'error');
+  }, []); // Dependency array ว่าง เพราะไม่มีตัวแปรใดที่ handleApiError ต้องพึ่งพา
+  
+  
+  const fetchData = useCallback(async () => {
     try {
+      setLoading(true);
       const sessionResponse = await api.get('/auth/check-session');
       const studentId = sessionResponse.data.user.user_id;
-
+  
       const [typesResponse, requestsResponse] = await Promise.all([
         api.get('/document-types/types'),
         api.get(`/project-requests/status?studentId=${studentId}`),
       ]);
-
-      setDocumentTypes(typesResponse.data);
-
+  
+      const allTypes = typesResponse.data;
       const approvedRequest = requestsResponse.data.data.find(
         (request) => request.status === 'approved'
       );
-
+  
       setApprovedProject(approvedRequest || null);
-
+  
       if (approvedRequest) {
-        const typesResponse = await api.get(
-          `/project-documents/types-with-status?requestId=${approvedRequest.request_id}`
+        const [typesWithStatusResponse, historyResponse] = await Promise.all([
+          api.get(`/project-documents/types-with-status?requestId=${approvedRequest.request_id}`),
+          api.get(`/project-documents/history?requestId=${approvedRequest.request_id}`),
+        ]);
+  
+        const typeMap = new Map();
+        [...allTypes, ...typesWithStatusResponse.data].forEach((type) =>
+          typeMap.set(type.type_id, type)
         );
-        const historyResponse = await api.get(
-          `/project-documents/history?requestId=${approvedRequest.request_id}`
-        );
+  
+        setDocumentTypes(Array.from(typeMap.values()));
         setDocumentHistory(historyResponse.data);
-        setDocumentTypes(typesResponse.data);
+      } else {
+        setDocumentTypes(allTypes);
+        setDocumentHistory([]);
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
+      handleApiError(error, 'ไม่สามารถโหลดข้อมูลได้');
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [handleApiError]);
+   
+  
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+  
+// Snackbar utility function เพื่อการแสดงผล Snackbar ได้ง่ายขึ้น
+const showSnackbar = (message, severity = 'info') => {
+  setSnackbar({ open: true, message, severity });
+};
+
+
+
   const handleViewDocument = (filePath) => {
     if (filePath) {
       setSelectedFilePath(`http://localhost:5000/${filePath}`);
@@ -111,24 +137,63 @@ const UploadProjectDocument = () => {
   };
 
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
+    const selectedFile = e.target.files[0];
+    const fileExtension = selectedFile?.name.split('.').pop().toLowerCase();
+    const maxFileSize = 5 * 1024 * 1024; // ขนาดไฟล์สูงสุด 5MB
+  
+    if (selectedFile && fileExtension === 'pdf') {
+      if (selectedFile.size > maxFileSize) {
+        showSnackbar('ขนาดไฟล์ต้องไม่เกิน 5MB', 'warning');
+        setFile(null);
+      } else {
+        setFile(selectedFile);
+      }
+    } else {
+      showSnackbar('กรุณาอัพโหลดไฟล์ PDF เท่านั้น', 'error');
+      setFile(null);
+    }
   };
 
+
   const handleSubmit = async () => {
-    if (!file || !selectedType || !approvedProject) {
+    const errorMessage = !file
+      ? 'กรุณาเลือกไฟล์สำหรับอัพโหลด'
+      : !selectedType
+      ? 'กรุณาเลือกประเภทเอกสาร'
+      : !approvedProject
+      ? 'ยังไม่มีโครงการที่ได้รับการอนุมัติ ไม่สามารถอัพโหลดเอกสารได้'
+      : null;
+  
+    if (errorMessage) {
       setSnackbar({
         open: true,
-        message: 'Please fill all fields.',
+        message: errorMessage,
         severity: 'error',
       });
       return;
     }
-
+  
+    // ตรวจสอบสถานะเอกสารที่เลือก
+    const selectedDocument = documentTypes.find(
+      (type) => type.type_id === selectedType
+    );
+  
+    if (selectedDocument?.status === 'approved') {
+      setSnackbar({
+        open: true,
+        message: 'เอกสารนี้ได้รับการอนุมัติแล้ว ไม่สามารถอัพโหลดซ้ำได้',
+        severity: 'warning',
+      });
+      setSelectedType(''); // ล้างประเภทเอกสารที่เลือก
+      setFile(null);       // ล้างไฟล์ที่เลือก
+      return;
+    }
+  
     const formData = new FormData();
     formData.append('file', file);
     formData.append('type_id', selectedType);
     formData.append('request_id', approvedProject.request_id);
-
+  
     try {
       setLoading(true);
       await api.post('/project-documents/upload', formData);
@@ -137,7 +202,8 @@ const UploadProjectDocument = () => {
         message: 'Document uploaded successfully.',
         severity: 'success',
       });
-
+  
+      // ล้างค่าที่เคยเลือกไว้หลังจากอัพโหลดสำเร็จ
       setSelectedType('');
       setFile(null);
       fetchData();
@@ -152,6 +218,8 @@ const UploadProjectDocument = () => {
       setLoading(false);
     }
   };
+  
+
   const handleCancelSubmission = async () => {
     try {
       setLoading(true);
@@ -235,6 +303,18 @@ const UploadProjectDocument = () => {
       ? new Date(b.submitted_at) - new Date(a.submitted_at)
       : new Date(a.submitted_at) - new Date(b.submitted_at)
   );
+  // ฟังก์ชันผสานประเภทเอกสารและสถานะโดยใช้ Map เพื่อกรองซ้ำ
+  const mergeDocumentTypes = () => {
+    const typeMap = new Map();
+
+    documentTypes.forEach((type) => {
+      typeMap.set(type.type_id, type);
+    });
+
+    return Array.from(typeMap.values());
+  };
+
+  const mergedDocumentTypes = mergeDocumentTypes();
 
   return (
     //<Paper elevation={3} sx={{ padding: 4, borderRadius: 3, width: "100%", mx: "auto" }}>
@@ -301,13 +381,13 @@ const UploadProjectDocument = () => {
               <Typography variant="h6" gutterBottom>
                 เอกสารทั้งหมดที่ต้องส่ง
               </Typography>
-              {documentTypes.length === 0 ? (
+              {mergedDocumentTypes.length === 0 ? (
                 <Typography variant="body2" color="text.secondary">
                   No documents required.
                 </Typography>
               ) : (
                 <Box component="ul" sx={{ pl: 2, mb: 0 }}>
-                  {documentTypes.map((type) => (
+                  {mergedDocumentTypes.map((type) => (
                     <Box
                       component="li"
                       key={type.type_id}
@@ -321,20 +401,16 @@ const UploadProjectDocument = () => {
                             : 'text.secondary',
                       }}
                     >
-                      {/* Icon ตามสถานะ */}
                       {type.status === 'approved' ? (
-                        <AssignmentTurnedInIcon
-                          sx={{ color: 'success.main' }}
-                        />
+                        <AssignmentTurnedInIcon sx={{ color: 'success.main' }} />
                       ) : (
                         <AssignmentIcon sx={{ color: 'text.secondary' }} />
                       )}
-
-                      {/* ชื่อเอกสาร */}
                       <Typography variant="body2">{type.type_name}</Typography>
                     </Box>
                   ))}
                 </Box>
+
               )}
             </Box>
           </Paper>
@@ -566,12 +642,19 @@ const UploadProjectDocument = () => {
       </Dialog>
 
       <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-      >
-        <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
-      </Snackbar>
+  open={snackbar.open}
+  autoHideDuration={3000}
+  onClose={() => setSnackbar({ ...snackbar, open: false })}
+  anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+>
+  <Alert
+    onClose={() => setSnackbar({ ...snackbar, open: false })}
+    severity={snackbar.severity}
+  >
+    {snackbar.message}
+  </Alert>
+</Snackbar>
+
     </>
   );
 };

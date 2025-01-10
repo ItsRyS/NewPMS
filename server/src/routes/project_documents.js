@@ -18,7 +18,17 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage });
+const upload = multer({ 
+  storage,
+  fileFilter: (req, file, cb) =>{
+    if(file.mimetype === 'application/pdf'){
+      cb(null, true);
+    } else {
+      
+      cb(new Error('กรุณาอัพโหลดไฟล์ PDF เท่านั้น'), false);
+    }
+  }
+});
 
 // เส้นทางสำหรับการจัดการเอกสารโครงงาน
 router.post(

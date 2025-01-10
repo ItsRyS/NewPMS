@@ -1,19 +1,10 @@
-import * as React from 'react';
-import api from '../../services/api';
-import { useNavigate } from 'react-router-dom';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import CssBaseline from '@mui/material/CssBaseline';
-import FormLabel from '@mui/material/FormLabel';
-import FormControl from '@mui/material/FormControl';
-import Link from '@mui/material/Link';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
-import Stack from '@mui/material/Stack';
-import MuiCard from '@mui/material/Card';
+import { useState } from 'react';
+import { Box, Button, CssBaseline, FormLabel, FormControl, TextField, Typography, Stack, Card, Link, Snackbar, Alert } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { useNavigate } from 'react-router-dom';
+import api from '../../services/api';
 
-const Card = styled(MuiCard)(({ theme }) => ({
+const StyledCard = styled(Card)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignSelf: 'center',
@@ -21,178 +12,94 @@ const Card = styled(MuiCard)(({ theme }) => ({
   padding: theme.spacing(4),
   gap: theme.spacing(2),
   margin: 'auto',
-  backgroundColor: '#ffffff', // พื้นหลังสีขาว
+  backgroundColor: '#ffffff',
   boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.1)',
-  [theme.breakpoints.up('sm')]: {
-    maxWidth: '450px',
-  },
+  [theme.breakpoints.up('sm')]: { maxWidth: '450px' },
 }));
 
 const SignUpContainer = styled(Stack)(({ theme }) => ({
   height: '100vh',
-  minHeight: '100%',
   padding: theme.spacing(2),
-  backgroundColor: '#ffffff', // พื้นหลังสีขาว
-  [theme.breakpoints.up('sm')]: {
-    padding: theme.spacing(4),
-  },
+  backgroundColor: '#ffffff',
+  [theme.breakpoints.up('sm')]: { padding: theme.spacing(4) },
 }));
 
 export default function SignUp() {
-  const [emailError, setEmailError] = React.useState(false);
-  const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
-  const [passwordError, setPasswordError] = React.useState(false);
-  const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
-  const [nameError, setNameError] = React.useState(false);
-  const [nameErrorMessage, setNameErrorMessage] = React.useState('');
-
+  const [errors, setErrors] = useState({});
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'error' });
   const navigate = useNavigate();
 
-  const validateInputs = () => {
-    const email = document.getElementById('email');
-    const password = document.getElementById('password');
-    const name = document.getElementById('name');
-
-    let isValid = true;
-
-    if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
-      setEmailError(true);
-      setEmailErrorMessage('Please enter a valid email address.');
-      isValid = false;
-    } else {
-      setEmailError(false);
-      setEmailErrorMessage('');
-    }
-
-    if (!password.value || password.value.length < 6) {
-      setPasswordError(true);
-      setPasswordErrorMessage('Password must be at least 6 characters long.');
-      isValid = false;
-    } else {
-      setPasswordError(false);
-      setPasswordErrorMessage('');
-    }
-
-    if (!name.value || name.value.length < 1) {
-      setNameError(true);
-      setNameErrorMessage('Name is required.');
-      isValid = false;
-    } else {
-      setNameError(false);
-      setNameErrorMessage('');
-    }
-
-    return isValid;
+  const validateInputs = ({ username, email, password }) => {
+    const newErrors = {
+      username: !username.trim() ? 'Username is required.' : '',
+      email: !/\S+@\S+\.\S+/.test(email) ? 'Please enter a valid email address.' : '',
+      password: password.length < 6 ? 'Password must be at least 6 characters long.' : '',
+    };
+    setErrors(newErrors);
+    return Object.values(newErrors).every((error) => error === ''); // ตรวจสอบว่าไม่มีข้อผิดพลาด
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    const { name: username, email, password } = Object.fromEntries(new FormData(event.currentTarget).entries());
 
-    if (!validateInputs()) return;
-
-    const data = new FormData(event.currentTarget);
-    const userData = {
-      username: data.get('name'),
-      email: data.get('email'),
-      password: data.get('password'),
-    };
+    if (!validateInputs({ username, email, password })) return;
 
     try {
-      const response = await api.post('/auth/register', userData, {
+      const response = await api.post('/auth/register', { username, email, password }, {
         headers: { 'Content-Type': 'application/json' },
       });
 
       if (response.status === 201) {
-        alert('Sign up successful! Redirecting to sign in.');
-        navigate('/SignIn');
+        setSnackbar({ open: true, message: 'Sign up successful! Redirecting to sign in.', severity: 'success' });
+        setTimeout(() => navigate('/SignIn'), 2000);
       }
     } catch (error) {
-      const message = error.response?.data?.error || 'Connection failed.';
-      alert(`Error: ${message}`);
+      setSnackbar({ open: true, message: error.response?.data?.error || 'Connection failed.', severity: 'error' });
     }
   };
 
   return (
     <>
       <CssBaseline />
-      <SignUpContainer
-        direction="column"
-        justifyContent="space-between"
-        sx={{ height: '100vh', overflow: 'auto' }}
-      >
-        <Card variant="outlined" sx={{ minHeight: '400px' }}>
-          <Box
-            sx={{
-              width: '200px',
-              height: '80px',
-              margin: '0 auto',
-            }}
-          >
-            <img
-              src="/it_logo.png"
-              alt="IT-PMS Logo"
-              style={{ width: '100%', height: '100%', objectFit: 'scale-down' }}
-            />
-          </Box>
-          <Typography
-            component="h1"
-            variant="h4"
-            sx={{ fontSize: 'clamp(2rem, 10vw, 2.15rem)', textAlign: 'center' }}
-          >
-            Sign up
-          </Typography>
-
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
-          >
-            <FormControl>
-              <FormLabel htmlFor="name">Full name</FormLabel>
-              <TextField
-                autoComplete="name"
-                name="name"
-                required
-                fullWidth
-                id="name"
-                placeholder="Incognito user"
-                error={nameError}
-                helperText={nameErrorMessage}
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel htmlFor="email">Email</FormLabel>
-              <TextField
-                required
-                fullWidth
-                id="email"
-                placeholder="your@gmail.com"
-                name="email"
-                autoComplete="email"
-                variant="outlined"
-                error={emailError}
-                helperText={emailErrorMessage}
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel htmlFor="password">Password</FormLabel>
-              <TextField
-                required
-                fullWidth
-                name="password"
-                placeholder="••••••"
-                type="password"
-                id="password"
-                autoComplete="new-password"
-                variant="outlined"
-                error={passwordError}
-                helperText={passwordErrorMessage}
-              />
-            </FormControl>
-
-            <Button type="submit" fullWidth variant="contained">
+      <SignUpContainer direction="column" justifyContent="space-between">
+        <StyledCard variant="outlined">
+          <Stack direction="row" alignItems="center" justifyContent="center" gap={4} sx={{ mb: 4 }}>
+            <Box sx={{ width: '60px', height: '60px' }}>
+              <img src="/it_logo.png" alt="IT-PMS Logo" style={{ width: '100%', height: '100%', objectFit: 'scale-down' }} />
+            </Box>
+            <Typography component="h1" variant="h4" sx={{ fontSize: 'clamp(2rem, 10vw, 2.15rem)', textAlign: 'center' }}>
               Sign up
-            </Button>
+            </Typography>
+          </Stack>
+
+          <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {['name', 'email', 'password'].map((field) => (
+              <FormControl key={field}>
+                <FormLabel htmlFor={field}>{field.charAt(0).toUpperCase() + field.slice(1)}</FormLabel>
+                <TextField
+                  id={field}
+                  name={field}
+                  type={field === 'password' ? 'password' : 'text'}
+                  placeholder={field === 'name' ? 'Incognito user' : field === 'email' ? 'your@gmail.com' : '••••••'}
+                  autoComplete={field}
+                  required
+                  fullWidth
+                  error={!!errors[field === 'name' ? 'username' : field]}
+                  helperText={errors[field === 'name' ? 'username' : field] || ''}
+                />
+              </FormControl>
+            ))}
+
+            <Box sx={{ display: 'flex', gap: 3, justifyContent: 'center' }}>
+              <Button type="submit" variant="contained" size="large" sx={{ px: 4 }}>
+                Sign up
+              </Button>
+              <Button onClick={() => navigate('/')} variant="outlined" size="large" sx={{ px: 4 }}>
+                Back to Home
+              </Button>
+            </Box>
+
             <Typography sx={{ textAlign: 'center' }}>
               Already have an account?{' '}
               <Link href="/signin" variant="body2">
@@ -200,8 +107,15 @@ export default function SignUp() {
               </Link>
             </Typography>
           </Box>
-        </Card>
+        </StyledCard>
       </SignUpContainer>
+
+      {/* Snackbar สำหรับแจ้งเตือน */}
+      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
+        <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 }
