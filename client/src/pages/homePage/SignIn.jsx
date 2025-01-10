@@ -1,21 +1,10 @@
-import * as React from 'react';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import CssBaseline from '@mui/material/CssBaseline';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormLabel from '@mui/material/FormLabel';
-import FormControl from '@mui/material/FormControl';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
-import Stack from '@mui/material/Stack';
-import MuiCard from '@mui/material/Card';
+import { useState, useEffect } from 'react';
+import { Box, Button, Checkbox, CssBaseline, FormControlLabel, FormLabel, FormControl, TextField, Typography, Stack, Card, Link, Snackbar, Alert } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
-import Link from '@mui/material/Link';
 import api from '../../services/api';
 
-const Card = styled(MuiCard)(({ theme }) => ({
+const StyledCard = styled(Card)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignSelf: 'center',
@@ -23,173 +12,99 @@ const Card = styled(MuiCard)(({ theme }) => ({
   padding: theme.spacing(4),
   gap: theme.spacing(2),
   margin: 'auto',
-  backgroundColor: '#ffffff', // พื้นหลังสีขาว
+  backgroundColor: '#ffffff',
   boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.1)',
-  [theme.breakpoints.up('sm')]: {
-    maxWidth: '450px',
-  },
+  [theme.breakpoints.up('sm')]: { maxWidth: '450px' },
 }));
 
 const SignInContainer = styled(Stack)(({ theme }) => ({
   height: '100vh',
-  minHeight: '100%',
   padding: theme.spacing(2),
-  backgroundColor: '#ffffff', // พื้นหลังสีขาว
-  [theme.breakpoints.up('sm')]: {
-    padding: theme.spacing(4),
-  },
+  backgroundColor: '#ffffff',
+  [theme.breakpoints.up('sm')]: { padding: theme.spacing(4) },
 }));
 
 export default function SignIn() {
-  const [emailError, setEmailError] = React.useState(false);
-  const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
-  const [passwordError, setPasswordError] = React.useState(false);
-  const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
-  const [serverError, setServerError] = React.useState('');
+  const [errors, setErrors] = useState({});
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'error' });
   const navigate = useNavigate();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!sessionStorage.getItem('tabId')) {
       sessionStorage.setItem('tabId', `${Date.now()}-${Math.random()}`);
     }
   }, []);
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    if (!validateInputs()) return;
-
-    const data = new FormData(event.currentTarget);
-    const email = data.get('email');
-    const password = data.get('password');
-    const tabId = sessionStorage.getItem('tabId');
-
-    try {
-      const response = await api.post(
-        '/auth/login',
-        { email, password, tabId },
-        { withCredentials: true }
-      );
-      const { role } = response.data;
-
-      if (role) {
-        navigate(role === 'teacher' ? '/adminHome' : '/studentHome');
-      } else {
-        setServerError('Unknown role, please contact support.');
-      }
-    } catch (error) {
-      console.error('Sign-in error:', error);
-      setServerError(
-        error.response?.data?.error ||
-          'Sign-in failed. Please check your credentials.'
-      );
-    }
+  const validateInputs = ({ email, password }) => {
+    const newErrors = {
+      email: !/\S+@\S+\.\S+/.test(email) ? 'Please enter a valid email address.' : '',
+      password: password.length < 6 ? 'Password must be at least 6 characters long.' : '',
+    };
+    setErrors(newErrors);
+    return Object.values(newErrors).every((error) => error === '');
   };
 
-  const validateInputs = () => {
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const { email, password } = Object.fromEntries(new FormData(event.currentTarget).entries());
+    const tabId = sessionStorage.getItem('tabId');
 
-    const isEmailValid = email && /\S+@\S+\.\S+/.test(email);
-    const isPasswordValid = password && password.length >= 6;
+    if (!validateInputs({ email, password })) return;
 
-    setEmailError(!isEmailValid);
-    setEmailErrorMessage(
-      !isEmailValid ? 'Please enter a valid email address.' : ''
-    );
+    try {
+      const response = await api.post('/auth/login', { email, password, tabId }, { withCredentials: true });
+      const { role } = response.data;
 
-    setPasswordError(!isPasswordValid);
-    setPasswordErrorMessage(
-      !isPasswordValid ? 'Password must be at least 6 characters long.' : ''
-    );
-
-    return isEmailValid && isPasswordValid;
+      setSnackbar({ open: true, message: 'Sign in successful!', severity: 'success' });
+      setTimeout(() => navigate(role === 'teacher' ? '/adminHome' : '/studentHome'), 2000);
+    } catch (error) {
+      setSnackbar({ open: true, message: error.response?.data?.error || 'Sign-in failed. Please check your credentials.', severity: 'error' });
+    }
   };
 
   return (
     <>
       <CssBaseline />
-      <SignInContainer
-        direction="column"
-        justifyContent="space-between"
-        sx={{ height: '100vh', overflow: 'auto' }}
-      >
-        <Card variant="outlined" sx={{ minHeight: '400px' }}>
-          <Box
-            sx={{
-              width: '200px',
-              height: '80px',
-              margin: '0 auto',
-            }}
-          >
-            <img
-              src="/it_logo.png"
-              alt="IT-PMS Logo"
-              style={{ width: '100%', height: '100%', objectFit: 'scale-down' }}
-            />
-          </Box>
-
-          <Typography
-            component="h1"
-            variant="h4"
-            sx={{ fontSize: 'clamp(2rem, 10vw, 2.15rem)', textAlign: 'center' }}
-          >
-            Sign in
-          </Typography>
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            noValidate
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              width: '100%',
-              gap: 2,
-            }}
-          >
-            {serverError && (
-              <Typography color="error" sx={{ textAlign: 'center' }}>
-                {serverError}
-              </Typography>
-            )}
-            <FormControl>
-              <FormLabel htmlFor="email">Email</FormLabel>
-              <TextField
-                error={emailError}
-                helperText={emailErrorMessage}
-                id="email"
-                type="email"
-                name="email"
-                placeholder="your@email.com"
-                autoComplete="email"
-                autoFocus
-                required
-                fullWidth
-                variant="outlined"
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel htmlFor="password">Password</FormLabel>
-              <TextField
-                error={passwordError}
-                helperText={passwordErrorMessage}
-                name="password"
-                placeholder="••••••"
-                type="password"
-                id="password"
-                autoComplete="current-password"
-                required
-                fullWidth
-                variant="outlined"
-              />
-            </FormControl>
-            <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
-              label="Remember me"
-            />
-            <Button type="submit" fullWidth variant="contained">
+      <SignInContainer direction="column" justifyContent="space-between">
+        <StyledCard variant="outlined">
+          <Stack direction="row" alignItems="center" justifyContent="center" gap={4} sx={{ mb: 4 }}>
+            <Box sx={{ width: '60px', height: '60px' }}>
+              <img src="/it_logo.png" alt="IT-PMS Logo" style={{ width: '100%', height: '100%', objectFit: 'scale-down' }} />
+            </Box>
+            <Typography component="h1" variant="h4" sx={{ fontSize: 'clamp(2rem, 10vw, 2.15rem)', textAlign: 'center' }}>
               Sign in
-            </Button>
+            </Typography>
+          </Stack>
+
+          <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {['email', 'password'].map((field) => (
+              <FormControl key={field}>
+                <FormLabel htmlFor={field}>{field.charAt(0).toUpperCase() + field.slice(1)}</FormLabel>
+                <TextField
+                  id={field}
+                  name={field}
+                  type={field === 'password' ? 'password' : 'email'}
+                  placeholder={field === 'email' ? 'your@email.com' : '••••••'}
+                  autoComplete={field}
+                  required
+                  fullWidth
+                  error={!!errors[field]}
+                  helperText={errors[field] || ''}
+                />
+              </FormControl>
+            ))}
+
+            <FormControlLabel control={<Checkbox value="remember" color="primary" />} label="Remember me" />
+
+            <Box sx={{ display: 'flex', gap: 3, justifyContent: 'center' }}>
+              <Button type="submit" variant="contained" size="large" sx={{ px: 4 }}>
+                Sign in
+              </Button>
+              <Button onClick={() => navigate('/')} variant="outlined" size="large" sx={{ px: 4 }}>
+                Back to Home
+              </Button>
+            </Box>
+
             <Typography sx={{ textAlign: 'center' }}>
               Don&apos;t have an account?{' '}
               <Link href="/signup" variant="body2">
@@ -197,8 +112,15 @@ export default function SignIn() {
               </Link>
             </Typography>
           </Box>
-        </Card>
+        </StyledCard>
       </SignInContainer>
+
+      {/* Snackbar สำหรับแจ้งเตือน */}
+      <Snackbar open={snackbar.open} autoHideDuration={5000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
+        <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 }
