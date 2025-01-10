@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Box, Button, Checkbox, CssBaseline, FormControlLabel, FormLabel, FormControl, TextField, Typography, Stack, Card, Link, Snackbar, Alert } from '@mui/material';
+import { Box, Button, CssBaseline, FormLabel, FormControl, TextField, Typography, Stack, Card, Link, Snackbar, Alert } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
@@ -94,7 +94,7 @@ export default function SignIn() {
               </FormControl>
             ))}
 
-            <FormControlLabel control={<Checkbox value="remember" color="primary" />} label="Remember me" />
+           {/*<FormControlLabel control={<Checkbox value="remember" color="primary" />} label="Remember me" />*/} 
 
             <Box sx={{ display: 'flex', gap: 3, justifyContent: 'center' }}>
               <Button type="submit" variant="contained" size="large" sx={{ px: 4 }}>
