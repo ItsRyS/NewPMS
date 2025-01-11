@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   esbuild: {
-    loader: 'jsx', // กำหนดให้ esbuild ใช้ loader แบบ jsx
+    jsx: 'automatic' // ใช้ JSX Runtime แบบ automatic
   },
   server: {
     mimeTypes: {
@@ -13,6 +13,8 @@ export default defineConfig({
   plugins: [react()],
   build: {
     sourcemap: false,
+    rollupOptions: {
+      external: ['react', 'react-dom', 'react-router-dom']
+    }
   },
 });
-
