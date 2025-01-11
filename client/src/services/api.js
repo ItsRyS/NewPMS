@@ -1,9 +1,8 @@
-
 import axios from 'axios';
 
 // สร้าง instance ของ Axios
 const api = axios.create({
-  baseURL: 'http://localhost:4000/api', // ตั้งค่าฐาน URL สำหรับ API
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:4000/api', // ใช้ import.meta.env สำหรับ Vite
   withCredentials: true, // เปิดใช้งาน cookie สำหรับการร้องขอ
 });
 
