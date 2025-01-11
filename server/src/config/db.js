@@ -7,8 +7,11 @@ const db = mysql.createPool({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   port: process.env.DB_PORT,
+  ssl: {
+    ca: process.env.TIDB_CA_CERT, // โหลด Certificate จาก Environment Variable
+  },
 });
 
-console.log('Connected to the database.'); // ใช้ข้อความ Log ธรรมดาแทน callback
+console.log('Connected to the TiDB Cloud database.');
 
 module.exports = db.promise();
