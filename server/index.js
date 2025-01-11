@@ -1,12 +1,11 @@
 require("dotenv").config();
-const mysql = require('mysql2');
 const express = require("express");
 const path = require("path");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const session = require("express-session");
 const MySQLStore = require("express-mysql-session")(session);
-const fs = require("fs");
+
 // นำเข้า Routes
 const authRoutes = require("./src/routes/auth");
 const projectRoutes = require("./src/routes/projects");
@@ -26,19 +25,15 @@ app.use(
     credentials: true, // เปิดใช้งาน Cookie
   })
 );
-const connectionPool = mysql.createPool({
+
+// การตั้งค่า Session Store
+const sessionStore = new MySQLStore({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   port: process.env.DB_PORT,
-  ssl: {
-    ca: fs.readFileSync('./src/config/isrgrootx1.pem'), // Path ของไฟล์ certificate
-  },
-  connectTimeout: 10000, // 10 วินาที
 });
-// การตั้งค่า Session Store
-const sessionStore = new MySQLStore({}, connectionPool);
 
 app.use(
   session({
