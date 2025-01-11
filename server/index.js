@@ -4,6 +4,7 @@ const path = require("path");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const session = require("express-session");
+const mysql = require("mysql2");
 const MySQLStore = require("express-mysql-session")(session);
 
 // นำเข้า Routes
@@ -26,14 +27,21 @@ app.use(
   })
 );
 
-// การตั้งค่า Session Store
-const sessionStore = new MySQLStore({
+// สร้าง pool พร้อมเปิดใช้งาน SSL
+const pool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   port: process.env.DB_PORT,
+  ssl: {
+    rejectUnauthorized: true, // เปิดการตรวจสอบ SSL
+  },
+  connectionLimit: 10, // จำกัดการเชื่อมต่อพร้อมกัน
 });
+
+// ใช้ pool ในการสร้าง Session Store
+const sessionStore = new MySQLStore({}, pool);
 
 app.use(
   session({
@@ -86,10 +94,12 @@ app.use((req, res, next) => {
   }
   next();
 });
+
 // Health Check Endpoint
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "OK", uptime: process.uptime() });
 });
+
 // Handle 404 Not Found
 app.use((req, res) => {
   res.status(404).json({ error: "Endpoint not found" });

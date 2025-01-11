@@ -64,7 +64,7 @@ const ViewProjectDocuments = () => {
 
   const handleViewDocument = (filePath, fileName, documentId) => {
     setSelectedDocument({
-      url: `http://localhost:5000/${filePath}`,
+      url: `http://localhost:4000/${filePath}`,
       name: fileName,
       document_id: documentId,
     });

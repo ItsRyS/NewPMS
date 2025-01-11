@@ -127,7 +127,7 @@ const Home = () => {
           variant="contained"
           color="primary"
           onClick={() =>
-            handleOpen(`http://localhost:5000/${params.row.project_path}`)
+            handleOpen(`http://localhost:4000/${params.row.project_path}`)
           }
           disabled={!params.row.project_path}
         >
