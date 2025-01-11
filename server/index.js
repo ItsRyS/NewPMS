@@ -17,12 +17,13 @@ const projectRequestsRoutes = require("./src/routes/projectRequests");
 const projectDocumentsRoutes = require("./src/routes/project_documents");
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 4000;
 
 // การตั้งค่า CORS
 app.use(
   cors({
-    origin: "http://localhost:5173", // อนุญาตให้เรียก API จาก Frontend
+    //origin: "http://localhost:5173", // อนุญาตให้เรียก API จาก Frontend
+    origin: 'https://itnewpms.vercel.app',
     credentials: true, // เปิดใช้งาน Cookie
   })
 );
