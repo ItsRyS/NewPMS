@@ -22,7 +22,7 @@ const PORT = process.env.PORT || 5000;
 // การตั้งค่า CORS
 app.use(
   cors({
-    origin: "http://localhost:5173", // อนุญาตให้เรียก API จาก Frontend
+    origin: 'https://itnewpms.vercel.app', // อนุญาตให้เรียก API จาก Frontend
     credentials: true, // เปิดใช้งาน Cookie
   })
 );
