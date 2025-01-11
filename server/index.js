@@ -35,7 +35,7 @@ const pool = mysql.createPool({
   database: process.env.DB_NAME,
   port: process.env.DB_PORT,
   ssl: {
-    rejectUnauthorized: true, // เปิดการตรวจสอบ SSL
+    rejectUnauthorized: false, // เปิดการตรวจสอบ SSL
   },
   connectionLimit: 10, // จำกัดการเชื่อมต่อพร้อมกัน
 });
@@ -52,7 +52,7 @@ app.use(
     store: sessionStore, // ใช้ MySQL เป็นที่เก็บ Session
     cookie: {
       maxAge: 1000 * 60 * 60 * 24, // อายุ Session 1 วัน
-      secure: false, // เปิด true เมื่อใช้ HTTPS
+      secure: true, // เปิด true เมื่อใช้ HTTPS
       httpOnly: true, // ห้ามเข้าถึง Cookie ผ่าน JavaScript
     },
   })
