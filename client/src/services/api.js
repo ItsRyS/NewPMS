@@ -5,10 +5,12 @@ const api = axios.create({
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json'
-  }
+  },
+  // Add timeout
+  timeout: 10000
 });
 
-// Request interceptor
+// Request interceptor with logging
 api.interceptors.request.use(
   (config) => {
     // Add tab ID if available
@@ -17,24 +19,48 @@ api.interceptors.request.use(
       config.headers['x-tab-id'] = tabId;
     }
     
+    // Log request details in development
+    if (import.meta.env.DEV) {
+      console.log(`Request: ${config.method.toUpperCase()} ${config.url}`);
+    }
+    
     return config;
   },
   (error) => {
+    console.error('Request error:', error);
     return Promise.reject(error);
   }
 );
 
-// Response interceptor
+// Response interceptor with enhanced error handling
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Log successful responses in development
+    if (import.meta.env.DEV) {
+      console.log(`Response from ${response.config.url}:`, response.status);
+    }
+    return response;
+  },
   async (error) => {
     const originalRequest = error.config;
 
-    // Handle network errors
-    if (error.code === 'ERR_NETWORK') {
-      console.error('Network Error:', error);
-      // You might want to show a user-friendly error message here
-      return Promise.reject(error);
+    // Detailed error logging
+    if (error.response) {
+      // Server responded with error status
+      console.error('Response error:', {
+        status: error.response.status,
+        data: error.response.data,
+        url: originalRequest.url
+      });
+    } else if (error.request) {
+      // Request made but no response
+      console.error('No response received:', {
+        url: originalRequest.url,
+        method: originalRequest.method
+      });
+    } else {
+      // Request setup error
+      console.error('Request setup error:', error.message);
     }
 
     // Handle 401 and attempt refresh
@@ -44,6 +70,7 @@ api.interceptors.response.use(
         await api.get('/auth/refresh-session');
         return api(originalRequest);
       } catch (refreshError) {
+        console.error('Session refresh failed:', refreshError);
         return Promise.reject(refreshError);
       }
     }
