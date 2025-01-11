@@ -2,8 +2,12 @@ import axios from 'axios';
 
 // สร้าง instance ของ Axios
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:4000/api', // ใช้ import.meta.env สำหรับ Vite
-  withCredentials: true, // เปิดใช้งาน cookie สำหรับการร้องขอ
+  baseURL: import.meta.env.VITE_API_URL,
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Credentials': true
+  }
 });
 
 // Interceptor สำหรับใส่ Tab ID ลงใน Headers ของทุกคำขอ

@@ -19,15 +19,19 @@ const projectDocumentsRoutes = require("./src/routes/project_documents");
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// การตั้งค่า CORS
-app.use(
-  cors({
-    origin: true, // เปิดให้รองรับทุกโดเมน (หรือจะระบุเฉพาะโดเมนก็ได้ เช่น 'https://itnewpms.vercel.app')
-    credentials: true,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    allowedHeaders: 'Content-Type,Authorization,x-tab-id',
-  })
-);
+// Update the CORS configuration
+app.use(cors({
+  origin: ['https://itnewpms.vercel.app', 'https://pms-server-one.vercel.app'],  // Specify exact allowed origins
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-tab-id'],
+  exposedHeaders: ['set-cookie'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
+}));
+
+// Add OPTIONS handling for preflight requests
+app.options('*', cors());
 
 // สร้าง pool พร้อมเปิดใช้งาน SSL
 const pool = mysql.createPool({
@@ -98,8 +102,12 @@ app.use((req, res, next) => {
 });
 
 // Health Check Endpoint
-app.get("/health", (req, res) => {
-  res.status(200).json({ status: "OK", uptime: process.uptime() });
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    timestamp: new Date(),
+    uptime: process.uptime()
+  });
 });
 
 // Handle 404 Not Found
@@ -108,11 +116,15 @@ app.use((req, res) => {
 });
 
 // Global Error Handler
+// Error handling middleware
 app.use((err, req, res) => {
-  console.error("Error stack:", err.stack); // แสดง Stack Error
-  res
-    .status(500)
-    .json({ error: "An unexpected error occurred", details: err.message });
+  console.error(err.stack);
+  res.status(err.status || 500).json({
+    error: {
+      message: err.message || 'Internal Server Error',
+      status: err.status || 500
+    }
+  });
 });
 
 // Start Server
