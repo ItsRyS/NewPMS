@@ -1,6 +1,5 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import commonjs from '@rollup/plugin-commonjs';
 
 export default defineConfig({
   esbuild: {
@@ -11,10 +10,7 @@ export default defineConfig({
       'application/javascript': ['js', 'jsx'],
     },
   },
-  plugins: [react(), commonjs()],
-  optimizeDeps: {
-    include: ['@mui/material', '@mui/icons-material','fabric'],
-  },
+  plugins: [react()],
   build: {
     sourcemap: false,
     rollupOptions: {
