@@ -1,18 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-<<<<<<< HEAD
-  baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  // Add timeout
-  timeout: 10000
-=======
   baseURL: 'http://localhost:5000/api', // ตั้งค่าฐาน URL สำหรับ API
   withCredentials: true, // เปิดใช้งาน cookie สำหรับการร้องขอ
->>>>>>> parent of 04e2890 (เชื่อม TiDB ได้แล้ว)
 });
 
 // Request interceptor with logging
