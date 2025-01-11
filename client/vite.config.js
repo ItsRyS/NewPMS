@@ -17,6 +17,9 @@ export default defineConfig({
   },
   build: {
     sourcemap: false,
+    rollupOptions: {
+      external: ['react', 'react-dom', 'react-router-dom']
+    }
   },
 });
 
