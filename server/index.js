@@ -22,8 +22,10 @@ const PORT = process.env.PORT || 4000;
 // การตั้งค่า CORS
 app.use(
   cors({
-    origin: 'https://itnewpms.vercel.app', // ใส่ URL ของ Frontend
-    credentials: true, // เปิดใช้งาน Cookie
+    origin: true, // เปิดให้รองรับทุกโดเมน (หรือจะระบุเฉพาะโดเมนก็ได้ เช่น 'https://itnewpms.vercel.app')
+    credentials: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: 'Content-Type,Authorization,x-tab-id',
   })
 );
 
