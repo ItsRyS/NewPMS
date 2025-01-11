@@ -110,16 +110,14 @@ exports.getApprovedProjects = async (req, res) => {
           pr.project_type, 
           pr.project_create_time, 
           pr.project_path, 
-          MAX(ti.teacher_name) AS project_advisor,
+          ti.teacher_name AS project_advisor,
           GROUP_CONCAT(DISTINCT u.username SEPARATOR ', ') AS team_members
       FROM project_release pr
       LEFT JOIN students_projects sp ON pr.project_id = sp.project_id
       LEFT JOIN users u ON sp.student_id = u.user_id
       LEFT JOIN teacher_info ti ON pr.advisor_id = ti.teacher_id
       WHERE pr.project_status IN ('operate', 'success')
-      GROUP BY pr.project_id, pr.project_name_th, pr.project_name_eng, 
-               pr.project_status, pr.project_type, 
-               pr.project_create_time, pr.project_path
+      GROUP BY pr.project_id
       ORDER BY pr.project_create_time DESC;
       `
     );
@@ -138,7 +136,6 @@ exports.getApprovedProjects = async (req, res) => {
       .json({ success: false, error: 'Failed to fetch projects.' });
   }
 };
-
 
 // Fetch project types for project request form
 exports.getProjectTypes = async (req, res) => {
