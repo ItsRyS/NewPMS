@@ -7,7 +7,7 @@ const session = require("express-session");
 const mysql = require("mysql2");
 const MySQLStore = require("express-mysql-session")(session);
 
-// นำเข้า Routes
+// Import Routes
 const authRoutes = require("./src/routes/auth");
 const projectRoutes = require("./src/routes/projects");
 const teacherRoutes = require("./src/routes/teacher");
@@ -19,58 +19,72 @@ const projectDocumentsRoutes = require("./src/routes/project_documents");
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// Update the CORS configuration
-app.use(cors({
-  origin: ['https://itnewpms.vercel.app', 'https://pms-server-one.vercel.app'],  // Specify exact allowed origins
-  credentials: true,
+// Middleware order is important
+// 1. CORS configuration - must be first
+const corsOptions = {
+  origin: ['https://itnewpms.vercel.app', 'http://localhost:5173'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-tab-id'],
-  exposedHeaders: ['set-cookie'],
+  credentials: true,
   preflightContinue: false,
   optionsSuccessStatus: 204
-}));
+};
 
-// Add OPTIONS handling for preflight requests
-app.options('*', cors());
+// Apply CORS middleware
+app.use(cors(corsOptions));
 
-// สร้าง pool พร้อมเปิดใช้งาน SSL
+// Handle OPTIONS preflight requests
+app.options('*', cors(corsOptions));
+
+// 2. Body parsing middleware
+app.use(express.json());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// 3. Database connection
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+  database: process.process.DB_NAME,
   port: process.env.DB_PORT,
   ssl: {
-    rejectUnauthorized: false, // เปิดการตรวจสอบ SSL
+    rejectUnauthorized: true,
+    minVersion: 'TLSv1.2'
   },
-  connectionLimit: 10, // จำกัดการเชื่อมต่อพร้อมกัน
+  connectionLimit: 10
 });
 
-// ใช้ pool ในการสร้าง Session Store
+// 4. Session configuration
 const sessionStore = new MySQLStore({}, pool);
 
 app.use(
   session({
     key: "user_sid",
-    secret: "itpms2024", // คีย์สำหรับเข้ารหัส Session
+    secret: process.env.JWT_SECRET || "itpms2024",
     resave: false,
     saveUninitialized: false,
-    store: sessionStore, // ใช้ MySQL เป็นที่เก็บ Session
+    store: sessionStore,
     cookie: {
-      maxAge: 1000 * 60 * 60 * 24, // อายุ Session 1 วัน
-      secure: true, // เปิด true เมื่อใช้ HTTPS
-      httpOnly: true, // ห้ามเข้าถึง Cookie ผ่าน JavaScript
-    },
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'none',
+      httpOnly: true
+    }
   })
 );
 
-// Middleware
-app.use(express.json()); // แปลงคำขอ JSON เป็น Object
-app.use(bodyParser.json()); // รองรับ JSON bodies
-app.use(bodyParser.urlencoded({ extended: true })); // รองรับ URL-encoded bodies
+// 5. Static files
+app.use("/upload", express.static(path.join(__dirname, "upload")));
 
-// Static Files
-app.use("/upload", express.static(path.join(__dirname, "upload"))); // ให้บริการไฟล์ในโฟลเดอร์ upload
+// Global middleware to add CORS headers to all responses
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Origin', req.headers.origin);
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,UPDATE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
+  next();
+});
 
 // API Routes
 app.use("/api/auth", authRoutes);
@@ -82,43 +96,14 @@ app.use("/api/project-requests", projectRequestsRoutes);
 app.use("/api/document-types", projectDocumentsRoutes);
 app.use("/api/project-documents", projectDocumentsRoutes);
 
-// Test Endpoint
-app.get("/api/test", (req, res) => {
-  res.json({ message: "API is working!" });
+// Health check endpoint
+app.get("/api/health", (req, res) => {
+  res.json({ status: "healthy", timestamp: new Date().toISOString() });
 });
 
-// Root Endpoint
-app.get("/", (req, res) => {
-  res.send("Hello from server");
-});
-
-// Middleware เพื่อตรวจจับ Tab ID
-app.use((req, res, next) => {
-  const tabId = req.headers["x-tab-id"];
-  if (tabId) {
-    //console.log("Tab ID:", tabId);
-  }
-  next();
-});
-
-// Health Check Endpoint
-app.get('/api/health', (req, res) => {
-  res.status(200).json({
-    status: 'ok',
-    timestamp: new Date(),
-    uptime: process.uptime()
-  });
-});
-
-// Handle 404 Not Found
-app.use((req, res) => {
-  res.status(404).json({ error: "Endpoint not found" });
-});
-
-// Global Error Handler
 // Error handling middleware
 app.use((err, req, res) => {
-  console.error(err.stack);
+  console.error('Error:', err);
   res.status(err.status || 500).json({
     error: {
       message: err.message || 'Internal Server Error',
@@ -127,7 +112,13 @@ app.use((err, req, res) => {
   });
 });
 
-// Start Server
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+// 404 handler - must be last
+app.use((req, res) => {
+  res.status(404).json({ error: "Endpoint not found" });
 });
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+module.exports = app;

@@ -1,53 +1,54 @@
 import axios from 'axios';
 
-// สร้าง instance ของ Axios
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true,
   headers: {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Credentials': true
+    'Content-Type': 'application/json'
   }
 });
 
-// Interceptor สำหรับใส่ Tab ID ลงใน Headers ของทุกคำขอ
+// Request interceptor
 api.interceptors.request.use(
   (config) => {
-    const tabId = sessionStorage.getItem('tabId'); // ดึง tabId จาก sessionStorage
+    // Add tab ID if available
+    const tabId = sessionStorage.getItem('tabId');
     if (tabId) {
-      config.headers['x-tab-id'] = tabId; // เพิ่ม tabId ลงใน Headers
+      config.headers['x-tab-id'] = tabId;
     }
+    
     return config;
   },
   (error) => {
-    return Promise.reject(error); // ส่งคืนข้อผิดพลาดถ้าพบปัญหา
+    return Promise.reject(error);
   }
 );
 
-// Interceptor สำหรับจัดการคำตอบ และลอง Refresh Session เมื่อพบ 401 Unauthorized
+// Response interceptor
 api.interceptors.response.use(
-  (response) => response, // ส่งคืนคำตอบที่สำเร็จ
+  (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // ตรวจสอบสถานะ 401 Unauthorized และยังไม่ได้ลองคำขอนี้ใหม่
-    if (
-      error.response &&
-      error.response.status === 401 &&
-      !originalRequest._retry &&
-      originalRequest.url !== '/auth/login'
-    ) {
-      originalRequest._retry = true; // ป้องกันการวนลูปคำขอ
+    // Handle network errors
+    if (error.code === 'ERR_NETWORK') {
+      console.error('Network Error:', error);
+      // You might want to show a user-friendly error message here
+      return Promise.reject(error);
+    }
 
+    // Handle 401 and attempt refresh
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
       try {
-        await api.get('/auth/refresh-session'); // เรียก API เพื่อ Refresh Session
-        return api(originalRequest); // ส่งคำขอเดิมอีกครั้ง
+        await api.get('/auth/refresh-session');
+        return api(originalRequest);
       } catch (refreshError) {
-        return Promise.reject(refreshError); // ส่งคืนข้อผิดพลาดถ้า Refresh ล้มเหลว
+        return Promise.reject(refreshError);
       }
     }
 
-    return Promise.reject(error); // ส่งคืนข้อผิดพลาดเดิมถ้าไม่ใช่กรณี 401
+    return Promise.reject(error);
   }
 );
 
