@@ -4,8 +4,7 @@ import commonjs from '@rollup/plugin-commonjs';
 
 export default defineConfig({
   esbuild: {
-    loader: 'jsx', // กำหนดให้ esbuild ใช้ loader แบบ jsx
-    jsx: 'automatic'
+    jsx: 'automatic' // ใช้ JSX Runtime แบบ automatic
   },
   server: {
     mimeTypes: {
@@ -22,6 +21,4 @@ export default defineConfig({
       external: ['react', 'react-dom', 'react-router-dom']
     }
   },
-  
 });
-
