@@ -109,21 +109,15 @@ exports.getAllRequests = async (req, res) => {
   try {
     const [projects] = await db.query(
       `
-      SELECT 
-    pr.request_id, 
-    pr.project_name, 
-    pr.project_name_eng, 
-    pr.status, 
-    pr.advisor_id, 
-    MAX(ti.teacher_name) AS teacher_name, -- ใช้ MAX กับ teacher_name
-    GROUP_CONCAT(DISTINCT u.username) AS students
-FROM project_requests pr
-LEFT JOIN teacher_info ti ON pr.advisor_id = ti.teacher_id
-LEFT JOIN students_projects sp ON pr.request_id = sp.request_id
-LEFT JOIN users u ON sp.student_id = u.user_id
-GROUP BY pr.request_id
-ORDER BY pr.created_at DESC;
-
+      SELECT pr.request_id, pr.project_name, pr.project_name_eng, pr.status, 
+             pr.advisor_id, ti.teacher_name,
+             GROUP_CONCAT(DISTINCT u.username) AS students
+      FROM project_requests pr
+      LEFT JOIN teacher_info ti ON pr.advisor_id = ti.teacher_id
+      LEFT JOIN students_projects sp ON pr.request_id = sp.request_id
+      LEFT JOIN users u ON sp.student_id = u.user_id
+      GROUP BY pr.request_id
+      ORDER BY pr.created_at DESC;
       `
     );
     res.status(200).json(projects);

@@ -4,7 +4,6 @@ const path = require("path");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const session = require("express-session");
-const mysql = require("mysql2");
 const MySQLStore = require("express-mysql-session")(session);
 
 // Import Routes
@@ -30,6 +29,7 @@ const corsOptions = {
   optionsSuccessStatus: 204
 };
 
+<<<<<<< HEAD
 // Apply CORS middleware
 app.use(cors(corsOptions));
 
@@ -43,11 +43,16 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Database connection
 const pool = mysql.createPool({
+=======
+// การตั้งค่า Session Store
+const sessionStore = new MySQLStore({
+>>>>>>> parent of 04e2890 (เชื่อม TiDB ได้แล้ว)
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME, // Fixed typo here
   port: process.env.DB_PORT,
+<<<<<<< HEAD
   ssl: {
     rejectUnauthorized: true,
     minVersion: 'TLSv1.2'
@@ -68,6 +73,10 @@ pool.getConnection((err, connection) => {
 // Session configuration
 const sessionStore = new MySQLStore({}, pool);
 
+=======
+});
+
+>>>>>>> parent of 04e2890 (เชื่อม TiDB ได้แล้ว)
 app.use(
   session({
     key: "user_sid",
@@ -114,7 +123,23 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
+<<<<<<< HEAD
 // 404 handler
+=======
+// Middleware เพื่อตรวจจับ Tab ID
+app.use((req, res, next) => {
+  const tabId = req.headers["x-tab-id"];
+  if (tabId) {
+    //console.log("Tab ID:", tabId);
+  }
+  next();
+});
+// Health Check Endpoint
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "OK", uptime: process.uptime() });
+});
+// Handle 404 Not Found
+>>>>>>> parent of 04e2890 (เชื่อม TiDB ได้แล้ว)
 app.use((req, res) => {
   res.status(404).json({ error: "Endpoint not found" });
 });

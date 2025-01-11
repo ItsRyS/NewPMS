@@ -133,7 +133,7 @@ const UploadDoc = () => {
       return;
     }
     setLoading(true);
-    setPdfPath(`http://localhost:4000/${docPath}`);
+    setPdfPath(`http://localhost:5000/${docPath}`);
     setOpenDialog(true);
   };
 

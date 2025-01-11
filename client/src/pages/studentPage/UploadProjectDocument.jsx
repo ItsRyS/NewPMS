@@ -124,7 +124,7 @@ const showSnackbar = (message, severity = 'info') => {
 
   const handleViewDocument = (filePath) => {
     if (filePath) {
-      setSelectedFilePath(`http://localhost:4000/${filePath}`);
+      setSelectedFilePath(`http://localhost:5000/${filePath}`);
       setOpenViewDialog(true);
     } else {
       console.error('Invalid file path:', filePath);
