@@ -15,9 +15,9 @@ import {
   FormControl,
   InputLabel,
 } from '@mui/material';
-import axios from 'axios';
 import NavbarHome from '../../components/NavHome';
 import FooterHome from '../../components/FooterHome';
+import api from '../../services/api';
 
 const TeacherPage = () => {
   const [teachers, setTeachers] = useState([]); // All teachers data
@@ -43,13 +43,13 @@ const TeacherPage = () => {
 
   useEffect(() => {
     // Fetch teacher data from API
-    axios
-      .get('http://localhost:5000/api/teacher') // Adjust your endpoint
+    api
+      .get('/teacher')
       .then((response) => {
         setTeachers(response.data);
         setFilteredTeachers(response.data);
 
-        // Extract unique expertise options
+        // Extract unique position options
         const uniquePosition = [
           ...new Set(response.data.map((teacher) => teacher.teacher_position)),
         ];
@@ -62,15 +62,15 @@ const TeacherPage = () => {
   }, []);
 
   useEffect(() => {
-    // Combine search and expertise filters
+    // Combine search and position filters
     const filtered = teachers.filter((teacher) => {
       const matchesName = teacher.teacher_name
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
-      const matchesExpertise =
+      const matchesPosition =
         positionFilter === '' || teacher.teacher_position === positionFilter;
 
-      return matchesName && matchesExpertise;
+      return matchesName && matchesPosition;
     });
     setFilteredTeachers(filtered);
   }, [searchTerm, positionFilter, teachers]);
@@ -79,7 +79,6 @@ const TeacherPage = () => {
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <NavbarHome />
       <Box sx={{ flex: 1, paddingBottom: '64px' }}>
-        {/* Adds space for the fixed footer */}
         <Container
           className="content-teacher"
           maxWidth="lg"
@@ -93,6 +92,7 @@ const TeacherPage = () => {
             boxShadow: 10,
             borderRadius: '12px',
             padding: 0,
+            height: '100%',
           }}
         >
           <Box sx={{ width: '100%', padding: 2 }}>
@@ -143,15 +143,15 @@ const TeacherPage = () => {
                     <CardMedia
                       component="img"
                       sx={{
-                        height: 300, // ปรับความสูงให้เล็กลง
-                        width: 'auto', // ปรับความกว้างอัตโนมัติให้สัมพันธ์กับความสูง
-                        objectFit: 'contain', // ทำให้ภาพพอดีกับกรอบโดยคงสัดส่วน
-                        margin: 'auto', // จัดภาพให้อยู่ตรงกลาง
+                        height: 300,
+                        width: 'auto',
+                        objectFit: 'contain',
+                        margin: 'auto',
                         padding: '10px',
                       }}
                       image={
                         teacher.teacher_image
-                          ? `http://localhost:5000/upload/pic/${teacher.teacher_image}`
+                          ? `http://localhost:4000/upload/pic/${teacher.teacher_image}`
                           : placeholderImage
                       }
                       alt={teacher.teacher_name || 'No Image'}
@@ -180,7 +180,7 @@ const TeacherPage = () => {
                   transform: 'translate(-50%, -50%)',
                   maxWidth: '90vw',
                   maxHeight: '90vh',
-                  overflow: 'auto', // เพิ่ม scroll หากเนื้อหาเกิน
+                  overflow: 'auto',
                   bgcolor: 'background.paper',
                   border: '2px solid #000',
                   boxShadow: 24,
@@ -193,13 +193,13 @@ const TeacherPage = () => {
                       component="img"
                       sx={{
                         maxWidth: '100%',
-                        maxHeight: '50vh', // จำกัดความสูงของรูปให้ไม่เกิน 60% ของหน้าจอ
-                        objectFit: 'contain', // คงสัดส่วนรูปภาพ
+                        maxHeight: '50vh',
+                        objectFit: 'contain',
                         marginBottom: '24px',
                       }}
                       image={
                         selectedTeacher.teacher_image
-                          ? `http://localhost:5000/upload/pic/${selectedTeacher.teacher_image}`
+                          ? `http://localhost:4000/upload/pic/${selectedTeacher.teacher_image}`
                           : placeholderImage
                       }
                       alt={selectedTeacher.teacher_name || 'No Image'}

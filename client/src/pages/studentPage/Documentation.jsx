@@ -17,7 +17,6 @@ import {
   useTheme,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-
 import api from '../../services/api'; // สำหรับการเชื่อมต่อ API
 
 const Documentation = () => {
@@ -96,7 +95,7 @@ const Documentation = () => {
       <Dialog
         open={openDialog}
         onClose={handleCloseDialog}
-        fullScreen={fullScreen} // ทำให้เต็มหน้าจอในมือถือ
+        fullScreen={fullScreen}
         maxWidth="lg"
         sx={{
           '& .MuiDialog-paper': { width: '100%', height: '100%' },
@@ -119,18 +118,19 @@ const Documentation = () => {
         >
           {loading && <CircularProgress />} {/* แสดง Loading */}
           {selectedDocument && (
-            <iframe
-              src={`http://localhost:5000/${selectedDocument.doc_path}`}
+            <object
+              data={`http://localhost:4000/${selectedDocument.doc_path}`}
+              type="application/pdf"
               width="100%"
               height="100%"
-              onLoad={() => setLoading(false)} // หยุด Loading เมื่อ iframe โหลดเสร็จ
+              onLoad={() => setLoading(false)} // หยุด Loading เมื่อ object โหลดเสร็จ
               style={{
                 border: 'none',
-                display: loading ? 'none' : 'block', // ซ่อน iframe จนกว่าจะโหลดเสร็จ
+                display: loading ? 'none' : 'block', // ซ่อน object จนกว่าจะโหลดเสร็จ
               }}
-              sandbox="allow-scripts allow-same-origin allow-downloads" // เพิ่มความปลอดภัย
-              title={selectedDocument.doc_title}
-            />
+            >
+              <p>ไม่สามารถแสดงเอกสารได้ โปรดดาวน์โหลดเอกสารแทน</p>
+            </object>
           )}
         </DialogContent>
       </Dialog>
