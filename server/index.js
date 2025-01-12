@@ -6,33 +6,32 @@ const bodyParser = require("body-parser");
 const session = require("express-session");
 const MySQLStore = require("express-mysql-session")(session);
 
-// นำเข้า Routes
-const authRoutes = require("./src/routes/auth");
-const projectRoutes = require("./src/routes/projects");
-const teacherRoutes = require("./src/routes/teacher");
-const documentRoutes = require("./src/routes/document");
-const userRoutes = require("./src/routes/users");
-const projectRequestsRoutes = require("./src/routes/projectRequests");
-const projectDocumentsRoutes = require("./src/routes/project_documents");
-
 const app = express();
-const PORT = process.env.PORT || 5000;
+
+// Check current environment
+const ENV = process.env.NODE_ENV || "development";
+const PORT = ENV === "development" ? process.env.DEV_PORT : process.env.PROD_PORT;
+const DB_HOST = ENV === "development" ? process.env.DEV_DB_HOST : process.env.PROD_DB_HOST;
+const DB_PORT = ENV === "development" ? process.env.DEV_DB_PORT : process.env.PROD_DB_PORT;
+const DB_USER = ENV === "development" ? process.env.DEV_DB_USER : process.env.PROD_DB_USER;
+const DB_PASSWORD = ENV === "development" ? process.env.DEV_DB_PASSWORD : process.env.PROD_DB_PASSWORD;
+const DB_NAME = ENV === "development" ? process.env.DEV_DB_NAME : process.env.PROD_DB_NAME;
 
 // การตั้งค่า CORS
 app.use(
   cors({
-    origin: "http://localhost:5173", // อนุญาตให้เรียก API จาก Frontend
+    origin: ENV === "development" ? "http://localhost:5173" : "https://your-production-url.com",
     credentials: true, // เปิดใช้งาน Cookie
   })
 );
 
 // การตั้งค่า Session Store
 const sessionStore = new MySQLStore({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: process.env.DB_PORT,
+  host: DB_HOST,
+  user: DB_USER,
+  password: DB_PASSWORD,
+  database: DB_NAME,
+  port: DB_PORT,
 });
 
 app.use(
@@ -44,7 +43,7 @@ app.use(
     store: sessionStore, // ใช้ MySQL เป็นที่เก็บ Session
     cookie: {
       maxAge: 1000 * 60 * 60 * 24, // อายุ Session 1 วัน
-      secure: false, // เปิด true เมื่อใช้ HTTPS
+      secure: ENV === "production", // เปิด true เมื่อใช้ HTTPS
       httpOnly: true, // ห้ามเข้าถึง Cookie ผ่าน JavaScript
     },
   })
@@ -57,6 +56,15 @@ app.use(bodyParser.urlencoded({ extended: true })); // รองรับ URL-en
 
 // Static Files
 app.use("/upload", express.static(path.join(__dirname, "upload"))); // ให้บริการไฟล์ในโฟลเดอร์ upload
+
+// นำเข้า Routes
+const authRoutes = require("./src/routes/auth");
+const projectRoutes = require("./src/routes/projects");
+const teacherRoutes = require("./src/routes/teacher");
+const documentRoutes = require("./src/routes/document");
+const userRoutes = require("./src/routes/users");
+const projectRequestsRoutes = require("./src/routes/projectRequests");
+const projectDocumentsRoutes = require("./src/routes/project_documents");
 
 // API Routes
 app.use("/api/auth", authRoutes);
@@ -86,10 +94,12 @@ app.use((req, res, next) => {
   }
   next();
 });
+
 // Health Check Endpoint
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "OK", uptime: process.uptime() });
 });
+
 // Handle 404 Not Found
 app.use((req, res) => {
   res.status(404).json({ error: "Endpoint not found" });
@@ -103,5 +113,6 @@ app.use((err, req, res) => {
 
 // Start Server
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server is running in ${ENV} mode on http://localhost:${PORT}`);
+  console.log(`Connected to database ${DB_NAME} at ${DB_HOST}:${DB_PORT}`);
 });

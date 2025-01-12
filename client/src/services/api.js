@@ -46,5 +46,21 @@ api.interceptors.response.use(
     return Promise.reject(error); // ส่งคืนข้อผิดพลาดเดิมถ้าไม่ใช่กรณี 401
   }
 );
+// Interceptor for response handling
+api.interceptors.response.use(
+  (response) => {
+    // Return response if status is OK
+    return response;
+  },
+  (error) => {
+    // Handle error and display message
+    if (error.response) {
+      alert(`Error: ${error.response.status} - ${error.response.data.message || 'Something went wrong'}`);
+    } else {
+      alert('Network Error: Please check your connection.');
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default api;
