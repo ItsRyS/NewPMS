@@ -1,76 +1,49 @@
 import axios from 'axios';
 
+// สร้าง instance ของ Axios
 const api = axios.create({
   baseURL: 'http://localhost:5000/api', // ตั้งค่าฐาน URL สำหรับ API
   withCredentials: true, // เปิดใช้งาน cookie สำหรับการร้องขอ
 });
 
-// Request interceptor with logging
+// Interceptor สำหรับใส่ Tab ID ลงใน Headers ของทุกคำขอ
 api.interceptors.request.use(
   (config) => {
-    // Add tab ID if available
-    const tabId = sessionStorage.getItem('tabId');
+    const tabId = sessionStorage.getItem('tabId'); // ดึง tabId จาก sessionStorage
     if (tabId) {
-      config.headers['x-tab-id'] = tabId;
+      config.headers['x-tab-id'] = tabId; // เพิ่ม tabId ลงใน Headers
     }
-    
-    // Log request details in development
-    if (import.meta.env.DEV) {
-      console.log(`Request: ${config.method.toUpperCase()} ${config.url}`);
-    }
-    
     return config;
   },
   (error) => {
-    console.error('Request error:', error);
-    return Promise.reject(error);
+    return Promise.reject(error); // ส่งคืนข้อผิดพลาดถ้าพบปัญหา
   }
 );
 
-// Response interceptor with enhanced error handling
+// Interceptor สำหรับจัดการคำตอบ และลอง Refresh Session เมื่อพบ 401 Unauthorized
 api.interceptors.response.use(
-  (response) => {
-    // Log successful responses in development
-    if (import.meta.env.DEV) {
-      console.log(`Response from ${response.config.url}:`, response.status);
-    }
-    return response;
-  },
+  (response) => response, // ส่งคืนคำตอบที่สำเร็จ
   async (error) => {
     const originalRequest = error.config;
 
-    // Detailed error logging
-    if (error.response) {
-      // Server responded with error status
-      console.error('Response error:', {
-        status: error.response.status,
-        data: error.response.data,
-        url: originalRequest.url
-      });
-    } else if (error.request) {
-      // Request made but no response
-      console.error('No response received:', {
-        url: originalRequest.url,
-        method: originalRequest.method
-      });
-    } else {
-      // Request setup error
-      console.error('Request setup error:', error.message);
-    }
+    // ตรวจสอบสถานะ 401 Unauthorized และยังไม่ได้ลองคำขอนี้ใหม่
+    if (
+      error.response &&
+      error.response.status === 401 &&
+      !originalRequest._retry &&
+      originalRequest.url !== '/auth/login' // เพิ่มเงื่อนไขไม่ให้ refresh session ระหว่าง login
+    ) {
+      originalRequest._retry = true; // ป้องกันการวนลูปคำขอ
 
-    // Handle 401 and attempt refresh
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
       try {
-        await api.get('/auth/refresh-session');
-        return api(originalRequest);
+        await api.get('/auth/refresh-session'); // เรียก API เพื่อ Refresh Session
+        return api(originalRequest); // ส่งคำขอเดิมอีกครั้ง
       } catch (refreshError) {
-        console.error('Session refresh failed:', refreshError);
-        return Promise.reject(refreshError);
+        return Promise.reject(refreshError); // ส่งคืนข้อผิดพลาดถ้า Refresh ล้มเหลว
       }
     }
 
-    return Promise.reject(error);
+    return Promise.reject(error); // ส่งคืนข้อผิดพลาดเดิมถ้าไม่ใช่กรณี 401
   }
 );
 

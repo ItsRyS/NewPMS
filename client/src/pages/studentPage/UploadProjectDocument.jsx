@@ -60,14 +60,17 @@ const UploadProjectDocument = () => {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm')); // สำหรับหน้าจอขนาดเล็ก
 
+  const showSnackbar = (message, severity = 'info') => {
+    setSnackbar({ open: true, message, severity });
+  };
+
   const handleApiError = useCallback((error, defaultMessage) => {
     console.error('API Error:', error);
     const message =
       error.response?.data?.message || defaultMessage || 'เกิดข้อผิดพลาด';
     showSnackbar(message, 'error');
-  }, []); // Dependency array ว่าง เพราะไม่มีตัวแปรใดที่ handleApiError ต้องพึ่งพา
-  
-  
+  }, []);
+
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
@@ -115,13 +118,6 @@ const UploadProjectDocument = () => {
     fetchData();
   }, [fetchData]);
   
-// Snackbar utility function เพื่อการแสดงผล Snackbar ได้ง่ายขึ้น
-const showSnackbar = (message, severity = 'info') => {
-  setSnackbar({ open: true, message, severity });
-};
-
-
-
   const handleViewDocument = (filePath) => {
     if (filePath) {
       setSelectedFilePath(`http://localhost:5000/${filePath}`);
