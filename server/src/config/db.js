@@ -1,14 +1,22 @@
 require('dotenv').config();
 const mysql = require('mysql2');
 
+// Check current environment
+const ENV = process.env.NODE_ENV || 'development';
+const DB_HOST = ENV === 'development' ? process.env.DEV_DB_HOST : process.env.PROD_DB_HOST;
+const DB_USER = ENV === 'development' ? process.env.DEV_DB_USER : process.env.PROD_DB_USER;
+const DB_PASSWORD = ENV === 'development' ? process.env.DEV_DB_PASSWORD : process.env.PROD_DB_PASSWORD;
+const DB_NAME = ENV === 'development' ? process.env.DEV_DB_NAME : process.env.PROD_DB_NAME;
+const DB_PORT = ENV === 'development' ? process.env.DEV_DB_PORT : process.env.PROD_DB_PORT;
+
 const db = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: process.env.DB_PORT,
+  host: DB_HOST,
+  user: DB_USER,
+  password: DB_PASSWORD,
+  database: DB_NAME,
+  port: DB_PORT,
 });
 
-console.log('Connected to the database.'); // ใช้ข้อความ Log ธรรมดาแทน callback
+console.log(`db.js say : Connected ${DB_NAME} at ${DB_HOST}:${DB_PORT}.`);
 
 module.exports = db.promise();

@@ -113,6 +113,5 @@ app.use((err, req, res) => {
 
 // Start Server
 app.listen(PORT, () => {
-  console.log(`Server is running in ${ENV} mode on http://localhost:${PORT}`);
-  console.log(`Connected to database ${DB_NAME} at ${DB_HOST}:${DB_PORT}`);
+  console.log(`index.js say : ${ENV} Server on http://localhost:${PORT}`);
 });
