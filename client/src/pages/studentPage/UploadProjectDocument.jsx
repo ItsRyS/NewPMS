@@ -375,7 +375,7 @@ const UploadProjectDocument = () => {
             {/* Required Documents Section */}
             <Box>
               <Typography variant="h6" gutterBottom>
-                เอกสารทั้งหมดที่ต้องส่ง
+                เอกสารที่ผ่านการอนุมัติ
               </Typography>
               {mergedDocumentTypes.length === 0 ? (
                 <Typography variant="body2" color="text.secondary">
@@ -420,7 +420,7 @@ const UploadProjectDocument = () => {
                 variant="h6"
                 sx={{ textAlign: 'center', fontWeight: 'bold' }}
               >
-                ประวัติการส่งเอกสาร
+                ประวัติการส่งเอกสาร / ผลการตรวจ
               </Typography>
               <Button
                 onClick={() =>
