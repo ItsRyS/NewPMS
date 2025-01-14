@@ -233,3 +233,19 @@ exports.resubmitDocument = async (req, res) => {
     connection.release();
   }
 };
+exports.saveAnnotations = async (req, res) => {
+  const { documentId, annotations } = req.body;
+
+  try {
+    // บันทึก annotations ในฐานข้อมูล หรือสร้างไฟล์ใหม่
+    // สมมติว่าบันทึกในไฟล์ JSON
+    const annotationsPath = `annotations/${documentId}.json`;
+    fs.writeFileSync(annotationsPath, JSON.stringify(annotations, null, 2));
+
+    res.status(200).json({ message: 'Annotations saved successfully.' });
+  } catch (error) {
+    console.error('Error saving annotations:', error.message);
+    res.status(500).json({ message: 'Failed to save annotations.' });
+  }
+};
+

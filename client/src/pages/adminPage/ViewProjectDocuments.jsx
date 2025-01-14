@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   Box,
   Typography,
-  CircularProgress,
   Table,
   TableBody,
   TableCell,
@@ -16,35 +15,36 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  DialogContentText,
   TextField,
   Snackbar,
   Alert,
-  Chip,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  CircularProgress,
 } from '@mui/material';
+import PDFJSAnnotate from 'pdf-annotate.js';
 import api from '../../services/api';
 
 const ViewProjectDocuments = () => {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedDocument, setSelectedDocument] = useState(null);
-  const [openModal, setOpenModal] = useState(false);
-  const [openRejectDialog, setOpenRejectDialog] = useState(false);
+  const [openRejectOptions, setOpenRejectOptions] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
-  const [currentDocumentId, setCurrentDocumentId] = useState(null);
+  const [rejectOption, setRejectOption] = useState('comment');
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
     severity: 'info',
   });
+  const viewerRef = useRef(null);
 
   const fetchPendingDocuments = async () => {
     try {
       setLoading(true);
       const response = await api.get('/project-documents/all');
-      const pendingDocs = response.data.filter(
-        (doc) => doc.status === 'pending'
-      );
+      const pendingDocs = response.data.filter((doc) => doc.status === 'pending');
       setDocuments(pendingDocs);
     } catch (error) {
       console.error('Error fetching documents:', error);
@@ -60,7 +60,17 @@ const ViewProjectDocuments = () => {
 
   useEffect(() => {
     fetchPendingDocuments();
-  }, []);
+  }, []); // Added initial fetch effect
+
+  useEffect(() => {
+    if (selectedDocument !== null && viewerRef.current) {
+      PDFJSAnnotate.UI.render({
+        documentId: selectedDocument.document_id,
+        pdfDocument: selectedDocument.url,
+        container: viewerRef.current,
+      });
+    }
+  }, [selectedDocument]);
 
   const handleViewDocument = (filePath, fileName, documentId) => {
     setSelectedDocument({
@@ -68,23 +78,18 @@ const ViewProjectDocuments = () => {
       name: fileName,
       document_id: documentId,
     });
-    setOpenModal(true);
   };
 
-  const handleCloseModal = () => {
-    setOpenModal(false);
-    setSelectedDocument(null);
-  };
-
-  const handleApprove = async (documentId) => {
+  const handleApprove = async () => {
     try {
-      await api.post(`/project-documents/approve/${documentId}`);
+      await api.post(`/project-documents/approve/${selectedDocument.document_id}`);
       setSnackbar({
         open: true,
         message: 'Document approved successfully.',
         severity: 'success',
       });
       fetchPendingDocuments();
+      setSelectedDocument(null);
     } catch (error) {
       console.error('Error approving document:', error);
       setSnackbar({
@@ -96,45 +101,60 @@ const ViewProjectDocuments = () => {
   };
 
   const handleReject = async () => {
-    if (!rejectReason.trim()) {
-      setSnackbar({
-        open: true,
-        message: 'Please provide a reason for rejection.',
-        severity: 'warning',
-      });
-      return;
+    if (rejectOption === 'comment') {
+      if (!rejectReason.trim()) {
+        setSnackbar({
+          open: true,
+          message: 'Please provide a reason for rejection.',
+          severity: 'warning',
+        });
+        return;
+      }
+
+      try {
+        await api.post(`/project-documents/reject/${selectedDocument.document_id}`, {
+          reason: rejectReason,
+        });
+        setSnackbar({
+          open: true,
+          message: 'Document rejected successfully.',
+          severity: 'success',
+        });
+        fetchPendingDocuments();
+        setSelectedDocument(null);
+        setOpenRejectOptions(false);
+      } catch (error) {
+        console.error('Error rejecting document:', error);
+        setSnackbar({
+          open: true,
+          message: 'Failed to reject document.',
+          severity: 'error',
+        });
+      }
+    } else if (rejectOption === 'highlight') {
+      try {
+        const annotations = PDFJSAnnotate.getAnnotations();
+        await api.post('/project-documents/save-annotations', {
+          documentId: selectedDocument.document_id,
+          annotations,
+        });
+        setSnackbar({
+          open: true,
+          message: 'Highlights saved successfully.',
+          severity: 'success',
+        });
+        fetchPendingDocuments();
+        setSelectedDocument(null);
+        setOpenRejectOptions(false);
+      } catch (error) {
+        console.error('Error saving highlights:', error);
+        setSnackbar({
+          open: true,
+          message: 'Failed to save highlights.',
+          severity: 'error',
+        });
+      }
     }
-
-    try {
-      await api.post(`/project-documents/reject/${currentDocumentId}`, {
-        reason: rejectReason,
-      });
-      setSnackbar({
-        open: true,
-        message: 'Document rejected successfully.',
-        severity: 'success',
-      });
-      handleCloseRejectDialog();
-      fetchPendingDocuments();
-    } catch (error) {
-      console.error('Error rejecting document:', error);
-      setSnackbar({
-        open: true,
-        message: 'Failed to reject document.',
-        severity: 'error',
-      });
-    }
-  };
-
-  const handleOpenRejectDialog = (documentId) => {
-    setCurrentDocumentId(documentId);
-    setOpenRejectDialog(true);
-  };
-
-  const handleCloseRejectDialog = () => {
-    setOpenRejectDialog(false);
-    setRejectReason('');
-    setCurrentDocumentId(null);
   };
 
   if (loading) {
@@ -149,28 +169,6 @@ const ViewProjectDocuments = () => {
       >
         <CircularProgress />
       </Box>
-    );
-  }
-  if (loading) {
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '100vh',
-        }}
-      >
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (documents.length === 0) {
-    return (
-      <Typography variant="h6" align="center" sx={{ mt: 4 }}>
-        ไม่มีเอกสารโครงงานที่ต้องการอนุมัติ
-      </Typography>
     );
   }
 
@@ -187,58 +185,38 @@ const ViewProjectDocuments = () => {
       <TableContainer
         component={Paper}
         sx={{
-          boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)', // Subtle shadow for floating table
-          borderRadius: '8px', // Rounded corners for the table
+          boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
+          borderRadius: '8px',
           overflow: 'auto',
         }}
       >
         <Table>
           <TableHead>
             <TableRow>
-              {/* <TableCell>Document ID</TableCell> */}
-              <TableCell>ชื่อโครงงาน</TableCell>
-              <TableCell>แบบเอกสารที่ส่งมา</TableCell>
-              <TableCell>ส่งโดย</TableCell>
-              <TableCell>วันเวลาที่ส่ง</TableCell>
-              <TableCell>สถานะเอกสาร</TableCell>
-              <TableCell>ตรวจเอกสาร</TableCell>
+              <TableCell>Project Name</TableCell>
+              <TableCell>Document Type</TableCell>
+              <TableCell>Submitted By</TableCell>
+              <TableCell>Submitted At</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {documents.map((doc) => (
               <TableRow key={doc.document_id}>
-                {/*<TableCell>{doc.document_id}</TableCell>/*/}
                 <TableCell>{doc.project_name}</TableCell>
                 <TableCell>{doc.type_name}</TableCell>
                 <TableCell>{doc.student_name}</TableCell>
                 <TableCell>
                   {new Date(doc.submitted_at).toLocaleString()}
                 </TableCell>
-                <TableCell>
-                  <Chip
-                    label={doc.status}
-                    color={
-                      doc.status === 'approved'
-                        ? 'success'
-                        : doc.status === 'rejected'
-                          ? 'error'
-                          : 'default'
-                    }
-                  />
-                </TableCell>
+                <TableCell>{doc.status}</TableCell>
                 <TableCell>
                   <Button
                     variant="contained"
-                    color="primary"
-                    onClick={() =>
-                      handleViewDocument(
-                        doc.file_path,
-                        doc.type_name,
-                        doc.document_id
-                      )
-                    }
+                    onClick={() => handleViewDocument(doc.file_path, doc.type_name, doc.document_id)}
                   >
-                    ตรวจเอกสาร
+                    View Document
                   </Button>
                 </TableCell>
               </TableRow>
@@ -247,80 +225,78 @@ const ViewProjectDocuments = () => {
         </Table>
       </TableContainer>
 
-      <Modal open={openModal} onClose={handleCloseModal}>
-        <Box
-          sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: '90%',
-            height: 'calc(100vh - 32px)', // ใช้ 100% ของความสูง viewport ลบระยะห่างเล็กน้อย
-            bgcolor: 'background.paper',
-            boxShadow: 24,
-            borderRadius: 2,
-            overflow: 'hidden', // ป้องกันการเลื่อนเกินขอบ
-          }}
-        >
-          <Typography variant="h6" gutterBottom>
-            Document Preview: {selectedDocument?.name}
-          </Typography>
-          {selectedDocument && (
+      {selectedDocument && (
+        <Modal open={!!selectedDocument} onClose={() => setSelectedDocument(null)}>
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '90%',
+              height: 'calc(100vh - 32px)',
+              bgcolor: 'background.paper',
+              boxShadow: 24,
+              borderRadius: 2,
+              overflow: 'hidden',
+            }}
+          >
+            <Typography variant="h6" gutterBottom>
+              Document Preview: {selectedDocument.name}
+            </Typography>
             <iframe
               src={selectedDocument.url}
               width="100%"
-              height="85%" // ลดพื้นที่ iframe เพื่อเหลือให้ปุ่มด้านล่าง
-              style={{ border: 'none' }}
+              height="80%"
               title="Document Viewer"
-            ></iframe>
-          )}
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
-            <Button
-              variant="text"
-              color="success"
-              onClick={() => {
-                handleApprove(selectedDocument.document_id);
-                handleCloseModal();
-              }}
-            >
-              อนุมัติ
-            </Button>
-            <Button
-              variant="text"
-              color="error"
-              onClick={() => {
-                handleOpenRejectDialog(selectedDocument.document_id);
-                handleCloseModal();
-              }}
-            >
-              ไม่อนุมัติ
-            </Button>
-            <Button variant="text" onClick={handleCloseModal}>
-              ปิด
-            </Button>
+              style={{ border: 'none' }}
+            />
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
+              <Button variant="contained" color="success" onClick={handleApprove}>
+                Approve
+              </Button>
+              <Button
+                variant="contained"
+                color="error"
+                onClick={() => setOpenRejectOptions(true)}
+              >
+                Reject
+              </Button>
+            </Box>
           </Box>
-        </Box>
-      </Modal>
+        </Modal>
+      )}
 
-      <Dialog open={openRejectDialog} onClose={handleCloseRejectDialog}>
-        <DialogTitle>Reject Document</DialogTitle>
+      <Dialog
+        open={openRejectOptions}
+        onClose={() => setOpenRejectOptions(false)}
+      >
+        <DialogTitle>Reject Options</DialogTitle>
         <DialogContent>
-          <DialogContentText>เหตูผลที่ไม่อนุมัติเอกสาร</DialogContentText>
-          <TextField
-            fullWidth
-            multiline
-            rows={4}
-            value={rejectReason}
-            onChange={(e) => setRejectReason(e.target.value)}
-            sx={{ mt: 2 }}
-          />
+          <RadioGroup
+            value={rejectOption}
+            onChange={(e) => setRejectOption(e.target.value)}
+          >
+            <FormControlLabel value="comment" control={<Radio />} label="Add Comment" />
+            <FormControlLabel value="highlight" control={<Radio />} label="Highlight Document" />
+          </RadioGroup>
+          {rejectOption === "comment" && (
+            <TextField
+              fullWidth
+              multiline
+              rows={4}
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              sx={{ mt: 2 }}
+            />
+          )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseRejectDialog} color="error">
-            ปิด
+          <Button onClick={() => setOpenRejectOptions(false)} color="primary">
+            Cancel
           </Button>
-          <Button onClick={handleReject} color="primary">
-            ส่ง
+          <Button onClick={handleReject} color="error">
+            Confirm
           </Button>
         </DialogActions>
       </Dialog>

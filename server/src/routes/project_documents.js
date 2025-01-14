@@ -18,16 +18,15 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ 
+const upload = multer({
   storage,
-  fileFilter: (req, file, cb) =>{
-    if(file.mimetype === 'application/pdf'){
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/pdf') {
       cb(null, true);
     } else {
-      
       cb(new Error('กรุณาอัพโหลดไฟล์ PDF เท่านั้น'), false);
     }
-  }
+  },
 });
 
 // เส้นทางสำหรับการจัดการเอกสารโครงงาน
@@ -51,5 +50,6 @@ router.get(
   '/types-with-status',
   projectDocumentsController.getDocumentTypesWithStatus
 );
+router.post('/save-annotations', projectDocumentsController.saveAnnotations);
 
 module.exports = router;
