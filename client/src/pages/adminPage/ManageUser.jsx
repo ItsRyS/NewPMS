@@ -40,7 +40,7 @@ const ManageUser = () => {
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-
+  const [searchParams] = useSearchParams();
   // Fetch Users
   useEffect(() => {
     const fetchUsers = async () => {
@@ -54,7 +54,7 @@ const ManageUser = () => {
       }
     };
     fetchUsers();
-  }, [useSearchParams]);
+  }, [searchParams]);
 
   // Filter Users
   useEffect(() => {

@@ -30,20 +30,22 @@ import {
   useTheme,
   IconButton,
 } from '@mui/material';
-import { useSearchParams } from 'react-router-dom';
-import RemoveRedEyeTwoToneIcon from '@mui/icons-material/RemoveRedEyeTwoTone';
-import DeleteForeverTwoToneIcon from '@mui/icons-material/DeleteForeverTwoTone';
-import RefreshTwoToneIcon from '@mui/icons-material/RefreshTwoTone';
-import ArrowDownwardTwoToneIcon from '@mui/icons-material/ArrowDownwardTwoTone';
-import ArrowUpwardTwoToneIcon from '@mui/icons-material/ArrowUpwardTwoTone';
-import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
-import AssignmentIcon from '@mui/icons-material/Assignment';
-import UploadFileIcon from '@mui/icons-material/UploadFile';
-import CancelIcon from '@mui/icons-material/Cancel';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import {
+  RemoveRedEyeTwoTone as ViewIcon,
+  DeleteForeverTwoTone as DeleteIcon,
+  RefreshTwoTone as RefreshIcon,
+  ArrowDownwardTwoTone as ArrowDownIcon,
+  ArrowUpwardTwoTone as ArrowUpIcon,
+  AssignmentTurnedIn as ApprovedIcon,
+  Assignment as AssignmentIcon,
+  UploadFile as UploadIcon,
+  Cancel as CancelIcon,
+  CheckCircle as CheckIcon,
+  Close as CloseIcon,
+} from '@mui/icons-material';
 
 import api from '../../services/api';
-import CloseIcon from '@mui/icons-material/Close';
+
 const UploadProjectDocument = () => {
   const [documentTypes, setDocumentTypes] = useState([]);
   const [selectedType, setSelectedType] = useState('');
@@ -51,10 +53,12 @@ const UploadProjectDocument = () => {
   const [approvedProject, setApprovedProject] = useState(null);
   const [documentHistory, setDocumentHistory] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [openResubmitDialog, setOpenResubmitDialog] = useState(false);
+  const [dialog, setDialog] = useState({
+    resubmit: false,
+    cancel: false,
+    view: false,
+  });
   const [currentDocumentId, setCurrentDocumentId] = useState(null);
-  const [openCancelDialog, setOpenCancelDialog] = useState(false);
-  const [openViewDialog, setOpenViewDialog] = useState(false);
   const [selectedFilePath, setSelectedFilePath] = useState('');
   const [sortOrder, setSortOrder] = useState('desc');
   const [snackbar, setSnackbar] = useState({
@@ -62,9 +66,10 @@ const UploadProjectDocument = () => {
     message: '',
     severity: 'success',
   });
+
   const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('sm')); // สำหรับหน้าจอขนาดเล็ก
-  const [searchParams] = useSearchParams();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
+
   const showSnackbar = (message, severity = 'info') => {
     setSnackbar({ open: true, message, severity });
   };
@@ -124,26 +129,27 @@ const UploadProjectDocument = () => {
 
   useEffect(() => {
     fetchData();
-  }, [searchParams, fetchData]);
+  }, [fetchData]);
 
   const handleViewDocument = (filePath) => {
     if (filePath) {
       setSelectedFilePath(`http://localhost:5000/${filePath}`);
-      setOpenViewDialog(true);
+      setDialog((prev) => ({ ...prev, view: true }));
     } else {
       console.error('Invalid file path:', filePath);
     }
   };
 
-  const handleCloseViewDialog = () => {
-    setSelectedFilePath('');
-    setOpenViewDialog(false);
+  const handleCloseDialog = (type) => {
+    setDialog((prev) => ({ ...prev, [type]: false }));
+    if (type === 'view') setSelectedFilePath('');
+    if (type === 'resubmit') setFile(null);
   };
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     const fileExtension = selectedFile?.name.split('.').pop().toLowerCase();
-    const maxFileSize = 5 * 1024 * 1024; // ขนาดไฟล์สูงสุด 5MB
+    const maxFileSize = 5 * 1024 * 1024;
 
     if (selectedFile && fileExtension === 'pdf') {
       if (selectedFile.size > maxFileSize) {
@@ -168,27 +174,21 @@ const UploadProjectDocument = () => {
           : null;
 
     if (errorMessage) {
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: 'error',
-      });
+      showSnackbar(errorMessage, 'error');
       return;
     }
 
-    // ตรวจสอบสถานะเอกสารที่เลือก
     const selectedDocument = documentTypes.find(
       (type) => type.type_id === selectedType
     );
 
     if (selectedDocument?.status === 'approved') {
-      setSnackbar({
-        open: true,
-        message: 'เอกสารนี้ได้รับการอนุมัติแล้ว ไม่สามารถอัพโหลดซ้ำได้',
-        severity: 'warning',
-      });
-      setSelectedType(''); // ล้างประเภทเอกสารที่เลือก
-      setFile(null); // ล้างไฟล์ที่เลือก
+      showSnackbar(
+        'เอกสารนี้ได้รับการอนุมัติแล้ว ไม่สามารถอัพโหลดซ้ำได้',
+        'warning'
+      );
+      setSelectedType('');
+      setFile(null);
       return;
     }
 
@@ -200,23 +200,13 @@ const UploadProjectDocument = () => {
     try {
       setLoading(true);
       await api.post('/project-documents/upload', formData);
-      setSnackbar({
-        open: true,
-        message: 'Document uploaded successfully.',
-        severity: 'success',
-      });
-
-      // ล้างค่าที่เคยเลือกไว้หลังจากอัพโหลดสำเร็จ
+      showSnackbar('Document uploaded successfully.', 'success');
       setSelectedType('');
       setFile(null);
       fetchData();
     } catch (error) {
       console.error('Error uploading document:', error);
-      setSnackbar({
-        open: true,
-        message: 'Failed to upload document.',
-        severity: 'error',
-      });
+      showSnackbar('Failed to upload document.', 'error');
     } finally {
       setLoading(false);
     }
@@ -226,31 +216,20 @@ const UploadProjectDocument = () => {
     try {
       setLoading(true);
       await api.delete(`/project-documents/delete/${currentDocumentId}`);
-      setSnackbar({
-        open: true,
-        message: 'Document submission canceled successfully.',
-        severity: 'success',
-      });
+      showSnackbar('Document submission canceled successfully.', 'success');
       fetchData();
-      handleCloseCancelDialog();
+      handleCloseDialog('cancel');
     } catch (error) {
       console.error('Error canceling submission:', error);
-      setSnackbar({
-        open: true,
-        message: 'Failed to cancel document submission.',
-        severity: 'error',
-      });
+      showSnackbar('Failed to cancel document submission.', 'error');
     } finally {
       setLoading(false);
     }
   };
+
   const handleResubmit = async () => {
     if (!file) {
-      setSnackbar({
-        open: true,
-        message: 'Please select a file to resubmit.',
-        severity: 'error',
-      });
+      showSnackbar('Please select a file to resubmit.', 'error');
       return;
     }
 
@@ -263,41 +242,20 @@ const UploadProjectDocument = () => {
         `/project-documents/resubmit/${currentDocumentId}`,
         formData
       );
-      setSnackbar({
-        open: true,
-        message: 'Document resubmitted successfully.',
-        severity: 'success',
-      });
+      showSnackbar('Document resubmitted successfully.', 'success');
       fetchData();
-      handleCloseResubmitDialog();
+      handleCloseDialog('resubmit');
     } catch (error) {
       console.error('Error resubmitting document:', error);
-      setSnackbar({
-        open: true,
-        message: 'Failed to resubmit document.',
-        severity: 'error',
-      });
+      showSnackbar('Failed to resubmit document.', 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleOpenResubmitDialog = (documentId) => {
+  const handleOpenDialog = (type, documentId = null) => {
     setCurrentDocumentId(documentId);
-    setOpenResubmitDialog(true);
-  };
-
-  const handleCloseResubmitDialog = () => {
-    setFile(null);
-    setOpenResubmitDialog(false);
-  };
-  const handleOpenCancelDialog = (documentId) => {
-    setCurrentDocumentId(documentId);
-    setOpenCancelDialog(true);
-  };
-
-  const handleCloseCancelDialog = () => {
-    setOpenCancelDialog(false);
+    setDialog((prev) => ({ ...prev, [type]: true }));
   };
 
   const sortedDocumentHistory = [...documentHistory].sort((a, b) =>
@@ -305,38 +263,39 @@ const UploadProjectDocument = () => {
       ? new Date(b.submitted_at) - new Date(a.submitted_at)
       : new Date(a.submitted_at) - new Date(b.submitted_at)
   );
-  // ฟังก์ชันผสานประเภทเอกสารและสถานะโดยใช้ Map เพื่อกรองซ้ำ
+
   const mergeDocumentTypes = () => {
     const typeMap = new Map();
-
-    documentTypes.forEach((type) => {
-      typeMap.set(type.type_id, type);
-    });
-
+    documentTypes.forEach((type) => typeMap.set(type.type_id, type));
     return Array.from(typeMap.values());
   };
 
   const mergedDocumentTypes = mergeDocumentTypes();
 
+  const getChipColor = (status) => {
+    switch (status) {
+      case 'approved':
+        return 'success';
+      case 'rejected':
+        return 'error';
+      case 'returned':
+        return 'warning';
+      default:
+        return 'default';
+    }
+  };
+
   return (
-    //<Paper elevation={3} sx={{ padding: 4, borderRadius: 3, width: "100%", mx: "auto" }}>
     <>
-      <Grid
-        container
-        spacing={4}
-        alignItems={'stretch'}
-        justifyContent={'center'}
-      >
+      <Grid container spacing={4} alignItems="stretch" justifyContent="center">
         {/* Upload Section */}
         <Grid item xs={12} md={6}>
           <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
-            {/* Header */}
             <Typography variant="h6" gutterBottom>
               Upload Document
             </Typography>
             <Divider sx={{ mb: 2 }} />
 
-            {/* Document Upload Form */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
               <FormControl fullWidth>
                 <InputLabel>Document Type</InputLabel>
@@ -358,7 +317,6 @@ const UploadProjectDocument = () => {
               </Button>
             </Box>
 
-            {/* Selected File Information */}
             <Typography
               variant="body2"
               sx={{ mb: 2, color: file ? 'text.primary' : 'text.secondary' }}
@@ -366,7 +324,6 @@ const UploadProjectDocument = () => {
               {file ? `ไฟล์ที่เลือก: ${file.name}` : 'ยังไม่ได้เลือกเอกสาร'}
             </Typography>
 
-            {/* Submit Button */}
             <Button
               variant="contained"
               color="primary"
@@ -378,7 +335,6 @@ const UploadProjectDocument = () => {
               {loading ? <CircularProgress size={24} /> : 'Upload Document'}
             </Button>
 
-            {/* Required Documents Section */}
             <Box>
               <Typography variant="h6" gutterBottom>
                 เอกสารที่ผ่านการอนุมัติ
@@ -404,9 +360,7 @@ const UploadProjectDocument = () => {
                       }}
                     >
                       {type.status === 'approved' ? (
-                        <AssignmentTurnedInIcon
-                          sx={{ color: 'success.main' }}
-                        />
+                        <ApprovedIcon sx={{ color: 'success.main' }} />
                       ) : (
                         <AssignmentIcon sx={{ color: 'text.secondary' }} />
                       )}
@@ -434,11 +388,7 @@ const UploadProjectDocument = () => {
                   setSortOrder((prev) => (prev === 'desc' ? 'asc' : 'desc'))
                 }
                 startIcon={
-                  sortOrder === 'desc' ? (
-                    <ArrowDownwardTwoToneIcon />
-                  ) : (
-                    <ArrowUpwardTwoToneIcon />
-                  )
+                  sortOrder === 'desc' ? <ArrowDownIcon /> : <ArrowUpIcon />
                 }
               >
                 {sortOrder === 'desc' ? 'ใหม่ไปเก่า' : 'เก่าไปใหม่'}
@@ -485,7 +435,6 @@ const UploadProjectDocument = () => {
                             gap: 1,
                           }}
                         >
-                          {/* ดูเอกสาร */}
                           <Tooltip title="ดูเอกสาร">
                             <span>
                               <Button
@@ -496,25 +445,24 @@ const UploadProjectDocument = () => {
                                 disabled={!doc.file_path}
                                 sx={{ minWidth: 'auto', p: 0 }}
                               >
-                                <RemoveRedEyeTwoToneIcon />
+                                <ViewIcon />
                               </Button>
                             </span>
                           </Tooltip>
 
-                          {/* ส่งอีกครั้ง */}
                           <Tooltip title="ส่งอีกครั้ง">
                             <span>
                               <Button
                                 sx={{ minWidth: 'auto', p: 0 }}
                                 onClick={() =>
-                                  handleOpenResubmitDialog(doc.document_id)
+                                  handleOpenDialog('resubmit', doc.document_id)
                                 }
                                 disabled={
                                   doc.status !== 'rejected' &&
                                   doc.status !== 'returned'
                                 }
                               >
-                                <RefreshTwoToneIcon
+                                <RefreshIcon
                                   color={
                                     doc.status === 'rejected' ||
                                     doc.status === 'returned'
@@ -526,17 +474,16 @@ const UploadProjectDocument = () => {
                             </span>
                           </Tooltip>
 
-                          {/* ยกเลิกการส่ง */}
                           <Tooltip title="ยกเลิกการส่ง">
                             <span>
                               <Button
                                 sx={{ minWidth: 'auto', p: 0 }}
                                 onClick={() =>
-                                  handleOpenCancelDialog(doc.document_id)
+                                  handleOpenDialog('cancel', doc.document_id)
                                 }
                                 disabled={doc.status !== 'pending'}
                               >
-                                <DeleteForeverTwoToneIcon
+                                <DeleteIcon
                                   color={
                                     doc.status === 'pending'
                                       ? 'error'
@@ -555,15 +502,7 @@ const UploadProjectDocument = () => {
                             doc.status.charAt(0).toUpperCase() +
                             doc.status.slice(1)
                           }
-                          color={
-                            doc.status === 'approved'
-                              ? 'success'
-                              : doc.status === 'rejected'
-                                ? 'error'
-                                : doc.status === 'returned'
-                                  ? 'warning'
-                                  : 'default'
-                          }
+                          color={getChipColor(doc.status)}
                           sx={{ width: '90px', textAlign: 'center' }}
                         />
                       </TableCell>
@@ -577,87 +516,88 @@ const UploadProjectDocument = () => {
       </Grid>
 
       <Dialog
-  open={openResubmitDialog}
-  onClose={handleCloseResubmitDialog}
-  maxWidth="sm"
-  fullWidth
-  sx={{
-    '& .MuiDialog-paper': {
-      borderRadius: '16px',
-      padding: '24px',
-    },
-  }}
->
-  <DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.5rem' }}>
-    Resubmit Document
-  </DialogTitle>
-  <DialogContent sx={{ textAlign: 'center', marginTop: '16px' }}>
-    <Button
-      variant="contained"
-      component="label"
-      startIcon={<UploadFileIcon />} // ไอคอนสำหรับ Choose File
-      sx={{
-        backgroundColor: '#1976D2',
-        '&:hover': {
-          backgroundColor: '#1565C0',
-        },
-        fontSize: '1rem',
-        padding: '12px 24px',
-        borderRadius: '8px',
-      }}
-    >
-      Choose File
-      <input type="file" hidden onChange={handleFileChange} />
-    </Button>
-    {file && (
-      <Typography
-        variant="body1"
+        open={dialog.resubmit}
+        onClose={() => handleCloseDialog('resubmit')}
+        maxWidth="sm"
+        fullWidth
         sx={{
-          marginTop: '16px',
-          color: 'text.primary',
-          fontWeight: '500',
+          '& .MuiDialog-paper': {
+            borderRadius: '16px',
+            padding: '24px',
+          },
         }}
       >
-        Selected File: {file.name}
-      </Typography>
-    )}
-  </DialogContent>
-  <DialogActions
-    sx={{
-      justifyContent: 'center',
-      padding: '16px',
-      gap: '16px',
-    }}
-  >
-    <Button
-      onClick={handleCloseResubmitDialog}
-      variant="outlined"
-      color="error"
-      startIcon={<CancelIcon />} // ไอคอนสำหรับ Cancel
-      sx={{
-        borderRadius: '8px',
-        padding: '8px 16px',
-      }}
-    >
-      Cancel
-    </Button>
-    <Button
-      onClick={handleResubmit}
-      variant="contained"
-      color="primary"
-      startIcon={<CheckCircleIcon />} // ไอคอนสำหรับ Submit
-      sx={{
-        borderRadius: '8px',
-        padding: '8px 16px',
-      }}
-    >
-      Submit
-    </Button>
-  </DialogActions>
-</Dialog>
+        <DialogTitle
+          sx={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.5rem' }}
+        >
+          Resubmit Document
+        </DialogTitle>
+        <DialogContent sx={{ textAlign: 'center', marginTop: '16px' }}>
+          <Button
+            variant="contained"
+            component="label"
+            startIcon={<UploadIcon />}
+            sx={{
+              backgroundColor: '#1976D2',
+              '&:hover': {
+                backgroundColor: '#1565C0',
+              },
+              fontSize: '1rem',
+              padding: '12px 24px',
+              borderRadius: '8px',
+            }}
+          >
+            Choose File
+            <input type="file" hidden onChange={handleFileChange} />
+          </Button>
+          {file && (
+            <Typography
+              variant="body1"
+              sx={{
+                marginTop: '16px',
+                color: 'text.primary',
+                fontWeight: '500',
+              }}
+            >
+              Selected File: {file.name}
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions
+          sx={{
+            justifyContent: 'center',
+            padding: '16px',
+            gap: '16px',
+          }}
+        >
+          <Button
+            onClick={() => handleCloseDialog('resubmit')}
+            variant="outlined"
+            color="error"
+            startIcon={<CancelIcon />}
+            sx={{
+              borderRadius: '8px',
+              padding: '8px 16px',
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleResubmit}
+            variant="contained"
+            color="primary"
+            startIcon={<CheckIcon />}
+            sx={{
+              borderRadius: '8px',
+              padding: '8px 16px',
+            }}
+          >
+            Submit
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-      {/* Cancel Dialog */}
-      <Dialog open={openCancelDialog} onClose={handleCloseCancelDialog}>
+      <Dialog open={dialog.cancel} onClose={() => handleCloseDialog('cancel')}>
         <DialogTitle>Confirm Cancel</DialogTitle>
         <DialogContent>
           <DialogContentText>
@@ -665,7 +605,7 @@ const UploadProjectDocument = () => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseCancelDialog} color="primary">
+          <Button onClick={() => handleCloseDialog('cancel')} color="primary">
             ไม่
           </Button>
           <Button onClick={handleCancelSubmission} color="error">
@@ -675,15 +615,15 @@ const UploadProjectDocument = () => {
       </Dialog>
 
       <Dialog
-        open={openViewDialog}
-        onClose={handleCloseViewDialog}
+        open={dialog.view}
+        onClose={() => handleCloseDialog('view')}
         fullScreen={fullScreen}
         maxWidth="lg"
         fullWidth
-        sx={{ '& .MuiDialog-paper': { width: '100%', height: '100%' } }} // แทน maxHeight เดิม
+        sx={{ '& .MuiDialog-paper': { width: '100%', height: '100%' } }}
       >
         <IconButton
-          onClick={handleCloseViewDialog}
+          onClick={() => handleCloseDialog('view')}
           sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1 }}
         >
           <CloseIcon />
@@ -728,5 +668,4 @@ const UploadProjectDocument = () => {
     </>
   );
 };
-
 export default UploadProjectDocument;
