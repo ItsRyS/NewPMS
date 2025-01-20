@@ -45,8 +45,9 @@ import {
 } from '@mui/icons-material';
 
 import api from '../../services/api';
-
+import { useSearchParams } from 'react-router-dom';
 const UploadProjectDocument = () => {
+  const [searchParams] = useSearchParams();
   const [documentTypes, setDocumentTypes] = useState([]);
   const [selectedType, setSelectedType] = useState('');
   const [file, setFile] = useState(null);
@@ -129,7 +130,7 @@ const UploadProjectDocument = () => {
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+  }, [searchParams, fetchData]);
 
   const handleViewDocument = (filePath) => {
     if (filePath) {
@@ -423,6 +424,14 @@ const UploadProjectDocument = () => {
                         {doc.status === 'rejected' && (
                           <Typography variant="body2" color="error">
                             หมายเหตุ: {doc.reject_reason}
+                          </Typography>
+                        )}
+                        {doc.status === 'returned' && (
+                          <Typography
+                            variant="body2"
+                            sx={{ color: 'warning.main' }}
+                          >
+                            มีเอกสารที่แก้ไขจากอาจารย์
                           </Typography>
                         )}
                       </TableCell>
