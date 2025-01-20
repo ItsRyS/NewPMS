@@ -6,9 +6,7 @@ const projectDocumentsController = require('../controllers/projectDocumentsContr
 const storage = multer.diskStorage({
   destination: 'upload/project-documents',
   filename: (req, file, cb) => {
-    const originalName = Buffer.from(file.originalname, 'latin1').toString(
-      'utf8'
-    );
+    const originalName = Buffer.from(file.originalname, 'latin1').toString('utf8');
     const uniqueSuffix = Date.now();
     const sanitizedName = originalName
       .normalize('NFD')
@@ -30,30 +28,17 @@ const upload = multer({
 });
 
 // เส้นทางสำหรับการจัดการเอกสารโครงงาน
-router.post(
-  '/upload',
-  upload.single('file'),
-  projectDocumentsController.uploadDocument
-); // อัปโหลดเอกสาร
-router.get('/all', projectDocumentsController.getAllDocuments); // ดึงข้อมูลเอกสารทั้งหมด
-router.get('/types', projectDocumentsController.getDocumentTypes); // ดึงประเภทเอกสาร
-router.get('/history', projectDocumentsController.getDocumentHistory); // ดึงประวัติเอกสาร
-router.delete('/delete/:documentId', projectDocumentsController.deleteDocument); // ลบเอกสาร
-router.post('/approve/:id', projectDocumentsController.approveDocument); // อนุมัติเอกสาร
-router.post('/reject/:id', projectDocumentsController.rejectDocument); // ปฏิเสธเอกสาร
-router.post(
-  '/resubmit/:id',
-  upload.single('file'),
-  projectDocumentsController.resubmitDocument
-); // ส่งเอกสารใหม่
-router.get(
-  '/types-with-status',
-  projectDocumentsController.getDocumentTypesWithStatus
-);
-router.post(
-  '/return/:documentId',
-  upload.single('file'),
-  projectDocumentsController.returnDocument
-);
+router.post('/upload', upload.single('file'), projectDocumentsController.uploadDocument);
+router.get('/all', projectDocumentsController.getAllDocuments);
+router.get('/types', projectDocumentsController.getDocumentTypes);
+router.get('/history', projectDocumentsController.getDocumentHistory);
+
+router.delete('/:documentId', projectDocumentsController.deleteDocument);
+router.post('/:documentId/approve', projectDocumentsController.approveDocument); // เส้นทางสำหรับอนุมัติ
+router.post('/:documentId/reject', projectDocumentsController.rejectDocument); // เส้นทางสำหรับปฏิเสธ
+router.post('/:documentId/return', upload.single('file'), projectDocumentsController.returnDocument); // เส้นทางสำหรับคืนเอกสาร
+
+router.post('/resubmit/:id', upload.single('file'), projectDocumentsController.resubmitDocument);
+router.get('/types-with-status', projectDocumentsController.getDocumentTypesWithStatus);
 
 module.exports = router;
