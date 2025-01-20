@@ -1,4 +1,4 @@
-import { useState, useEffect,useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -37,6 +37,10 @@ import ArrowDownwardTwoToneIcon from '@mui/icons-material/ArrowDownwardTwoTone';
 import ArrowUpwardTwoToneIcon from '@mui/icons-material/ArrowUpwardTwoTone';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
+import CancelIcon from '@mui/icons-material/Cancel';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+
 import api from '../../services/api';
 import CloseIcon from '@mui/icons-material/Close';
 const UploadProjectDocument = () => {
@@ -76,30 +80,34 @@ const UploadProjectDocument = () => {
       setLoading(true);
       const sessionResponse = await api.get('/auth/check-session');
       const studentId = sessionResponse.data.user.user_id;
-  
+
       const [typesResponse, requestsResponse] = await Promise.all([
         api.get('/document-types/types'),
         api.get(`/project-requests/status?studentId=${studentId}`),
       ]);
-  
+
       const allTypes = typesResponse.data;
       const approvedRequest = requestsResponse.data.data.find(
         (request) => request.status === 'approved'
       );
-  
+
       setApprovedProject(approvedRequest || null);
-  
+
       if (approvedRequest) {
         const [typesWithStatusResponse, historyResponse] = await Promise.all([
-          api.get(`/project-documents/types-with-status?requestId=${approvedRequest.request_id}`),
-          api.get(`/project-documents/history?requestId=${approvedRequest.request_id}`),
+          api.get(
+            `/project-documents/types-with-status?requestId=${approvedRequest.request_id}`
+          ),
+          api.get(
+            `/project-documents/history?requestId=${approvedRequest.request_id}`
+          ),
         ]);
-  
+
         const typeMap = new Map();
         [...allTypes, ...typesWithStatusResponse.data].forEach((type) =>
           typeMap.set(type.type_id, type)
         );
-  
+
         setDocumentTypes(Array.from(typeMap.values()));
         setDocumentHistory(historyResponse.data);
       } else {
@@ -112,12 +120,11 @@ const UploadProjectDocument = () => {
       setLoading(false);
     }
   }, [handleApiError]);
-   
-  
+
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-  
+
   const handleViewDocument = (filePath) => {
     if (filePath) {
       setSelectedFilePath(`http://localhost:5000/${filePath}`);
@@ -136,7 +143,7 @@ const UploadProjectDocument = () => {
     const selectedFile = e.target.files[0];
     const fileExtension = selectedFile?.name.split('.').pop().toLowerCase();
     const maxFileSize = 5 * 1024 * 1024; // ขนาดไฟล์สูงสุด 5MB
-  
+
     if (selectedFile && fileExtension === 'pdf') {
       if (selectedFile.size > maxFileSize) {
         showSnackbar('ขนาดไฟล์ต้องไม่เกิน 5MB', 'warning');
@@ -150,16 +157,15 @@ const UploadProjectDocument = () => {
     }
   };
 
-
   const handleSubmit = async () => {
     const errorMessage = !file
       ? 'กรุณาเลือกไฟล์สำหรับอัพโหลด'
       : !selectedType
-      ? 'กรุณาเลือกประเภทเอกสาร'
-      : !approvedProject
-      ? 'ยังไม่มีโครงการที่ได้รับการอนุมัติ ไม่สามารถอัพโหลดเอกสารได้'
-      : null;
-  
+        ? 'กรุณาเลือกประเภทเอกสาร'
+        : !approvedProject
+          ? 'ยังไม่มีโครงการที่ได้รับการอนุมัติ ไม่สามารถอัพโหลดเอกสารได้'
+          : null;
+
     if (errorMessage) {
       setSnackbar({
         open: true,
@@ -168,12 +174,12 @@ const UploadProjectDocument = () => {
       });
       return;
     }
-  
+
     // ตรวจสอบสถานะเอกสารที่เลือก
     const selectedDocument = documentTypes.find(
       (type) => type.type_id === selectedType
     );
-  
+
     if (selectedDocument?.status === 'approved') {
       setSnackbar({
         open: true,
@@ -181,15 +187,15 @@ const UploadProjectDocument = () => {
         severity: 'warning',
       });
       setSelectedType(''); // ล้างประเภทเอกสารที่เลือก
-      setFile(null);       // ล้างไฟล์ที่เลือก
+      setFile(null); // ล้างไฟล์ที่เลือก
       return;
     }
-  
+
     const formData = new FormData();
     formData.append('file', file);
     formData.append('type_id', selectedType);
     formData.append('request_id', approvedProject.request_id);
-  
+
     try {
       setLoading(true);
       await api.post('/project-documents/upload', formData);
@@ -198,7 +204,7 @@ const UploadProjectDocument = () => {
         message: 'Document uploaded successfully.',
         severity: 'success',
       });
-  
+
       // ล้างค่าที่เคยเลือกไว้หลังจากอัพโหลดสำเร็จ
       setSelectedType('');
       setFile(null);
@@ -214,7 +220,6 @@ const UploadProjectDocument = () => {
       setLoading(false);
     }
   };
-  
 
   const handleCancelSubmission = async () => {
     try {
@@ -398,7 +403,9 @@ const UploadProjectDocument = () => {
                       }}
                     >
                       {type.status === 'approved' ? (
-                        <AssignmentTurnedInIcon sx={{ color: 'success.main' }} />
+                        <AssignmentTurnedInIcon
+                          sx={{ color: 'success.main' }}
+                        />
                       ) : (
                         <AssignmentIcon sx={{ color: 'text.secondary' }} />
                       )}
@@ -406,7 +413,6 @@ const UploadProjectDocument = () => {
                     </Box>
                   ))}
                 </Box>
-
               )}
             </Box>
           </Paper>
@@ -502,11 +508,15 @@ const UploadProjectDocument = () => {
                                 onClick={() =>
                                   handleOpenResubmitDialog(doc.document_id)
                                 }
-                                disabled={doc.status !== 'rejected'}
+                                disabled={
+                                  doc.status !== 'rejected' &&
+                                  doc.status !== 'returned'
+                                }
                               >
                                 <RefreshTwoToneIcon
                                   color={
-                                    doc.status === 'rejected'
+                                    doc.status === 'rejected' ||
+                                    doc.status === 'returned'
                                       ? 'warning'
                                       : 'disabled'
                                   }
@@ -549,7 +559,9 @@ const UploadProjectDocument = () => {
                               ? 'success'
                               : doc.status === 'rejected'
                                 ? 'error'
-                                : 'default'
+                                : doc.status === 'returned'
+                                  ? 'warning'
+                                  : 'default'
                           }
                           sx={{ width: '90px', textAlign: 'center' }}
                         />
@@ -563,24 +575,86 @@ const UploadProjectDocument = () => {
         </Grid>
       </Grid>
 
-      <Dialog open={openResubmitDialog} onClose={handleCloseResubmitDialog}>
-        <DialogTitle>Resubmit Document</DialogTitle>
-        <DialogContent>
-          <Button variant="contained" component="label">
-            Choose File
-            <input type="file" hidden onChange={handleFileChange} />
-          </Button>
-          {file && <Typography>{file.name}</Typography>}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseResubmitDialog} color="error">
-            Cancel
-          </Button>
-          <Button onClick={handleResubmit} color="primary">
-            Submit
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <Dialog
+  open={openResubmitDialog}
+  onClose={handleCloseResubmitDialog}
+  maxWidth="sm"
+  fullWidth
+  sx={{
+    '& .MuiDialog-paper': {
+      borderRadius: '16px',
+      padding: '24px',
+    },
+  }}
+>
+  <DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.5rem' }}>
+    Resubmit Document
+  </DialogTitle>
+  <DialogContent sx={{ textAlign: 'center', marginTop: '16px' }}>
+    <Button
+      variant="contained"
+      component="label"
+      startIcon={<UploadFileIcon />} // ไอคอนสำหรับ Choose File
+      sx={{
+        backgroundColor: '#1976D2',
+        '&:hover': {
+          backgroundColor: '#1565C0',
+        },
+        fontSize: '1rem',
+        padding: '12px 24px',
+        borderRadius: '8px',
+      }}
+    >
+      Choose File
+      <input type="file" hidden onChange={handleFileChange} />
+    </Button>
+    {file && (
+      <Typography
+        variant="body1"
+        sx={{
+          marginTop: '16px',
+          color: 'text.primary',
+          fontWeight: '500',
+        }}
+      >
+        Selected File: {file.name}
+      </Typography>
+    )}
+  </DialogContent>
+  <DialogActions
+    sx={{
+      justifyContent: 'center',
+      padding: '16px',
+      gap: '16px',
+    }}
+  >
+    <Button
+      onClick={handleCloseResubmitDialog}
+      variant="outlined"
+      color="error"
+      startIcon={<CancelIcon />} // ไอคอนสำหรับ Cancel
+      sx={{
+        borderRadius: '8px',
+        padding: '8px 16px',
+      }}
+    >
+      Cancel
+    </Button>
+    <Button
+      onClick={handleResubmit}
+      variant="contained"
+      color="primary"
+      startIcon={<CheckCircleIcon />} // ไอคอนสำหรับ Submit
+      sx={{
+        borderRadius: '8px',
+        padding: '8px 16px',
+      }}
+    >
+      Submit
+    </Button>
+  </DialogActions>
+</Dialog>
+
       {/* Cancel Dialog */}
       <Dialog open={openCancelDialog} onClose={handleCloseCancelDialog}>
         <DialogTitle>Confirm Cancel</DialogTitle>
@@ -638,19 +712,18 @@ const UploadProjectDocument = () => {
       </Dialog>
 
       <Snackbar
-  open={snackbar.open}
-  autoHideDuration={3000}
-  onClose={() => setSnackbar({ ...snackbar, open: false })}
-  anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
->
-  <Alert
-    onClose={() => setSnackbar({ ...snackbar, open: false })}
-    severity={snackbar.severity}
-  >
-    {snackbar.message}
-  </Alert>
-</Snackbar>
-
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 };

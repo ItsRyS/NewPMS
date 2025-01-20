@@ -18,9 +18,6 @@ import {
   TextField,
   Snackbar,
   Alert,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
   CircularProgress,
 } from '@mui/material';
 import PDFJSAnnotate from 'pdf-annotate.js';
@@ -32,7 +29,6 @@ const ViewProjectDocuments = () => {
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [openRejectOptions, setOpenRejectOptions] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
-  const [rejectOption, setRejectOption] = useState('comment');
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
@@ -44,7 +40,9 @@ const ViewProjectDocuments = () => {
     try {
       setLoading(true);
       const response = await api.get('/project-documents/all');
-      const pendingDocs = response.data.filter((doc) => doc.status === 'pending');
+      const pendingDocs = response.data.filter(
+        (doc) => doc.status === 'pending'
+      );
       setDocuments(pendingDocs);
     } catch (error) {
       console.error('Error fetching documents:', error);
@@ -82,7 +80,9 @@ const ViewProjectDocuments = () => {
 
   const handleApprove = async () => {
     try {
-      await api.post(`/project-documents/approve/${selectedDocument.document_id}`);
+      await api.post(
+        `/project-documents/approve/${selectedDocument.document_id}`
+      );
       setSnackbar({
         open: true,
         message: 'Document approved successfully.',
@@ -99,61 +99,70 @@ const ViewProjectDocuments = () => {
       });
     }
   };
+  const handleReturnDocument = async (file) => {
+    if (!file) {
+      setSnackbar({
+        open: true,
+        message: 'Please select a file to return.',
+        severity: 'error',
+      });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      await api.post(
+        `/project-documents/return/${selectedDocument.document_id}`,
+        formData
+      );
+      setSnackbar({
+        open: true,
+        message: 'Document returned successfully.',
+        severity: 'success',
+      });
+      fetchPendingDocuments();
+      setSelectedDocument(null);
+    } catch (error) {
+      console.error('Error returning document:', error);
+      setSnackbar({
+        open: true,
+        message: 'Failed to return document.',
+        severity: 'error',
+      });
+    }
+  };
 
   const handleReject = async () => {
-    if (rejectOption === 'comment') {
-      if (!rejectReason.trim()) {
-        setSnackbar({
-          open: true,
-          message: 'Please provide a reason for rejection.',
-          severity: 'warning',
-        });
-        return;
-      }
+    if (!rejectReason.trim()) {
+      setSnackbar({
+        open: true,
+        message: 'Please provide a reason for rejection.',
+        severity: 'warning',
+      });
+      return;
+    }
 
-      try {
-        await api.post(`/project-documents/reject/${selectedDocument.document_id}`, {
-          reason: rejectReason,
-        });
-        setSnackbar({
-          open: true,
-          message: 'Document rejected successfully.',
-          severity: 'success',
-        });
-        fetchPendingDocuments();
-        setSelectedDocument(null);
-        setOpenRejectOptions(false);
-      } catch (error) {
-        console.error('Error rejecting document:', error);
-        setSnackbar({
-          open: true,
-          message: 'Failed to reject document.',
-          severity: 'error',
-        });
-      }
-    } else if (rejectOption === 'highlight') {
-      try {
-        const annotations = PDFJSAnnotate.getAnnotations();
-        await api.post('/project-documents/save-annotations', {
-          documentId: selectedDocument.document_id,
-          annotations,
-        });
-        setSnackbar({
-          open: true,
-          message: 'Highlights saved successfully.',
-          severity: 'success',
-        });
-        fetchPendingDocuments();
-        setSelectedDocument(null);
-        setOpenRejectOptions(false);
-      } catch (error) {
-        console.error('Error saving highlights:', error);
-        setSnackbar({
-          open: true,
-          message: 'Failed to save highlights.',
-          severity: 'error',
-        });
-      }
+    try {
+      await api.post(`/project-documents/reject/${selectedDocument.document_id}`, {
+        reason: rejectReason,
+      });
+      setSnackbar({
+        open: true,
+        message: 'Document rejected successfully.',
+        severity: 'success',
+      });
+      fetchPendingDocuments();
+      setSelectedDocument(null);
+      setOpenRejectOptions(false);
+    } catch (error) {
+      console.error('Error rejecting document:', error);
+      setSnackbar({
+        open: true,
+        message: 'Failed to reject document.',
+        severity: 'error',
+      });
     }
   };
 
@@ -214,7 +223,13 @@ const ViewProjectDocuments = () => {
                 <TableCell>
                   <Button
                     variant="contained"
-                    onClick={() => handleViewDocument(doc.file_path, doc.type_name, doc.document_id)}
+                    onClick={() =>
+                      handleViewDocument(
+                        doc.file_path,
+                        doc.type_name,
+                        doc.document_id
+                      )
+                    }
                   >
                     View Document
                   </Button>
@@ -226,7 +241,10 @@ const ViewProjectDocuments = () => {
       </TableContainer>
 
       {selectedDocument && (
-        <Modal open={!!selectedDocument} onClose={() => setSelectedDocument(null)}>
+        <Modal
+          open={!!selectedDocument}
+          onClose={() => setSelectedDocument(null)}
+        >
           <Box
             sx={{
               position: 'absolute',
@@ -252,7 +270,11 @@ const ViewProjectDocuments = () => {
               style={{ border: 'none' }}
             />
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
-              <Button variant="contained" color="success" onClick={handleApprove}>
+              <Button
+                variant="contained"
+                color="success"
+                onClick={handleApprove}
+              >
                 Approve
               </Button>
               <Button
@@ -262,44 +284,57 @@ const ViewProjectDocuments = () => {
               >
                 Reject
               </Button>
+              <Button
+                variant="contained"
+                component="label"
+                color="primary"
+                sx={{ ml: 2 }}
+              >
+                Return Document
+                <input
+                  type="file"
+                  hidden
+                  onChange={(e) => handleReturnDocument(e.target.files[0])}
+                />
+              </Button>
             </Box>
           </Box>
         </Modal>
       )}
 
-      <Dialog
-        open={openRejectOptions}
-        onClose={() => setOpenRejectOptions(false)}
-      >
-        <DialogTitle>Reject Options</DialogTitle>
-        <DialogContent>
-          <RadioGroup
-            value={rejectOption}
-            onChange={(e) => setRejectOption(e.target.value)}
-          >
-            <FormControlLabel value="comment" control={<Radio />} label="Add Comment" />
-            <FormControlLabel value="highlight" control={<Radio />} label="Highlight Document" />
-          </RadioGroup>
-          {rejectOption === "comment" && (
-            <TextField
-              fullWidth
-              multiline
-              rows={4}
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-              sx={{ mt: 2 }}
-            />
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenRejectOptions(false)} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleReject} color="error">
-            Confirm
-          </Button>
-        </DialogActions>
-      </Dialog>
+<Dialog
+  open={openRejectOptions}
+  onClose={() => setOpenRejectOptions(false)}
+>
+  <DialogTitle>Reject Document</DialogTitle>
+  <DialogContent>
+    <Typography variant="body1" sx={{ mb: 2 }}>
+      Please provide a reason for rejection:
+    </Typography>
+    <TextField
+      fullWidth
+      multiline
+      rows={4}
+      value={rejectReason}
+      onChange={(e) => setRejectReason(e.target.value)}
+      placeholder="Provide a detailed reason"
+      sx={{ mt: 2 }}
+    />
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setOpenRejectOptions(false)} color="primary">
+      Cancel
+    </Button>
+    <Button
+      onClick={handleReject}
+      color="error"
+      disabled={!rejectReason.trim()} // ปุ่ม Confirm จะกดไม่ได้ถ้าคอมเมนต์ยังว่าง
+    >
+      Confirm
+    </Button>
+  </DialogActions>
+</Dialog>
+
 
       <Snackbar
         open={snackbar.open}

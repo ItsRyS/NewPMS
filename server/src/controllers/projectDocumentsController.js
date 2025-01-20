@@ -41,12 +41,12 @@ exports.getDocumentTypesWithStatus = async (req, res) => {
 
   try {
     const [results] = await db.query(
-      `SELECT 
-         dt.type_id, 
-         dt.type_name, 
-         pd.status 
+      `SELECT
+         dt.type_id,
+         dt.type_name,
+         pd.status
        FROM document_types dt
-       LEFT JOIN project_documents pd 
+       LEFT JOIN project_documents pd
          ON dt.type_id = pd.type_id AND pd.request_id = ?
        ORDER BY dt.type_id`,
       [requestId]
@@ -64,15 +64,15 @@ exports.getDocumentTypesWithStatus = async (req, res) => {
 exports.getAllDocuments = async (req, res) => {
   try {
     const [documents] = await db.query(`
-      SELECT 
-        pd.document_id, 
-        pr.project_name, 
-        dt.type_name, 
-        u.username AS student_name, 
-        pd.file_path, 
-        pd.submitted_at, 
-        pd.status, 
-        pd.reject_reason 
+      SELECT
+        pd.document_id,
+        pr.project_name,
+        dt.type_name,
+        u.username AS student_name,
+        pd.file_path,
+        pd.submitted_at,
+        pd.status,
+        pd.reject_reason
       FROM project_documents pd
       LEFT JOIN project_requests pr ON pd.request_id = pr.request_id
       LEFT JOIN document_types dt ON pd.type_id = dt.type_id
@@ -91,13 +91,13 @@ exports.getDocumentHistory = async (req, res) => {
   const { requestId } = req.query;
   try {
     const [documents] = await db.query(
-      `SELECT 
-         pd.document_id, 
+      `SELECT
+         pd.document_id,
          pd.file_path,
-         dt.type_name, 
+         dt.type_name,
          pd.submitted_at,
-         pd.status, 
-         pd.reject_reason 
+         pd.status,
+         pd.reject_reason
        FROM project_documents pd
        LEFT JOIN document_types dt ON pd.type_id = dt.type_id
        WHERE pd.request_id = ?
@@ -233,19 +233,35 @@ exports.resubmitDocument = async (req, res) => {
     connection.release();
   }
 };
-exports.saveAnnotations = async (req, res) => {
-  const { documentId, annotations } = req.body;
+
+exports.returnDocument = async (req, res) => {
+  const { documentId } = req.params;
+  const file_path = req.file ? req.file.path : null;
+
+  if (!file_path) {
+    return res.status(400).json({ message: 'File upload failed.' });
+  }
 
   try {
-    // บันทึก annotations ในฐานข้อมูล หรือสร้างไฟล์ใหม่
-    // สมมติว่าบันทึกในไฟล์ JSON
-    const annotationsPath = `annotations/${documentId}.json`;
-    fs.writeFileSync(annotationsPath, JSON.stringify(annotations, null, 2));
+    const [existingDoc] = await db.query(
+      'SELECT file_path FROM project_documents WHERE document_id = ?',
+      [documentId]
+    );
 
-    res.status(200).json({ message: 'Annotations saved successfully.' });
+    if (existingDoc[0].file_path && fs.existsSync(existingDoc[0].file_path)) {
+      fs.unlinkSync(existingDoc[0].file_path);
+    }
+
+    await db.query(
+      "UPDATE project_documents SET file_path = ?, status = 'returned' WHERE document_id = ?",
+      [file_path, documentId]
+    );
+
+    res.status(200).json({ message: 'Document returned successfully.' });
   } catch (error) {
-    console.error('Error saving annotations:', error.message);
-    res.status(500).json({ message: 'Failed to save annotations.' });
+    console.error('Error returning document:', error.message);
+    res.status(500).json({ message: 'Failed to return document.' });
   }
 };
+
 

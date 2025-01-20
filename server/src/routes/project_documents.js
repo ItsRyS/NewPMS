@@ -50,6 +50,10 @@ router.get(
   '/types-with-status',
   projectDocumentsController.getDocumentTypesWithStatus
 );
-router.post('/save-annotations', projectDocumentsController.saveAnnotations);
+router.post(
+  '/return/:documentId',
+  upload.single('file'),
+  projectDocumentsController.returnDocument
+);
 
 module.exports = router;
