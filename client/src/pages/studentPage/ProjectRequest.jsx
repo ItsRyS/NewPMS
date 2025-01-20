@@ -11,7 +11,7 @@ import {
   Paper,
 } from '@mui/material';
 import api from '../../services/api';
-
+import { useSearchParams } from 'react-router-dom';
 const ProjectRequest = () => {
   const [projectNameTh, setProjectNameTh] = useState('');
   const [projectNameEng, setProjectNameEng] = useState('');
@@ -26,7 +26,7 @@ const ProjectRequest = () => {
   const [canSubmit, setCanSubmit] = useState(true);
   const [latestStatus, setLatestStatus] = useState('');
   const [error, setError] = useState('');
-
+ const [searchParams] = useSearchParams();
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -38,19 +38,19 @@ const ProjectRequest = () => {
             api.get('/auth/check-session'),
             api.get('/projects/project-types'),
           ]);
-  
+
         console.log('Project Types Response:', projectTypeResponse.data); // เพิ่ม log ตรงนี้
-  
+
         const studentUsers = studentResponse.data.filter(
           (user) => user.role === 'student'
         );
         setAdvisors(advisorResponse.data);
         setStudents(studentUsers);
         setProjectTypes(projectTypeResponse.data.data); // ตรวจสอบว่าข้อมูลถูกต้อง
-  
+
         const { user_id } = sessionResponse.data.user;
         setGroupMembers([user_id]);
-  
+
         const statusResponse = await api.get('/project-requests/status', {
           params: { studentId: user_id },
         });
@@ -58,12 +58,12 @@ const ProjectRequest = () => {
           (a, b) => new Date(b.created_at) - new Date(a.created_at)
         );
         setProjectStatus(statuses);
-  
+
         const hasApproved = statuses.some(
           (status) => status.status === 'approved'
         );
         setLatestStatus(hasApproved ? 'approved' : statuses[0]?.status || '');
-  
+
         setCanSubmit(
           !(
             statuses.some((status) => status.status === 'pending') ||
@@ -76,9 +76,9 @@ const ProjectRequest = () => {
         setLoading(false);
       }
     };
-  
+
     fetchData();
-  }, []);
+  }, [searchParams]);
 
   const handleSubmit = useCallback(async () => {
     if (!projectNameTh || !projectNameEng) {

@@ -70,7 +70,7 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
           sx={{
             color: '#ffffff',
             marginTop: 1,
-            display: { xs: 'none', sm: 'block' }, // ซ่อนชื่อผู้ใช้ในขนาด xs
+            display: { xs: 'none', sm: 'block' },
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
@@ -82,52 +82,46 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
       </Box>
 
       <List>
-        <NavLink
-          to="/studentHome"
-          style={{ textDecoration: 'none', color: 'inherit' }}
-        >
-          <ListItemButton onClick={() => setTitle('หนักหลัก')}>
-            <ListItemIcon>
-              <Home sx={{ color: '#9CA3AF' }} />
-            </ListItemIcon>
-            <ListItemText primary="หนักหลัก" />
-          </ListItemButton>
-        </NavLink>
-
-        <NavLink
-          to="/studentHome/Documentation"
-          style={{ textDecoration: 'none', color: 'inherit' }}
-        >
-          <ListItemButton onClick={() => setTitle('แบบร่างเอกสาร')}>
-            <ListItemIcon>
-              <School sx={{ color: '#9CA3AF' }} />
-            </ListItemIcon>
-            <ListItemText primary="แบบร่างเอกสาร" />
-          </ListItemButton>
-        </NavLink>
-
-        <NavLink
-          to="/studentHome/projectRequest"
-          style={{ textDecoration: 'none', color: 'inherit' }}
-        >
-          <ListItemButton onClick={() => setTitle('คำร้องโครงการ')}>
-            <ListItemIcon>
-              <Assignment sx={{ color: '#9CA3AF' }} />
-            </ListItemIcon>
-            <ListItemText primary="คำร้องโครงการ" />
-          </ListItemButton>
-        </NavLink>
-        <NavLink
-          to="/studentHome/uploadProjectDocument"
-          style={{ textDecoration: 'none', color: 'inherit' }}
-        >
-          <ListItemButton onClick={() => setTitle('ส่งเอกสาร')}>
-            <ListItemIcon>
-              <PresentToAll sx={{ color: '#9CA3AF' }} />
-            </ListItemIcon>
-            <ListItemText primary="ส่งเอกสาร" />
-          </ListItemButton>
-        </NavLink>
+        {[
+          {
+            to: '/studentHome',
+            text: 'หนักหลัก',
+            icon: <Home sx={{ color: '#9CA3AF' }} />,
+            title: 'หนักหลัก',
+          },
+          {
+            to: '/studentHome/Documentation',
+            text: 'แบบร่างเอกสาร',
+            icon: <School sx={{ color: '#9CA3AF' }} />,
+            title: 'แบบร่างเอกสาร',
+          },
+          {
+            to: '/studentHome/projectRequest',
+            text: 'คำร้องโครงการ',
+            icon: <Assignment sx={{ color: '#9CA3AF' }} />,
+            title: 'คำร้องโครงการ',
+          },
+          {
+            to: '/studentHome/uploadProjectDocument',
+            text: 'ส่งเอกสาร',
+            icon: <PresentToAll sx={{ color: '#9CA3AF' }} />,
+            title: 'ส่งเอกสาร',
+          },
+        ].map(({ to, text, icon, title }, index) => (
+          <NavLink
+            key={index}
+            to={{
+              pathname: to,
+              search: `?reload=${Date.now()}`, // เพิ่ม query parameter เพื่อกระตุ้นการโหลดใหม่
+            }}
+            style={{ textDecoration: 'none', color: 'inherit' }}
+          >
+            <ListItemButton onClick={() => setTitle(title)}>
+              <ListItemIcon>{icon}</ListItemIcon>
+              <ListItemText primary={text} />
+            </ListItemButton>
+          </NavLink>
+        ))}
       </List>
 
       <Divider sx={{ borderColor: '#374151', mt: 2 }} />

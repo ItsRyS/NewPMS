@@ -21,7 +21,7 @@ import { useTheme } from '@mui/system';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
 import api from '../../services/api';
-
+import { useSearchParams } from 'react-router-dom';
 const ManageUser = () => {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
@@ -54,7 +54,7 @@ const ManageUser = () => {
       }
     };
     fetchUsers();
-  }, []);
+  }, [useSearchParams]);
 
   // Filter Users
   useEffect(() => {

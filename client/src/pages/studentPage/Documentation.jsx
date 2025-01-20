@@ -16,6 +16,7 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
+import { useSearchParams } from 'react-router-dom';
 import CloseIcon from '@mui/icons-material/Close';
 
 import api from '../../services/api'; // สำหรับการเชื่อมต่อ API
@@ -25,7 +26,7 @@ const Documentation = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  const [searchParams] = useSearchParams();
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm')); // สำหรับหน้าจอขนาดเล็ก
 
@@ -39,7 +40,7 @@ const Documentation = () => {
       }
     };
     fetchDocuments();
-  }, []);
+  }, [searchParams]);
 
   const handleOpenDialog = (doc) => {
     setSelectedDocument(doc);

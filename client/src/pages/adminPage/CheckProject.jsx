@@ -11,12 +11,12 @@ import {
   InputLabel,
 } from '@mui/material';
 import api from '../../services/api';
-
+import { useSearchParams } from 'react-router-dom';
 const CheckProject = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState('all'); // เก็บสถานะที่ต้องการกรอง
-
+  const [searchParams] = useSearchParams();
   useEffect(() => {
     const fetchRequests = async () => {
       try {
@@ -33,7 +33,7 @@ const CheckProject = () => {
     };
 
     fetchRequests();
-  }, []);
+  }, [searchParams]);
 
   const handleStatusUpdate = async (requestId, status) => {
     try {

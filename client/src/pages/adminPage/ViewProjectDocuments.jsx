@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Box,
   Typography,
@@ -20,9 +20,8 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
-import PDFJSAnnotate from 'pdf-annotate.js';
 import api from '../../services/api';
-
+import { useSearchParams } from 'react-router-dom';
 const ViewProjectDocuments = () => {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,8 +33,8 @@ const ViewProjectDocuments = () => {
     message: '',
     severity: 'info',
   });
-  const viewerRef = useRef(null);
 
+  const [searchParams] = useSearchParams();
   const fetchPendingDocuments = async () => {
     try {
       setLoading(true);
@@ -58,17 +57,9 @@ const ViewProjectDocuments = () => {
 
   useEffect(() => {
     fetchPendingDocuments();
-  }, []); // Added initial fetch effect
+  }, [searchParams]); // Added initial fetch effect
 
-  useEffect(() => {
-    if (selectedDocument !== null && viewerRef.current) {
-      PDFJSAnnotate.UI.render({
-        documentId: selectedDocument.document_id,
-        pdfDocument: selectedDocument.url,
-        container: viewerRef.current,
-      });
-    }
-  }, [selectedDocument]);
+
 
   const handleViewDocument = (filePath, fileName, documentId) => {
     setSelectedDocument({

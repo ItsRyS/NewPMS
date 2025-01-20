@@ -16,7 +16,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import { useMediaQuery, useTheme } from '@mui/material';
 import api from '../../services/api';
-
+import { useSearchParams } from 'react-router-dom';
 const UploadDoc = () => {
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState('');
@@ -32,7 +32,7 @@ const UploadDoc = () => {
     message: '',
     severity: 'info',
   });
-
+  const [searchParams] = useSearchParams();
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -64,7 +64,7 @@ const UploadDoc = () => {
 
     fetchUsername();
     fetchDocuments();
-  }, []);
+  }, [searchParams]);
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];

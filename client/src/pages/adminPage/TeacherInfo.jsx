@@ -20,7 +20,7 @@ import {
   MenuItem,
 } from '@mui/material';
 import api from '../../services/api'; // Axios instance
-
+import { useSearchParams } from 'react-router-dom';
 const TeacherInfo = () => {
   const [teachers, setTeachers] = useState([]);
   const [form, setForm] = useState({
@@ -38,10 +38,10 @@ const TeacherInfo = () => {
   const [openForm, setOpenForm] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [teacherToDelete, setTeacherToDelete] = useState(null);
-
+  const [searchParams] = useSearchParams();
   useEffect(() => {
     fetchTeachers();
-  }, []);
+  }, [ searchParams]);
 
   const fetchTeachers = async () => {
     try {

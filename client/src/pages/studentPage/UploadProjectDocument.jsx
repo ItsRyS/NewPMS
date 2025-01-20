@@ -30,6 +30,7 @@ import {
   useTheme,
   IconButton,
 } from '@mui/material';
+import { useSearchParams } from 'react-router-dom';
 import RemoveRedEyeTwoToneIcon from '@mui/icons-material/RemoveRedEyeTwoTone';
 import DeleteForeverTwoToneIcon from '@mui/icons-material/DeleteForeverTwoTone';
 import RefreshTwoToneIcon from '@mui/icons-material/RefreshTwoTone';
@@ -63,7 +64,7 @@ const UploadProjectDocument = () => {
   });
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm')); // สำหรับหน้าจอขนาดเล็ก
-
+  const [searchParams] = useSearchParams();
   const showSnackbar = (message, severity = 'info') => {
     setSnackbar({ open: true, message, severity });
   };
@@ -123,7 +124,7 @@ const UploadProjectDocument = () => {
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+  }, [searchParams, fetchData]);
 
   const handleViewDocument = (filePath) => {
     if (filePath) {

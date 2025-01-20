@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate ,useSearchParams} from 'react-router-dom';
 import ProjectTable from '../../components/ProjectTable'; // Import ProjectTable
 import api from '../../services/api'; // Import API configuration
 import {
@@ -17,7 +17,7 @@ function StudentHome() {
   const [searchTerm, setSearchTerm] = useState(''); // คำที่ใช้ค้นหา
   const [searchField, setSearchField] = useState('project_name_th'); // ฟิลด์ที่ต้องการค้นหา
   const [loading, setLoading] = useState(true); // State สำหรับสถานะการโหลดข้อมูล
-
+  const [searchParams] = useSearchParams();
   useEffect(() => {
     const checkSession = async () => {
       try {
@@ -49,7 +49,7 @@ function StudentHome() {
 
     checkSession();
     fetchProjects(); // ดึงข้อมูลโปรเจกต์เมื่อ component ถูก mount
-  }, [navigate]);
+  }, [searchParams,navigate]);
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value); // อัปเดตคำค้นหา

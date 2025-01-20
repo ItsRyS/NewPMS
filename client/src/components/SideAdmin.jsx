@@ -119,7 +119,10 @@ const SideAdmin = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
           ].map(({ to, text, icon, title }, index) => (
             <NavLink
               key={index}
-              to={to}
+              to={{
+                pathname: to,
+                search: `?reload=${Date.now()}`, // เพิ่ม query parameter
+              }}
               style={{ textDecoration: 'none', color: 'inherit' }}
             >
               <ListItemButton onClick={() => setTitle(title)} sx={{ pl: 4 }}>
@@ -156,7 +159,10 @@ const SideAdmin = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
           ].map(({ to, text, icon, title }, index) => (
             <NavLink
               key={index}
-              to={to}
+              to={{
+                pathname: to,
+                search: `?reload=${Date.now()}`, // เพิ่ม query parameter
+              }}
               style={{ textDecoration: 'none', color: 'inherit' }}
             >
               <ListItemButton onClick={() => setTitle(title)} sx={{ pl: 4 }}>
