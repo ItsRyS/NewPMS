@@ -7,8 +7,6 @@ import {
   InputLabel,
   FormControl,
   CircularProgress,
-  Snackbar,
-  Alert,
   MenuItem,
   Grid,
   Chip,
@@ -46,6 +44,7 @@ import {
 
 import api from '../../services/api';
 import { useSearchParams } from 'react-router-dom';
+import ReusableSnackbar from '../components/ReusableSnackbar';
 const UploadProjectDocument = () => {
   const [searchParams] = useSearchParams();
   const [documentTypes, setDocumentTypes] = useState([]);
@@ -62,14 +61,14 @@ const UploadProjectDocument = () => {
   const [currentDocumentId, setCurrentDocumentId] = useState(null);
   const [selectedFilePath, setSelectedFilePath] = useState('');
   const [sortOrder, setSortOrder] = useState('desc');
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
+
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
     severity: 'success',
   });
-
-  const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   const showSnackbar = (message, severity = 'info') => {
     setSnackbar({ open: true, message, severity });
@@ -273,18 +272,14 @@ const UploadProjectDocument = () => {
 
   const mergedDocumentTypes = mergeDocumentTypes();
 
-  const getChipColor = (status) => {
-    switch (status) {
-      case 'approved':
-        return 'success';
-      case 'rejected':
-        return 'error';
-      case 'returned':
-        return 'warning';
-      default:
-        return 'default';
-    }
-  };
+  const getChipColor = (status) =>
+    status === 'approved'
+      ? 'success'
+      : status === 'rejected'
+        ? 'error'
+        : status === 'returned'
+          ? 'warning'
+          : 'default';
 
   return (
     <>
@@ -661,19 +656,12 @@ const UploadProjectDocument = () => {
         </DialogContent>
       </Dialog>
 
-      <Snackbar
+      <ReusableSnackbar
         open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-      >
-        <Alert
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          severity={snackbar.severity}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+        message={snackbar.message}
+        severity={snackbar.severity}
+        handleClose={() => setSnackbar({ ...snackbar, open: false })}
+      />
     </>
   );
 };
