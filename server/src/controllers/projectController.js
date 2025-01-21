@@ -31,7 +31,7 @@ exports.updateRequestStatus = async (req, res) => {
     if (status === 'approved') {
       const [projectData] = await connection.query(
         `
-        SELECT 
+        SELECT
           pr.project_name AS project_name_th,
           pr.project_name_eng AS project_name_eng,
           pr.project_type,
@@ -46,7 +46,7 @@ exports.updateRequestStatus = async (req, res) => {
       const project = projectData[0];
       const [insertResult] = await connection.query(
         `
-        INSERT INTO project_release 
+        INSERT INTO project_release
         (project_name_th, project_name_eng, project_type, project_status, project_create_time, advisor_id)
         VALUES (?, ?, ?, 'operate', ?, ?)
         `,
@@ -102,14 +102,14 @@ exports.getApprovedProjects = async (req, res) => {
   try {
     const [projects] = await db.query(
       `
-      SELECT 
-          pr.project_id, 
-          pr.project_name_th, 
-          pr.project_name_eng, 
-          pr.project_status, 
-          pr.project_type, 
-          pr.project_create_time, 
-          pr.project_path, 
+      SELECT
+          pr.project_id,
+          pr.project_name_th,
+          pr.project_name_eng,
+          pr.project_status,
+          pr.project_type,
+          pr.project_create_time,
+          pr.project_path,
           ti.teacher_name AS project_advisor,
           GROUP_CONCAT(DISTINCT u.username SEPARATOR ', ') AS team_members
       FROM project_release pr
@@ -123,9 +123,11 @@ exports.getApprovedProjects = async (req, res) => {
     );
 
     if (projects.length === 0) {
-      return res
-        .status(404)
-        .json({ success: false, message: 'No projects found.' });
+      return res.status(200).json({
+        success: true,
+        data: [],
+        message: 'No projects found.',
+      });
     }
 
     res.status(200).json({ success: true, data: projects });
@@ -146,8 +148,8 @@ exports.getProjectTypes = async (req, res) => {
 
     if (projectTypes.length === 0) {
       return res
-        .status(404)
-        .json({ success: false, message: 'No project types found.' });
+        .status(200)
+        .json({ success: true, data: [], message: 'No project types found.' });
     }
 
     res.status(200).json({ success: true, data: projectTypes });
@@ -158,5 +160,3 @@ exports.getProjectTypes = async (req, res) => {
       .json({ success: false, error: 'Failed to fetch project types.' });
   }
 };
-
-

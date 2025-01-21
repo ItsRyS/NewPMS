@@ -1,11 +1,11 @@
 import { DataGrid } from '@mui/x-data-grid';
-import { CircularProgress, Box, Paper } from '@mui/material';
+import {  Box, Paper, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 
 const ProjectTable = ({ rows, columns, loading }) => {
   return (
     <Paper elevation={3} sx={{ height: 500, p: 2 }}>
-      {loading ? (
+      {rows.length === 0 && !loading ? (
         <Box
           sx={{
             display: 'flex',
@@ -14,7 +14,9 @@ const ProjectTable = ({ rows, columns, loading }) => {
             height: '100%',
           }}
         >
-          <CircularProgress />
+          <Typography variant="h6" color="textSecondary">
+            ยังไม่มีโครงงาน
+          </Typography>
         </Box>
       ) : (
         <DataGrid
@@ -36,4 +38,3 @@ ProjectTable.propTypes = {
 };
 
 export default ProjectTable;
-

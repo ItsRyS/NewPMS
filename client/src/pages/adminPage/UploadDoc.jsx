@@ -17,6 +17,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useMediaQuery, useTheme } from '@mui/material';
 import api from '../../services/api';
 import { useSearchParams } from 'react-router-dom';
+
 const UploadDoc = () => {
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState('');
@@ -40,7 +41,7 @@ const UploadDoc = () => {
     const fetchDocuments = async () => {
       try {
         const response = await api.get('/document');
-        setDocuments(response.data); // รับข้อมูลใหม่ที่มี username
+        setDocuments(response.data);
       } catch (error) {
         console.error('Error fetching documents:', error);
         setSnackbar({
@@ -55,7 +56,7 @@ const UploadDoc = () => {
       try {
         const response = await api.get('/auth/check-session');
         if (response.data.isAuthenticated) {
-          setUsername(response.data.user.user_id); // ตั้ง username
+          setUsername(response.data.user.user_id);
         }
       } catch (error) {
         console.error('Failed to fetch session info:', error);
@@ -96,7 +97,7 @@ const UploadDoc = () => {
     formData.append('file', file);
     formData.append('doc_title', docTitle);
     formData.append('doc_description', docDescription);
-    formData.append('uploaded_by', username); // ส่ง user_id แทน username
+    formData.append('uploaded_by', username);
 
     try {
       const response = await api.post('/document/upload', formData);
@@ -133,7 +134,11 @@ const UploadDoc = () => {
       return;
     }
     setLoading(true);
-    setPdfPath(`http://localhost:5000/${docPath}`);
+    // Replace backslashes with forward slashes
+    const normalizedPath = docPath.replace(/\\/g, '/');
+    const fullPath = `http://localhost:5000/${normalizedPath}`;
+    console.log('PDF Path:', fullPath); // Debugging
+    setPdfPath(fullPath);
     setOpenDialog(true);
   };
 
@@ -162,7 +167,6 @@ const UploadDoc = () => {
   return (
     <Paper elevation={3} sx={{ padding: 4, borderRadius: 3 }}>
       <Grid container spacing={4}>
-        {/* Upload Section */}
         <Grid item xs={12} md={6}>
           <Box>
             <Typography variant="h5" sx={{ mb: 2 }}>
@@ -214,8 +218,6 @@ const UploadDoc = () => {
             </Button>
           </Box>
         </Grid>
-
-        {/* Document List Section */}
         <Grid item xs={12} md={6}>
           <Typography variant="h5" sx={{ mb: 2 }}>
             Document List
@@ -272,18 +274,15 @@ const UploadDoc = () => {
           )}
         </Grid>
       </Grid>
-
-      {/* PDF Viewer Dialog */}
       <Dialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}
-        fullScreen={fullScreen} // ทำให้เต็มหน้าจอในมือถือ
+        fullScreen={fullScreen}
         maxWidth="lg"
         sx={{
-          '& .MuiDialog-paper': { width: '90%', height: '90%' }, // ปรับขนาด Dialog
+          '& .MuiDialog-paper': { width: '90%', height: '90%' },
         }}
       >
-        {/* ปุ่ม Close */}
         <IconButton
           onClick={() => setOpenDialog(false)}
           sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1 }}
@@ -296,28 +295,37 @@ const UploadDoc = () => {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            height: '100%', // ใช้พื้นที่ของ Dialog เต็มที่
+            height: '100%',
           }}
         >
-          {loading && <CircularProgress />} {/* แสดง Loading */}
-          {pdfPath && (
+          {loading && <CircularProgress />}
+          {pdfPath ? (
             <iframe
               src={pdfPath}
               width="100%"
-              height="100%" // ใช้พื้นที่ของ DialogContent เต็มที่
+              height="100%"
               onLoad={() => setLoading(false)}
+              onError={() => {
+                setLoading(false);
+                setSnackbar({
+                  open: true,
+                  message: 'Failed to load PDF document. Please try again.',
+                  severity: 'error',
+                });
+              }}
               style={{
                 border: 'none',
-                display: loading ? 'none' : 'block', // ซ่อน iframe จนกว่าจะโหลดเสร็จ
+                display: loading ? 'none' : 'block',
               }}
-              sandbox="allow-scripts allow-same-origin"
               title="Document Viewer"
             />
+          ) : (
+            <Typography variant="body1" color="textSecondary">
+              No document to display.
+            </Typography>
           )}
         </DialogContent>
       </Dialog>
-
-      {/* Snackbar */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}
