@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useSnackbar } from '../../components/ReusableSnackbar';
+import { useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
 
 const Documentation = () => {
@@ -28,7 +29,7 @@ const Documentation = () => {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const showSnackbar = useSnackbar();
-
+  const [searchParams] = useSearchParams();
   useEffect(() => {
     const fetchDocuments = async () => {
       try {
@@ -40,7 +41,7 @@ const Documentation = () => {
       }
     };
     fetchDocuments();
-  }, []);
+  }, [searchParams]);
 
   const handleViewDocument = (docPath) => {
     if (!docPath) {
