@@ -16,19 +16,18 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { useSearchParams } from 'react-router-dom';
 import CloseIcon from '@mui/icons-material/Close';
-
-import api from '../../services/api'; // สำหรับการเชื่อมต่อ API
+import { useSnackbar } from '../../components/ReusableSnackbar';
+import api from '../../services/api';
 
 const Documentation = () => {
   const [documents, setDocuments] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
-  const [selectedDocument, setSelectedDocument] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [searchParams] = useSearchParams();
+  const [pdfPath, setPdfPath] = useState('');
+  const [loading, setLoading] = useState(false);
   const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('sm')); // สำหรับหน้าจอขนาดเล็ก
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const showSnackbar = useSnackbar();
 
   useEffect(() => {
     const fetchDocuments = async () => {
@@ -37,20 +36,27 @@ const Documentation = () => {
         setDocuments(response.data);
       } catch (error) {
         console.error('Error fetching documents:', error);
+        showSnackbar('Failed to fetch documents', 'error');
       }
     };
     fetchDocuments();
-  }, [searchParams]);
+  }, []);
 
-  const handleOpenDialog = (doc) => {
-    setSelectedDocument(doc);
-    setLoading(true); // เริ่ม Loading
+  const handleViewDocument = (docPath) => {
+    if (!docPath) {
+      showSnackbar('Document not found.', 'error');
+      return;
+    }
+    setLoading(true);
+    const normalizedPath = docPath.replace(/\\/g, '/');
+    const fullPath = `http://localhost:5000/${normalizedPath}`;
+    setPdfPath(fullPath);
     setOpenDialog(true);
   };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
-    setSelectedDocument(null);
+    setPdfPath('');
   };
 
   return (
@@ -82,7 +88,7 @@ const Documentation = () => {
                   <Button
                     variant="contained"
                     color="primary"
-                    onClick={() => handleOpenDialog(doc)}
+                    onClick={() => handleViewDocument(doc.doc_path)}
                   >
                     View
                   </Button>
@@ -93,17 +99,15 @@ const Documentation = () => {
         </Table>
       </TableContainer>
 
-      {/* Dialog สำหรับแสดงเอกสาร */}
       <Dialog
         open={openDialog}
         onClose={handleCloseDialog}
-        fullScreen={fullScreen} // ทำให้เต็มหน้าจอในมือถือ
+        fullScreen={fullScreen}
         maxWidth="lg"
         sx={{
-          '& .MuiDialog-paper': { width: '100%', height: '100%' },
+          '& .MuiDialog-paper': { width: '90%', height: '90%' },
         }}
       >
-        {/* ปุ่ม Close */}
         <IconButton
           onClick={handleCloseDialog}
           sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1 }}
@@ -112,26 +116,34 @@ const Documentation = () => {
         </IconButton>
         <DialogContent
           sx={{
-            padding: 1,
+            padding: 0,
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
+            height: '100%',
           }}
         >
-          {loading && <CircularProgress />} {/* แสดง Loading */}
-          {selectedDocument && (
+          {loading && <CircularProgress />}
+          {pdfPath ? (
             <iframe
-              src={`http://localhost:5000/${selectedDocument.doc_path}`}
+              src={pdfPath}
               width="100%"
               height="100%"
-              onLoad={() => setLoading(false)} // หยุด Loading เมื่อ iframe โหลดเสร็จ
+              onLoad={() => setLoading(false)}
+              onError={() => {
+                setLoading(false);
+                showSnackbar('Failed to load PDF document. Please try again.', 'error');
+              }}
               style={{
                 border: 'none',
-                display: loading ? 'none' : 'block', // ซ่อน iframe จนกว่าจะโหลดเสร็จ
+                display: loading ? 'none' : 'block',
               }}
-              sandbox="allow-scripts allow-same-origin allow-downloads" // เพิ่มความปลอดภัย
-              title={selectedDocument.doc_title}
+              title="Document Viewer"
             />
+          ) : (
+            <Typography variant="body1" color="textSecondary">
+              No document to display.
+            </Typography>
           )}
         </DialogContent>
       </Dialog>

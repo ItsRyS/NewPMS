@@ -41,10 +41,9 @@ import {
   CheckCircle as CheckIcon,
   Close as CloseIcon,
 } from '@mui/icons-material';
-
+import { useSnackbar } from '../../components/ReusableSnackbar';
 import api from '../../services/api';
 import { useSearchParams } from 'react-router-dom';
-import ReusableSnackbar from '../../components/ReusableSnackbar';
 const UploadProjectDocument = () => {
   const [searchParams] = useSearchParams();
   const [documentTypes, setDocumentTypes] = useState([]);
@@ -63,16 +62,7 @@ const UploadProjectDocument = () => {
   const [sortOrder, setSortOrder] = useState('desc');
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
-
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: '',
-    severity: 'success',
-  });
-
-  const showSnackbar = (message, severity = 'info') => {
-    setSnackbar({ open: true, message, severity });
-  };
+  const showSnackbar = useSnackbar(); // ใช้ useSnackbar
 
   const handleApiError = useCallback((error, defaultMessage) => {
     console.error('API Error:', error);
@@ -655,13 +645,6 @@ const UploadProjectDocument = () => {
           )}
         </DialogContent>
       </Dialog>
-
-      <ReusableSnackbar
-        open={snackbar.open}
-        message={snackbar.message}
-        severity={snackbar.severity}
-        handleClose={() => setSnackbar({ ...snackbar, open: false })}
-      />
     </>
   );
 };

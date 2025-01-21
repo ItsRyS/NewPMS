@@ -9,16 +9,16 @@ import {
   Dialog,
   DialogContent,
   IconButton,
-  Snackbar,
-  Alert,
   CircularProgress,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useMediaQuery, useTheme } from '@mui/material';
 import api from '../../services/api';
 import { useSearchParams } from 'react-router-dom';
+import { useSnackbar } from '../../components/ReusableSnackbar'; // ใช้ useSnackbar
 
 const UploadDoc = () => {
+  const showSnackbar = useSnackbar(); // เรียกใช้ showSnackbar
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState('');
   const [docTitle, setDocTitle] = useState('');
@@ -28,11 +28,6 @@ const UploadDoc = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState('Loading...');
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: '',
-    severity: 'info',
-  });
   const [searchParams] = useSearchParams();
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
@@ -44,11 +39,7 @@ const UploadDoc = () => {
         setDocuments(response.data);
       } catch (error) {
         console.error('Error fetching documents:', error);
-        setSnackbar({
-          open: true,
-          message: 'Failed to fetch documents',
-          severity: 'error',
-        });
+        showSnackbar('Failed to fetch documents', 'error'); // ใช้ showSnackbar
       }
     };
 
@@ -70,11 +61,7 @@ const UploadDoc = () => {
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile?.type !== 'application/pdf') {
-      setSnackbar({
-        open: true,
-        message: 'Please upload only PDF files.',
-        severity: 'error',
-      });
+      showSnackbar('Please upload only PDF files.', 'error');
       setFile(null);
       setFileName('');
     } else {
@@ -85,11 +72,7 @@ const UploadDoc = () => {
 
   const handleUpload = async () => {
     if (!file || !docTitle || !docDescription) {
-      setSnackbar({
-        open: true,
-        message: 'Please fill out all fields.',
-        severity: 'error',
-      });
+      showSnackbar('Please fill out all fields.', 'error');
       return;
     }
 
@@ -101,11 +84,7 @@ const UploadDoc = () => {
 
     try {
       const response = await api.post('/document/upload', formData);
-      setSnackbar({
-        open: true,
-        message: response.data.message,
-        severity: 'success',
-      });
+      showSnackbar(response.data.message, 'success');
 
       const updatedDocuments = await api.get('/document');
       setDocuments(updatedDocuments.data);
@@ -116,28 +95,18 @@ const UploadDoc = () => {
       setDocDescription('');
     } catch (error) {
       console.error('Error uploading document:', error);
-      setSnackbar({
-        open: true,
-        message: 'Failed to upload document.',
-        severity: 'error',
-      });
+      showSnackbar('Failed to upload document.', 'error');
     }
   };
 
   const handleViewDocument = (docPath) => {
     if (!docPath) {
-      setSnackbar({
-        open: true,
-        message: 'Document not found.',
-        severity: 'error',
-      });
+      showSnackbar('Document not found.', 'error');
       return;
     }
     setLoading(true);
-    // Replace backslashes with forward slashes
     const normalizedPath = docPath.replace(/\\/g, '/');
     const fullPath = `http://localhost:5000/${normalizedPath}`;
-    console.log('PDF Path:', fullPath); // Debugging
     setPdfPath(fullPath);
     setOpenDialog(true);
   };
@@ -148,19 +117,11 @@ const UploadDoc = () => {
 
     try {
       await api.delete(`/document/${docId}`);
-      setSnackbar({
-        open: true,
-        message: 'Document deleted successfully.',
-        severity: 'success',
-      });
+      showSnackbar('Document deleted successfully.', 'success');
       setDocuments((prev) => prev.filter((doc) => doc.doc_id !== docId));
     } catch (error) {
       console.error('Error deleting document:', error);
-      setSnackbar({
-        open: true,
-        message: 'Failed to delete document.',
-        severity: 'error',
-      });
+      showSnackbar('Failed to delete document.', 'error');
     }
   };
 
@@ -307,11 +268,10 @@ const UploadDoc = () => {
               onLoad={() => setLoading(false)}
               onError={() => {
                 setLoading(false);
-                setSnackbar({
-                  open: true,
-                  message: 'Failed to load PDF document. Please try again.',
-                  severity: 'error',
-                });
+                showSnackbar(
+                  'Failed to load PDF document. Please try again.',
+                  'error'
+                );
               }}
               style={{
                 border: 'none',
@@ -326,19 +286,6 @@ const UploadDoc = () => {
           )}
         </DialogContent>
       </Dialog>
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-      >
-        <Alert
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          severity={snackbar.severity}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </Paper>
   );
 };

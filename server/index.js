@@ -55,7 +55,15 @@ app.use(bodyParser.json()); // รองรับ JSON bodies
 app.use(bodyParser.urlencoded({ extended: true })); // รองรับ URL-encoded bodies
 
 // Static Files
-app.use("/upload", express.static(path.join(__dirname, "upload"))); // ให้บริการไฟล์ในโฟลเดอร์ upload
+app.use('/upload', express.static(path.join(__dirname, 'upload'), {
+  setHeaders: (res, filePath) => {
+    if (path.extname(filePath) === '.pdf') {
+      //console.log(`Serving PDF: ${filePath}`);
+      res.setHeader('Content-Disposition', 'inline');
+    }
+  },
+}));
+
 
 // นำเข้า Routes
 const authRoutes = require("./src/routes/auth");

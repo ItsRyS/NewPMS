@@ -1,22 +1,55 @@
+import { createContext, useContext, useState } from 'react';
+import { Snackbar, Alert } from '@mui/material';
 import PropTypes from 'prop-types';
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
 
-const ReusableSnackbar = ({ open, message, severity, handleClose }) => {
+// สร้าง Context
+const SnackbarContext = createContext();
+
+// Provider สำหรับ ReusableSnackbar
+export const SnackbarProvider = ({ children }) => {
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'info',
+  });
+
+  // ฟังก์ชันแสดง Snackbar
+  const showSnackbar = (message, severity = 'info') => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  // ฟังก์ชันปิด Snackbar
+  const handleClose = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
   return (
-    <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
-      <Alert onClose={handleClose} severity={severity} variant="filled">
-        {message}
-      </Alert>
-    </Snackbar>
+    <SnackbarContext.Provider value={showSnackbar}>
+      {children}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+      >
+        <Alert onClose={handleClose} severity={snackbar.severity}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </SnackbarContext.Provider>
   );
 };
 
-ReusableSnackbar.propTypes = {
-  open: PropTypes.bool.isRequired,
-  message: PropTypes.string.isRequired,
-  severity: PropTypes.string.isRequired,
-  handleClose: PropTypes.func.isRequired,
+// กำหนด PropTypes
+SnackbarProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 };
 
-export default ReusableSnackbar;
+// Hook สำหรับเรียกใช้ Snackbar
+export const useSnackbar = () => {
+  const context = useContext(SnackbarContext);
+  if (!context) {
+    throw new Error('useSnackbar must be used within a SnackbarProvider');
+  }
+  return context;
+};
