@@ -44,7 +44,7 @@ import {
 
 import api from '../../services/api';
 import { useSearchParams } from 'react-router-dom';
-import ReusableSnackbar from '../components/ReusableSnackbar';
+import ReusableSnackbar from '../../components/ReusableSnackbar';
 const UploadProjectDocument = () => {
   const [searchParams] = useSearchParams();
   const [documentTypes, setDocumentTypes] = useState([]);
