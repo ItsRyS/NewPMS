@@ -73,6 +73,8 @@ const documentRoutes = require("./src/routes/document");
 const userRoutes = require("./src/routes/users");
 const projectRequestsRoutes = require("./src/routes/projectRequests");
 const projectDocumentsRoutes = require("./src/routes/project_documents");
+const projectReleaseRoutes = require('./src/routes/projectRelease');
+
 
 // API Routes
 app.use("/api/auth", authRoutes);
@@ -83,7 +85,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/project-requests", projectRequestsRoutes);
 app.use("/api/document-types", projectDocumentsRoutes);
 app.use("/api/project-documents", projectDocumentsRoutes);
-
+app.use("/api/project-release", projectReleaseRoutes);
 // Test Endpoint
 app.get("/api/test", (req, res) => {
   res.json({ message: "API is working!" });

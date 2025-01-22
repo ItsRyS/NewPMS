@@ -16,7 +16,7 @@ const StudentHome = lazy(() => import('../pages/studentPage/StudentHome'));
 
 const CheckProject = lazy(() => import('../pages/adminPage/CheckProject'));
 const ManageUser = lazy(() => import('../pages/adminPage/ManageUser'));
-const ReleaseProject = lazy(() => import('../pages/adminPage/ReleaseProject'));
+const ReleaseProjectPage = lazy(() => import('../pages/adminPage/ReleaseProjectPage'));
 const UploadDoc = lazy(() => import('../pages/adminPage/UploadDoc'));
 const TeacherInfo = lazy(() => import('../pages/adminPage/TeacherInfo'));
 const ViewProjectDocuments = lazy(
@@ -113,7 +113,7 @@ const router = createBrowserRouter([
         path: 'release-project',
         element: (
           <Suspense fallback={<div>Loading...</div>}>
-            <ReleaseProject />
+            <ReleaseProjectPage />
           </Suspense>
         ),
       },
@@ -194,7 +194,7 @@ const router = createBrowserRouter([
       // Add more routes here
     ],
   },
-  
+
 ]);
 
 const AppRoutes = () => {

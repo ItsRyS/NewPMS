@@ -100,8 +100,7 @@ exports.updateRequestStatus = async (req, res) => {
 // Fetch approved and ongoing projects
 exports.getApprovedProjects = async (req, res) => {
   try {
-    const [projects] = await db.query(
-      `
+    const [projects] = await db.query(`
       SELECT
           pr.project_id,
           pr.project_name_th,
@@ -116,11 +115,11 @@ exports.getApprovedProjects = async (req, res) => {
       LEFT JOIN students_projects sp ON pr.project_id = sp.project_id
       LEFT JOIN users u ON sp.student_id = u.user_id
       LEFT JOIN teacher_info ti ON pr.advisor_id = ti.teacher_id
-      WHERE pr.project_status IN ('operate', 'success')
+      WHERE pr.project_status IN ('operate', 'success', 'complete')
       GROUP BY pr.project_id
       ORDER BY pr.project_create_time DESC;
-      `
-    );
+    `);
+
 
     if (projects.length === 0) {
       return res.status(200).json({

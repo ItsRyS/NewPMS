@@ -16,10 +16,9 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Snackbar,
-  Alert,
   CircularProgress,
 } from '@mui/material';
+import { useSnackbar } from '../../components/ReusableSnackbar';
 import api from '../../services/api';
 import { useSearchParams } from 'react-router-dom';
 
@@ -29,9 +28,8 @@ const ViewProjectDocuments = () => {
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [openRejectOptions, setOpenRejectOptions] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
-
   const [searchParams] = useSearchParams();
+  const showSnackbar = useSnackbar();
 
   // ฟังก์ชันสำหรับโหลดข้อมูลเอกสาร
   const fetchPendingDocuments = useCallback(async () => {
@@ -40,24 +38,28 @@ const ViewProjectDocuments = () => {
       const response = await api.get('/project-documents/all');
       setDocuments(response.data.filter((doc) => doc.status === 'pending'));
     } catch (error) {
-      handleSnackbar('Failed to load documents.', 'error');
+      showSnackbar('Failed to load documents.', 'error');
       console.error('Error fetching documents:', error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [showSnackbar]);
 
   useEffect(() => {
     fetchPendingDocuments();
   }, [fetchPendingDocuments, searchParams]);
 
-  // ฟังก์ชันแสดง Snackbar
-  const handleSnackbar = (message, severity) => {
-    setSnackbar({ open: true, message, severity });
+  // ปิด Dialog และรีเซ็ตค่า rejectReason
+  const handleCloseRejectDialog = () => {
+    setOpenRejectOptions(false);
+    setRejectReason(''); // รีเซ็ตค่า
   };
 
-  // ปิด Snackbar
-  const handleCloseSnackbar = () => setSnackbar((prev) => ({ ...prev, open: false }));
+  // เปิด Dialog และรีเซ็ตค่า rejectReason
+  const handleOpenRejectDialog = () => {
+    setRejectReason(''); // รีเซ็ตค่า
+    setOpenRejectOptions(true);
+  };
 
   // จัดการ Action (Approve, Reject, Return)
   const handleAction = async (action, payload = null) => {
@@ -72,12 +74,12 @@ const ViewProjectDocuments = () => {
       } else {
         await api.post(endpoint);
       }
-      handleSnackbar(`Document ${action}ed successfully.`, 'success');
+      showSnackbar(`Document ${action}ed successfully.`, 'success');
       fetchPendingDocuments();
       setSelectedDocument(null);
-      if (action === 'reject') setOpenRejectOptions(false);
+      if (action === 'reject') handleCloseRejectDialog();
     } catch (error) {
-      handleSnackbar(`Failed to ${action} document.`, 'error');
+      showSnackbar(`Failed to ${action} document.`, 'error');
       console.error(`Error ${action}ing document:`, error);
     }
   };
@@ -166,7 +168,7 @@ const ViewProjectDocuments = () => {
               <Button variant="contained" color="success" onClick={() => handleAction('approve')}>
                 Approve
               </Button>
-              <Button variant="contained" color="error" onClick={() => setOpenRejectOptions(true)}>
+              <Button variant="contained" color="error" onClick={handleOpenRejectDialog}>
                 Reject
               </Button>
               <Button variant="contained" component="label" color="primary" sx={{ ml: 2 }}>
@@ -178,7 +180,7 @@ const ViewProjectDocuments = () => {
         </Modal>
       )}
 
-      <Dialog open={openRejectOptions} onClose={() => setOpenRejectOptions(false)}>
+      <Dialog open={openRejectOptions} onClose={handleCloseRejectDialog}>
         <DialogTitle>Reject Document</DialogTitle>
         <DialogContent>
           <TextField
@@ -192,7 +194,7 @@ const ViewProjectDocuments = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenRejectOptions(false)}>Cancel</Button>
+          <Button onClick={handleCloseRejectDialog}>Cancel</Button>
           <Button
             onClick={() => handleAction('reject', rejectReason)}
             color="error"
@@ -202,10 +204,6 @@ const ViewProjectDocuments = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
-      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={handleCloseSnackbar}>
-        <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
-      </Snackbar>
     </Paper>
   );
 };

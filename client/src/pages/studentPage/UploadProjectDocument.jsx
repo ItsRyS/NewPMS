@@ -205,7 +205,7 @@ const UploadProjectDocument = () => {
   const handleCancelSubmission = async () => {
     try {
       setLoading(true);
-      await api.delete(`/project-documents/delete/${currentDocumentId}`);
+      await api.delete(`/project-documents/${currentDocumentId}`);
       showSnackbar('Document submission canceled successfully.', 'success');
       fetchData();
       handleCloseDialog('cancel');
