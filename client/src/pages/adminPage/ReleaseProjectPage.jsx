@@ -4,7 +4,6 @@ import {
   Paper,
   Typography,
   Button,
-
   CircularProgress,
   Table,
   TableBody,
@@ -15,6 +14,7 @@ import {
 } from '@mui/material';
 import api from '../../services/api';
 import { useSnackbar } from '../../components/ReusableSnackbar';
+
 const ReleaseProjectPage = () => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,12 +37,23 @@ const ReleaseProjectPage = () => {
     fetchProjects();
   }, []);
 
-
-
-
-
   const handleReleaseProject = async (projectId) => {
     try {
+      // ตรวจสอบสถานะเอกสารก่อน
+      const response = await api.get(`/project-release/check-documents/${projectId}`);
+      const { unapprovedDocuments } = response.data;
+
+      if (unapprovedDocuments && unapprovedDocuments.length > 0) {
+        // แจ้งเตือนว่าเอกสารใดยังไม่ได้รับการอนุมัติ
+        const unapprovedNames = unapprovedDocuments.map((doc) => doc.type_name).join(', ');
+        showSnackbar(
+          `Cannot release project. The following documents are not approved: ${unapprovedNames}`,
+          'error'
+        );
+        return;
+      }
+
+      // อนุมัติโครงการ
       await api.put(`/project-release/update-status/${projectId}`);
       showSnackbar('Project released successfully.', 'success');
       fetchProjects();
@@ -106,7 +117,6 @@ const ReleaseProjectPage = () => {
           </TableBody>
         </Table>
       </TableContainer>
-
     </Paper>
   );
 };

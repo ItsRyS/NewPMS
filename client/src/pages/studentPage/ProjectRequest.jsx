@@ -7,11 +7,12 @@ import {
   Button,
   MenuItem,
   CircularProgress,
-  Alert,
   Paper,
 } from '@mui/material';
 import api from '../../services/api';
 import { useSearchParams } from 'react-router-dom';
+import { useSnackbar } from '../../components/ReusableSnackbar';
+
 const ProjectRequest = () => {
   const [projectNameTh, setProjectNameTh] = useState('');
   const [projectNameEng, setProjectNameEng] = useState('');
@@ -25,8 +26,9 @@ const ProjectRequest = () => {
   const [loading, setLoading] = useState(false);
   const [canSubmit, setCanSubmit] = useState(true);
   const [latestStatus, setLatestStatus] = useState('');
-  const [error, setError] = useState('');
- const [searchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
+  const showSnackbar = useSnackbar();
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -39,14 +41,14 @@ const ProjectRequest = () => {
             api.get('/projects/project-types'),
           ]);
 
-        console.log('Project Types Response:', projectTypeResponse.data); // เพิ่ม log ตรงนี้
+        console.log('Project Types Response:', projectTypeResponse.data);
 
         const studentUsers = studentResponse.data.filter(
           (user) => user.role === 'student'
         );
         setAdvisors(advisorResponse.data);
         setStudents(studentUsers);
-        setProjectTypes(projectTypeResponse.data.data); // ตรวจสอบว่าข้อมูลถูกต้อง
+        setProjectTypes(projectTypeResponse.data.data);
 
         const { user_id } = sessionResponse.data.user;
         setGroupMembers([user_id]);
@@ -72,38 +74,38 @@ const ProjectRequest = () => {
         );
       } catch (error) {
         console.error('Error fetching data:', error);
+        showSnackbar('เกิดข้อผิดพลาดในการโหลดข้อมูล', 'error');
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [searchParams]);
+  }, [searchParams, showSnackbar]);
 
   const handleSubmit = useCallback(async () => {
     if (!projectNameTh || !projectNameEng) {
-      setError('กรุณากรอกชื่อโครงงานทั้งภาษาไทยและภาษาอังกฤษ');
+      showSnackbar('กรุณากรอกชื่อโครงงานทั้งภาษาไทยและภาษาอังกฤษ', 'error');
       return;
     }
     if (!selectedAdvisor) {
-      setError('กรุณาเลือกอาจารย์ที่ปรึกษา');
+      showSnackbar('กรุณาเลือกอาจารย์ที่ปรึกษา', 'error');
       return;
     }
     if (!projectType) {
-      setError('กรุณาเลือกประเภทโครงงาน');
+      showSnackbar('กรุณาเลือกประเภทโครงงาน', 'error');
       return;
     }
     if (groupMembers.length === 0) {
-      setError('กรุณาเพิ่มสมาชิกในกลุ่มอย่างน้อย 1 คน');
+      showSnackbar('กรุณาเพิ่มสมาชิกในกลุ่มอย่างน้อย 1 คน', 'error');
       return;
     }
-    setError('');
 
     try {
       const sessionResponse = await api.get('/auth/check-session');
       const { user_id } = sessionResponse.data.user;
 
-      const response = await api.post('/project-requests/create', {
+      await api.post('/project-requests/create', {
         project_name: projectNameTh,
         project_name_eng: projectNameEng,
         project_type: projectType,
@@ -111,7 +113,8 @@ const ProjectRequest = () => {
         advisorId: selectedAdvisor,
         studentId: user_id,
       });
-      console.log('Request submitted:', response.data);
+
+      showSnackbar('ส่งคำร้องสำเร็จ', 'success');
 
       const updatedStatus = await api.get('/project-requests/status', {
         params: { studentId: user_id },
@@ -124,21 +127,22 @@ const ProjectRequest = () => {
       setLatestStatus(statuses[0]?.status || '');
       setCanSubmit(false);
     } catch (error) {
-      console.error(
-        'Error submitting request:',
-        error.response?.data || error.message
+      console.error('Error submitting request:', error);
+      showSnackbar(
+        error.response?.data?.message || 'เกิดข้อผิดพลาดในการส่งคำร้อง',
+        'error'
       );
-      if (error.response?.data?.message) {
-        setError(error.response.data.message);
-      }
     }
+
   }, [
     projectNameTh,
     projectNameEng,
     projectType,
     groupMembers,
     selectedAdvisor,
+    showSnackbar,
   ]);
+
 
   if (loading) {
     return (
@@ -170,12 +174,21 @@ const ProjectRequest = () => {
         <Typography variant="h5" gutterBottom>
           Request a Project
         </Typography>
-        {error && <Alert severity="error">{error}</Alert>}
         {!canSubmit && latestStatus === 'approved' && (
-          <Alert severity="success" sx={{ marginBottom: 2 }}>
-            ยินดีด้วย! โครงการของคุณได้รับการอนุมัติแล้ว
-            กรุณาไปยังหน้าส่งเอกสารเพื่อส่งโครงการของคุณ
-          </Alert>
+          <Box
+            sx={{
+              bgcolor: 'success.main',
+              color: 'white',
+              p: 2,
+              borderRadius: 1,
+              mb: 2
+            }}
+          >
+            <Typography>
+              ยินดีด้วย! โครงการของคุณได้รับการอนุมัติแล้ว
+              กรุณาไปยังหน้าส่งเอกสารเพื่อส่งโครงการของคุณ
+            </Typography>
+          </Box>
         )}
         <TextField
           fullWidth
@@ -212,8 +225,6 @@ const ProjectRequest = () => {
             <MenuItem disabled>Loading...</MenuItem>
           )}
         </TextField>
-
-
 
         {/* Group Members */}
         {groupMembers.map((member, index) => (
@@ -266,6 +277,7 @@ const ProjectRequest = () => {
             Add Member
           </Button>
         )}
+
         {/* Advisor */}
         <TextField
           select

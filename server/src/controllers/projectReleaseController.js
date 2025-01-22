@@ -1,5 +1,6 @@
 const db = require('../config/db');
 
+// ดึงข้อมูลโครงการที่รอการอนุมัติ
 exports.getPendingProjects = async (req, res) => {
   try {
     const [projects] = await db.query(
@@ -23,6 +24,7 @@ exports.getPendingProjects = async (req, res) => {
   }
 };
 
+// อัปเดตสถานะโครงการ
 exports.updateProjectStatus = async (req, res) => {
   const { projectId } = req.params;
 
@@ -33,11 +35,8 @@ exports.updateProjectStatus = async (req, res) => {
       SELECT
         COUNT(*) AS approved_count
       FROM project_documents pd
-      JOIN document_types dt ON pd.type_id = dt.type_id
-      WHERE pd.request_id = (
-        SELECT request_id FROM students_projects WHERE project_id = ?
-      )
-      AND pd.status = 'approved'
+      JOIN students_projects sp ON pd.request_id = sp.request_id
+      WHERE sp.project_id = ? AND pd.status = 'approved'
       `,
       [projectId]
     );
@@ -52,7 +51,7 @@ exports.updateProjectStatus = async (req, res) => {
     if (documentCheck[0].approved_count < documentTotal[0].total_count) {
       return res.status(400).json({
         success: false,
-        message: 'Cannot release project. Ensure all 16 documents are submitted and approved.',
+        message: 'Cannot release project. Ensure all documents are approved.',
       });
     }
 
@@ -70,5 +69,34 @@ exports.updateProjectStatus = async (req, res) => {
   } catch (error) {
     console.error('Error releasing project:', error.message);
     res.status(500).json({ success: false, message: 'Failed to release project.' });
+  }
+};
+
+// ตรวจสอบเอกสารที่ยังไม่ได้รับการอนุมัติ
+exports.checkProjectDocuments = async (req, res) => {
+  const { projectId } = req.params;
+
+  try {
+    const [unapprovedDocuments] = await db.query(
+      `
+      SELECT dt.type_name
+      FROM document_types dt
+      LEFT JOIN project_documents pd
+        ON dt.type_id = pd.type_id
+        AND pd.request_id = (
+          SELECT request_id
+          FROM students_projects
+          WHERE project_id = ?
+          LIMIT 1
+        )
+      WHERE pd.status IS NULL OR pd.status != 'approved'
+      `,
+      [projectId]
+    );
+
+    res.status(200).json({ unapprovedDocuments });
+  } catch (error) {
+    console.error('Error checking project documents:', error.message);
+    res.status(500).json({ success: false, message: 'Failed to check project documents.' });
   }
 };
