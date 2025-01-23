@@ -10,7 +10,7 @@ import {
   MenuItem,
   Box,
 } from '@mui/material';
-
+import dayjs from 'dayjs';
 function StudentHome() {
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]); // State สำหรับเก็บข้อมูลโปรเจกต์
@@ -39,7 +39,11 @@ function StudentHome() {
       try {
         setLoading(true);
         const response = await api.get('/projects'); // เรียก API เพื่อดึงข้อมูลโปรเจกต์
-        setProjects(response.data.data); // เก็บข้อมูลโปรเจกต์ใน state
+        const formattedProjects = response.data.data.map((project) => ({
+          ...project,
+          project_create_time: dayjs(project.project_create_time).format('DD/MM/YYYY'), // ฟอร์แมตวันที่
+        }));
+        setProjects(formattedProjects); // เก็บข้อมูลโปรเจกต์ใน state
       } catch (error) {
         console.error('Error fetching projects:', error);
       } finally {
@@ -97,7 +101,7 @@ function StudentHome() {
     {
       field: 'project_advisor',
       headerName: 'ที่ปรึกษา',
-      flex: 0.5,
+      flex: 1,
       minWidth: 120,
     },
     { field: 'project_type', headerName: 'ประเภท', flex: 0.5, minWidth: 100 },

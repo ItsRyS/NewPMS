@@ -68,7 +68,7 @@ const Home = () => {
     {
       field: 'project_advisor',
       headerName: 'ที่ปรึกษา',
-      flex: 0.5,
+      flex: 1,
       minWidth: 120,
     },
     { field: 'project_type', headerName: 'ประเภท', flex: 0.5, minWidth: 100 },
