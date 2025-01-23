@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Typography, Box } from '@mui/material';
+import {  Typography, Box } from '@mui/material';
 import ProjectTable from '../../components/ProjectTable';
 import api from '../../services/api';
 import { fetchProjectsData } from '../../services/projectUtils';
@@ -44,14 +44,12 @@ function StudentHome() {
   }, [navigate]);
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: '100vh' }}>
-      <Container sx={{ py: 4, flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-        <Typography variant="h4" gutterBottom>
-          โครงการของนักศึกษา
-        </Typography>
-        <ProjectTable rows={projects} loading={loading} />
-      </Container>
-    </Box>
+    <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: '100vh', width: '100%' }}>
+  <Typography variant="h4" gutterBottom>
+    โครงการของนักศึกษา
+  </Typography>
+  <ProjectTable rows={projects} loading={loading} />
+</Box>
   );
 }
 

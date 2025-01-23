@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Container, Box } from '@mui/material';
+import { Box } from '@mui/material';
 import NavbarHome from '../../components/NavHome';
 import FooterHome from '../../components/FooterHome';
 import ProjectTable from '../../components/ProjectTable';
@@ -22,10 +22,10 @@ const Home = () => {
   return (
     <>
       <NavbarHome />
-      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <Container sx={{ py: 4, marginTop: '70px', flex: 1 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', width: '100%' }}>
+
           <ProjectTable rows={projects} loading={loading} />
-        </Container>
+
         <FooterHome />
       </Box>
     </>

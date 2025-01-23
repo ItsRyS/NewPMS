@@ -31,6 +31,7 @@ const LayoutStudent = () => {
             marginLeft: { sm: '240px' },
             padding: 2,
             overflowY: 'auto',
+            width: '100%', // ขยายเต็มความกว้าง
           }}
         >
           <Toolbar />

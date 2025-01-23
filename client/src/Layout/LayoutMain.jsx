@@ -9,19 +9,21 @@ const LayoutMain = () => {
         display: 'flex',
         flexDirection: 'column',
         minHeight: '100vh', // Full height of the viewport
+        width: '100%', // Full width of the viewport
+        overflow: 'hidden',
       }}
     >
-      {/* Navbar 
+      {/* Navbar
       <NavbarHome />*/}
 
       {/* Main Content */}
-      <Box sx={{ flex: 1 }}>
+      <Box sx={{ flex: 1,width: '100%' }}>
         <Suspense fallback={<div>Loading...</div>}>
           <Outlet />
         </Suspense>
       </Box>
 
-      {/* Footer 
+      {/* Footer
       <FooterHome />*/}
     </Box>
   );

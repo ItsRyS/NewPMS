@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import {
+  Box,
   Paper,
   Typography,
   TextField,
@@ -16,19 +17,18 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import PropTypes from 'prop-types';
-import api from '../services/api'; // ใช้ instance axios จาก api.js
+import api from '../services/api';
 import { useSnackbar } from './ReusableSnackbar';
 
 const ProjectTable = ({ rows, loading }) => {
-  const [searchTerm, setSearchTerm] = useState(''); // State สำหรับคำค้นหา
-  const [searchField, setSearchField] = useState('project_name_th'); // Field สำหรับการค้นหา
-  const [openDocument, setOpenDocument] = useState(false); // State สำหรับการเปิด Dialog
-  const [documentUrl, setDocumentUrl] = useState(''); // URL ของเอกสาร
-  const { showSnackbar } = useSnackbar(); // แสดง Snackbar สำหรับ Error
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchField, setSearchField] = useState('project_name_th');
+  const [openDocument, setOpenDocument] = useState(false);
+  const [documentUrl, setDocumentUrl] = useState('');
+  const { showSnackbar } = useSnackbar();
   const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('sm')); // ตรวจสอบขนาดหน้าจอ
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
-  // ฟังก์ชันสำหรับดึงเอกสารและเปิด Dialog
   const handleViewDocument = async (projectId) => {
     try {
       const response = await api.get(
@@ -49,12 +49,11 @@ const ProjectTable = ({ rows, loading }) => {
     }
   };
 
-  // กำหนดคอลัมน์ของ DataGrid
   const columns = [
     {
       field: 'project_name_th',
       headerName: 'ชื่อโครงการ (TH)',
-      flex: 1.5, // ขยายพื้นที่มากขึ้น
+      flex: 1.5,
       minWidth: 250,
     },
     {
@@ -67,14 +66,20 @@ const ProjectTable = ({ rows, loading }) => {
       field: 'team_members',
       headerName: 'สมาชิกในทีม',
       flex: 1.2,
-      minWidth: 300, // เพิ่มความกว้างให้เหมาะสม
-      renderCell: (params) =>
-        params.row.team_members
-          ? params.row.team_members
-              .split(', ')
-              .map((member, index) => <span key={index}>{member}</span>)
-          : 'ไม่มีสมาชิก',
-    },
+      minWidth: 300,
+      renderCell: (params) => (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+          {params.row.team_members
+            ? params.row.team_members.split(', ').map((member, index) => (
+                <Typography key={index} variant="body2">
+                  {member}
+                </Typography>
+              ))
+            : <Typography variant="body2" color="textSecondary">ไม่มีสมาชิก</Typography>}
+        </Box>
+      ),
+    }
+    ,
     {
       field: 'project_advisor',
       headerName: 'ที่ปรึกษา',
@@ -113,7 +118,6 @@ const ProjectTable = ({ rows, loading }) => {
     },
   ];
 
-  // ฟิลเตอร์ข้อมูลตามคำค้นหา
   const filteredRows = rows.filter((row) =>
     row[searchField]
       ?.toString()
@@ -122,17 +126,27 @@ const ProjectTable = ({ rows, loading }) => {
   );
 
   return (
-    <>
+    <Box
+    sx={{
+      display: 'flex',
+      justifyContent: 'center', // จัดให้อยู่ตรงกลางแนวนอน
+      alignItems: 'center', // จัดให้อยู่ตรงกลางแนวตั้ง
+      minHeight: '100vh', // ครอบคลุมความสูงของหน้าจอ
+      backgroundColor: '#f5f5f5', // เพิ่มสีพื้นหลัง
+
+    }}>
       <Paper
         elevation={3}
         sx={{
           p: 2,
-          width: '100%', // กำหนดความกว้างเต็มจอ
-          maxWidth: '100%', // ยกเลิกการจำกัดความกว้าง
-          overflow: 'hidden', // ซ่อน scroll bar ถ้าเกินขอบ
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%', // ใช้พื้นที่เต็ม container
+          width: '100%', // ครอบคลุมความกว้างทั้งหมด
+          overflow: 'hidden', // ป้องกัน scroll bar เกินความจำเป็น
         }}
       >
-        {/* Search Section */}
+        {/* ส่วนค้นหา */}
         <Grid container spacing={2} sx={{ mb: 3 }}>
           <Grid item xs={12} md={4}>
             <TextField
@@ -160,34 +174,33 @@ const ProjectTable = ({ rows, loading }) => {
           </Grid>
         </Grid>
 
-        {/* DataGrid Section */}
-        <DataGrid
-          rows={filteredRows}
-          columns={columns}
-          pageSize={10} // จำกัดแถวต่อหน้าให้เหมาะสม
-          rowsPerPageOptions={[10]} // ใช้ตัวเลือกแค่ 10 แถว
-          disableSelectionOnClick
-          getRowId={(row) => row.project_id}
-          autoHeight // ปรับความสูงอัตโนมัติ
-          loading={loading}
-          density="comfortable" // เพิ่มระยะห่างให้แถวดูสบายตา
-          sx={{
-            '& .MuiDataGrid-root': {
-              width: '100%', // ทำให้เต็มหน้าจอ
-            },
-            '& .MuiDataGrid-columnHeaders': {
-              backgroundColor: theme.palette.grey[200], // เพิ่มพื้นหลังให้หัวคอลัมน์
-            },
-            '& .MuiDataGrid-virtualScroller': {
-              overflowX: 'hidden', // ซ่อน scroll bar แนวนอน
-            },
-            '& .MuiDataGrid-cell': {
-              fontSize: '0.9rem', // ลดขนาดตัวอักษร
-            },
-          }}
-        />
+        {/* ตาราง */}
+        <div style={{ flexGrow: 1, width: '100%' }}>
+          <DataGrid
+            rows={filteredRows}
+            columns={columns}
+            pageSize={10} // กำหนดจำนวนแถวต่อหน้า
+            rowsPerPageOptions={[10]} // แสดงตัวเลือกสำหรับ 10 แถว
+            disableSelectionOnClick
+            getRowId={(row) => row.project_id}
+            density="comfortable"
+            loading={loading}
+            sx={{
+              width: '100%',
+              '& .MuiDataGrid-columnHeaders': {
+                backgroundColor: theme.palette.grey[200], // พื้นหลังของ header
+              },
+              '& .MuiDataGrid-cell': {
+                textOverflow: 'ellipsis', // ตัดข้อความยาวเกิน
+                overflow: 'hidden',
+                whiteSpace: 'nowrap', // ไม่ตัดข้อความขึ้นบรรทัดใหม่
+              },
+            }}
+          />
+        </div>
       </Paper>
 
+      {/* Dialog สำหรับดูเอกสาร */}
       <Dialog
         open={openDocument}
         onClose={() => setOpenDocument(false)}
@@ -226,8 +239,9 @@ const ProjectTable = ({ rows, loading }) => {
           )}
         </DialogContent>
       </Dialog>
-    </>
+    </Box>
   );
+
 };
 
 ProjectTable.propTypes = {
