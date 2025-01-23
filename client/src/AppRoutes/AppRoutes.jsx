@@ -16,13 +16,15 @@ const StudentHome = lazy(() => import('../pages/studentPage/StudentHome'));
 
 const CheckProject = lazy(() => import('../pages/adminPage/CheckProject'));
 const ManageUser = lazy(() => import('../pages/adminPage/ManageUser'));
-const ReleaseProjectPage = lazy(() => import('../pages/adminPage/ReleaseProjectPage'));
+const ReleaseProjectPage = lazy(
+  () => import('../pages/adminPage/ReleaseProjectPage')
+);
 const UploadDoc = lazy(() => import('../pages/adminPage/UploadDoc'));
 const TeacherInfo = lazy(() => import('../pages/adminPage/TeacherInfo'));
 const ViewProjectDocuments = lazy(
   () => import('../pages/adminPage/ViewProjectDocuments')
 );
-
+const ProfileUser = lazy(() => import('../pages/studentPage/ProfileUser'));
 const Documentation = lazy(() => import('../pages/studentPage/Documentation'));
 const SendProject = lazy(() => import('../pages/studentPage/SendProject'));
 const ProjectRequest = lazy(
@@ -65,8 +67,7 @@ const router = createBrowserRouter([
             <SignUp />
           </Suspense>
         ),
-      }
-      ,
+      },
       {
         path: 'TeacherPage',
         element: (
@@ -93,6 +94,7 @@ const router = createBrowserRouter([
           </Suspense>
         ),
       },
+
       {
         path: 'CheckProject',
         element: (
@@ -160,6 +162,14 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: 'ProfileUser',
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <ProfileUser />
+          </Suspense>
+        ),
+      },
+      {
         path: 'Documentation',
         element: (
           <Suspense fallback={<div>Loading...</div>}>
@@ -194,7 +204,6 @@ const router = createBrowserRouter([
       // Add more routes here
     ],
   },
-
 ]);
 
 const AppRoutes = () => {

@@ -90,6 +90,12 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
             title: 'หนักหลัก',
           },
           {
+            to: '/studentHome/ProfileUser',
+            text: 'ข้อมูลส่วนตัว',
+            icon: <Home sx={{ color: '#9CA3AF' }} />,
+            title: 'ข้อมูลส่วนตัว',
+          },
+          {
             to: '/studentHome/Documentation',
             text: 'แบบร่างเอกสาร',
             icon: <School sx={{ color: '#9CA3AF' }} />,
