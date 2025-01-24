@@ -1,36 +1,37 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import {
   TextField,
   Button,
   Container,
   Typography,
   Box,
-  Alert,
   IconButton,
   InputAdornment,
   Avatar,
 } from '@mui/material';
-import { Visibility, VisibilityOff } from '@mui/icons-material'; // Icons for show/hide password
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import api from '../../services/api';
+import { useSnackbar } from '../../components/ReusableSnackbar'; // Import hook
 
 const ProfileUser = () => {
+  const { updateProfileImage } = useOutletContext();
   const [user, setUser] = useState({
     id: '',
     username: '',
     email: '',
-    role: '', // Role is fetched but cannot be changed
+    role: '',
     password: '',
     confirmPassword: '',
-    profileImage: '', // For profile picture
+    profileImage: '',
   });
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [showPassword, setShowPassword] = useState(false); // For toggling password visibility
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // For toggling confirm password visibility
+
+  const [loading, setLoading] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const showSnackbar = useSnackbar();
   const navigate = useNavigate();
 
-  // Fetch current user data
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -46,13 +47,14 @@ const ProfileUser = () => {
           confirmPassword: '',
         });
       } catch {
-        setError('Failed to fetch user data');
+        showSnackbar('Failed to fetch user data', 'error');
+      } finally {
+        setLoading(false);
       }
     };
     fetchUserData();
-  }, []);
+  }, [showSnackbar]);
 
-  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setUser((prevUser) => ({
@@ -61,7 +63,6 @@ const ProfileUser = () => {
     }));
   };
 
-  // Handle profile picture upload
   const handleProfileImageChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -77,21 +78,21 @@ const ProfileUser = () => {
         ...prevUser,
         profileImage: response.data.profileImage,
       }));
-      setSuccess('Profile picture updated successfully');
+      if (updateProfileImage) {
+        updateProfileImage(response.data.profileImage); // อัปเดตรูปภาพใน SideStudent
+      }
+
+      showSnackbar('Profile picture updated successfully', 'success');
     } catch {
-      setError('Failed to upload profile picture');
+      showSnackbar('Failed to upload profile picture', 'error');
     }
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
 
-    // Validate password match
     if (user.password && user.password !== user.confirmPassword) {
-      setError('Passwords do not match');
+      showSnackbar('Passwords do not match', 'error');
       return;
     }
 
@@ -99,18 +100,22 @@ const ProfileUser = () => {
       const payload = {
         username: user.username,
         email: user.email,
-        ...(user.password && { password: user.password }), // Only include password if it's provided
+        ...(user.password && { password: user.password }),
       };
 
-      const response = await api.put(`/users/${user.id}`, payload); // Update user data
+      const response = await api.put(`/users/${user.id}`, payload);
       if (response.status === 200) {
-        setSuccess('Profile updated successfully');
-        setTimeout(() => navigate('/dashboard'), 2000); // Redirect after success
+        showSnackbar('Profile updated successfully', 'success');
+        setTimeout(() => navigate('/dashboard'), 2000);
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to update profile');
+      showSnackbar(err.response?.data?.error || 'Failed to update profile', 'error');
     }
   };
+
+  if (loading) {
+    return <Typography>Loading...</Typography>;
+  }
 
   return (
     <Container maxWidth="sm">
@@ -118,10 +123,7 @@ const ProfileUser = () => {
         <Typography variant="h4" gutterBottom>
           Edit Profile
         </Typography>
-        {error && <Alert severity="error">{error}</Alert>}
-        {success && <Alert severity="success">{success}</Alert>}
 
-        {/* Profile Picture Upload */}
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
           <label htmlFor="profile-image-upload">
             <Avatar
@@ -143,7 +145,6 @@ const ProfileUser = () => {
         </Box>
 
         <form onSubmit={handleSubmit}>
-          {/* Username Field */}
           <TextField
             fullWidth
             margin="normal"
@@ -154,7 +155,6 @@ const ProfileUser = () => {
             required
           />
 
-          {/* Email Field */}
           <TextField
             fullWidth
             margin="normal"
@@ -166,17 +166,15 @@ const ProfileUser = () => {
             required
           />
 
-          {/* Role Field (Disabled) */}
           <TextField
             fullWidth
             margin="normal"
             label="Role"
             name="role"
             value={user.role}
-            disabled // Disable the role field
+            disabled
           />
 
-          {/* Password Field with Toggle */}
           <TextField
             fullWidth
             margin="normal"
@@ -196,7 +194,6 @@ const ProfileUser = () => {
             }}
           />
 
-          {/* Confirm Password Field with Toggle */}
           <TextField
             fullWidth
             margin="normal"
@@ -208,9 +205,7 @@ const ProfileUser = () => {
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  >
+                  <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
                     {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
                   </IconButton>
                 </InputAdornment>
@@ -218,7 +213,6 @@ const ProfileUser = () => {
             }}
           />
 
-          {/* Save Changes Button */}
           <Box sx={{ mt: 2 }}>
             <Button type="submit" variant="contained" color="primary">
               Save Changes

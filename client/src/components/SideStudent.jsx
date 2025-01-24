@@ -17,12 +17,15 @@ import { Home, School, Assignment, PresentToAll } from '@mui/icons-material';
 import { NavLink, useNavigate } from 'react-router-dom';
 import LogoutIcon from '@mui/icons-material/Logout';
 import api from '../services/api';
+import { useSnackbar } from '../components/ReusableSnackbar';
 
 const drawerWidth = 240;
 
 const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
   const [username, setUsername] = useState('Loading...');
   const [profileImage, setProfileImage] = useState('');
+  const [loading, setLoading] = useState(true);
+  const showSnackbar = useSnackbar();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,13 +37,18 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
         if (response.data.isAuthenticated) {
           setUsername(response.data.user.username);
           setProfileImage(response.data.user.profileImage);
+        } else {
+          navigate('/SignIn');
         }
       } catch (error) {
         console.error('Failed to fetch session:', error);
+        showSnackbar('Failed to load session data', 'error');
+      } finally {
+        setLoading(false);
       }
     };
     fetchSession();
-  }, []);
+  }, [navigate, showSnackbar]);
 
   const handleLogout = async () => {
     try {
@@ -54,6 +62,7 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
       }
     } catch (error) {
       console.error('Logout failed:', error.response?.data || error.message);
+      showSnackbar('Logout failed', 'error');
     }
   };
 
@@ -73,8 +82,8 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
             profileImage
               ? `http://localhost:5000/${profileImage}`
               : '/default-avatar.png'
-          } // เพิ่ม fallback
-          alt={username}
+          }
+          alt="Profile"
           sx={{ width: 100, height: 100 }}
         />
         <Typography
@@ -128,10 +137,7 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
         ].map(({ to, text, icon, title }, index) => (
           <NavLink
             key={index}
-            to={{
-              pathname: to,
-              search: `?reload=${Date.now()}`, // เพิ่ม query parameter เพื่อกระตุ้นการโหลดใหม่
-            }}
+            to={{ pathname: to }}
             style={{ textDecoration: 'none', color: 'inherit' }}
           >
             <ListItemButton onClick={() => setTitle(title)}>
@@ -156,6 +162,10 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
       </Box>
     </>
   );
+
+  if (loading) {
+    return <Typography>Loading...</Typography>;
+  }
 
   return (
     <>
@@ -199,6 +209,7 @@ SideStudent.propTypes = {
   mobileOpen: PropTypes.bool.isRequired,
   handleDrawerToggle: PropTypes.func.isRequired,
   setTitle: PropTypes.func.isRequired,
+  profileImage: PropTypes.string, // เพิ่ม PropTypes
 };
 
 export default SideStudent;

@@ -8,9 +8,13 @@ import { Box, Toolbar } from '@mui/material';
 const LayoutStudent = () => {
   const [mobileOpen, setMobileOpen] = useState(false); // เพิ่ม State สำหรับ Drawer
   const [title, setTitle] = useState('Dashboard');
+  const [profileImage, setProfileImage] = useState(''); // State สำหรับรูปภาพ
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen); // สลับสถานะ Drawer
+  };
+  const updateProfileImage = (newImagePath) => {
+    setProfileImage(newImagePath); // อัปเดตรูปภาพ
   };
 
   return (
@@ -21,6 +25,7 @@ const LayoutStudent = () => {
           mobileOpen={mobileOpen}
           handleDrawerToggle={handleDrawerToggle}
           setTitle={setTitle}
+          profileImage={profileImage}
         />
         <Box
           component="main"
@@ -36,7 +41,7 @@ const LayoutStudent = () => {
         >
           <Toolbar />
           <Suspense fallback={<div>Loading...</div>}>
-            <Outlet />
+            <Outlet context={{ updateProfileImage }}/>
           </Suspense>
         </Box>
       </Box>
@@ -44,4 +49,4 @@ const LayoutStudent = () => {
   );
 };
 
-export default LayoutStudent;
+export default LayoutStudent
