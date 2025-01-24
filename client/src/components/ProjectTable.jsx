@@ -211,7 +211,7 @@ const ProjectTable = ({ rows, loading }) => {
         }}
       >
         <DialogTitle>
-          Complete Report
+          เอกสารฉบับสมบูรณ์
           <IconButton
             aria-label="close"
             onClick={() => setOpenDocument(false)}
@@ -231,7 +231,7 @@ const ProjectTable = ({ rows, loading }) => {
               src={documentUrl}
               width="100%"
               height="100%"
-              title="Complete Report"
+              title="เอกสารฉบับสมบูรณ์"
               style={{ border: 'none' }}
             />
           ) : (

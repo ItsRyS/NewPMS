@@ -41,7 +41,7 @@ const NavbarHome = () => {
           <Link to="/" style={{ textDecoration: 'none' }}>
             {' '}
             <img
-              src="/it_logo2.svg"
+              src="/PMS-logo2.svg"
               alt="IT-PMS Logo"
               style={{ height: '40px', width: 'auto', marginRight: '8px' }}
             />
