@@ -9,13 +9,14 @@ import {
   IconButton,
   InputAdornment,
   Avatar,
+  Tooltip,
 } from '@mui/material';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { Visibility, VisibilityOff, CameraAlt } from '@mui/icons-material';
 import api from '../../services/api';
 import { useSnackbar } from '../../components/ReusableSnackbar';
 
 const ProfileUser = () => {
-  const { updateProfileImage, updateUserData } = useOutletContext(); // รับฟังก์ชันจาก SideStudent
+  const { updateProfileImage, updateUserData } = useOutletContext();
   const [user, setUser] = useState({
     id: '',
     username: '',
@@ -78,15 +79,6 @@ const ProfileUser = () => {
         profileImage: response.data.profileImage,
       }));
 
-      // อัปเดตเซสชัน
-      const tabId = sessionStorage.getItem('tabId');
-      if (tabId) {
-        await api.post('/auth/update-session', {
-          tabId,
-          profileImage: response.data.profileImage,
-        });
-      }
-
       // อัปเดตรูปโปรไฟล์ใน SideStudent
       if (updateProfileImage) {
         updateProfileImage(response.data.profileImage);
@@ -121,6 +113,11 @@ const ProfileUser = () => {
       if (response.status === 200) {
         showSnackbar('Profile updated successfully', 'success');
 
+        // อัปเดตข้อมูลผู้ใช้ใน SideStudent
+        if (updateUserData) {
+          updateUserData(user.username, user.profileImage);
+        }
+
         // อัปเดตเซสชัน
         const tabId = sessionStorage.getItem('tabId');
         if (tabId) {
@@ -131,12 +128,7 @@ const ProfileUser = () => {
           });
         }
 
-        // อัปเดตข้อมูลผู้ใช้ใน SideStudent
-        if (updateUserData) {
-          updateUserData(user.username, user.profileImage);
-        }
-
-
+        
       }
     } catch (err) {
       showSnackbar(err.response?.data?.error || 'Failed to update profile', 'error');
@@ -150,20 +142,42 @@ const ProfileUser = () => {
   return (
     <Container maxWidth="sm">
       <Box sx={{ mt: 4 }}>
-        <Typography variant="h4" gutterBottom>
+        <Typography variant="h4" gutterBottom align='center'>
           Edit Profile
         </Typography>
 
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
           <label htmlFor="profile-image-upload">
-            <Avatar
-              src={
-                user.profileImage
-                  ? `http://localhost:5000/${user.profileImage}`
-                  : 'https://i.pravatar.cc/300'
-              }
-              sx={{ width: 100, height: 100, cursor: 'pointer' }}
-            />
+            <Tooltip title="คลิกเพื่อเปลี่ยนรูปโปรไฟล์" arrow>
+              <Avatar
+                src={
+                  user.profileImage
+                    ? `http://localhost:5000/${user.profileImage}`
+                    : 'https://i.pravatar.cc/300'
+                }
+                sx={{
+                  width: 100,
+                  height: 100,
+                  cursor: 'pointer',
+                  position: 'relative',
+                  '&:hover': {
+                    opacity: 0.8,
+                  },
+                }}
+              >
+                <CameraAlt
+                  sx={{
+                    position: 'absolute',
+                    bottom: 0,
+                    right: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    borderRadius: '50%',
+                    padding: 1,
+                    color: 'white',
+                  }}
+                />
+              </Avatar>
+            </Tooltip>
             <input
               id="profile-image-upload"
               type="file"

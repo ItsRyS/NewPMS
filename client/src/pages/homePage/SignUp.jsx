@@ -1,9 +1,12 @@
 import { useState } from 'react';
-import { Box, Button, CssBaseline, FormLabel, FormControl, TextField, Typography, Stack, Card, Link, Snackbar, Alert } from '@mui/material';
+import { Box, Button, CssBaseline, FormLabel, FormControl, TextField, Typography, Stack, Card, Link } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
+import * as z from 'zod';
 import api from '../../services/api';
+import { useSnackbar } from '../../components/ReusableSnackbar';
 
+// สร้าง Styled Component สำหรับ Layout
 const StyledCard = styled(Card)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -24,38 +27,60 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
   [theme.breakpoints.up('sm')]: { padding: theme.spacing(4) },
 }));
 
+// สร้าง Zod Schema สำหรับ Sign Up
+const signUpSchema = z.object({
+  username: z.string().min(1, 'Username is required.'),
+  email: z.string().email('Please enter a valid email address.'),
+  password: z.string().min(6, 'Password must be at least 6 characters long.'),
+});
+
 export default function SignUp() {
   const [errors, setErrors] = useState({});
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'error' });
   const navigate = useNavigate();
-
-  const validateInputs = ({ username, email, password }) => {
-    const newErrors = {
-      username: !username.trim() ? 'Username is required.' : '',
-      email: !/\S+@\S+\.\S+/.test(email) ? 'Please enter a valid email address.' : '',
-      password: password.length < 6 ? 'Password must be at least 6 characters long.' : '',
-    };
-    setErrors(newErrors);
-    return Object.values(newErrors).every((error) => error === ''); // ตรวจสอบว่าไม่มีข้อผิดพลาด
-  };
+  const showSnackbar = useSnackbar(); // ดึงฟังก์ชัน showSnackbar จาก context
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const { name: username, email, password } = Object.fromEntries(new FormData(event.currentTarget).entries());
+    const formData = new FormData(event.currentTarget);
+    const data = {
+      username: formData.get('name'),
+      email: formData.get('email'),
+      password: formData.get('password'),
+    };
 
-    if (!validateInputs({ username, email, password })) return;
-
+    // ตรวจสอบข้อมูลด้วย Zod
     try {
-      const response = await api.post('/auth/register', { username, email, password }, {
+      signUpSchema.parse(data); // ถ้าผ่านจะทำงานต่อไป
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        const fieldErrors = err.formErrors?.fieldErrors || {};
+        setErrors({
+          username: fieldErrors.username ? fieldErrors.username[0] : '',
+          email: fieldErrors.email ? fieldErrors.email[0] : '',
+          password: fieldErrors.password ? fieldErrors.password[0] : '',
+        });
+      }
+      return; // ถ้า Error ไม่เรียก API ต่อ
+    }
+
+    // ไม่มี Error -> เคลียร์ Errors
+    setErrors({});
+
+    // เรียก API
+    try {
+      const response = await api.post('/auth/register', data, {
         headers: { 'Content-Type': 'application/json' },
       });
 
       if (response.status === 201) {
-        setSnackbar({ open: true, message: 'Sign up successful! Redirecting to sign in.', severity: 'success' });
-        setTimeout(() => navigate('/SignIn'), 2000);
+        // แสดง Snackbar สำเร็จ
+        showSnackbar('Sign up successful! Redirecting to sign in.', 'success');
+
+        // Redirect
+        setTimeout(() => navigate('/signin'), 2000);
       }
     } catch (error) {
-      setSnackbar({ open: true, message: error.response?.data?.error || 'Connection failed.', severity: 'error' });
+      showSnackbar(error.response?.data?.error || 'Connection failed.', 'error');
     }
   };
 
@@ -73,23 +98,55 @@ export default function SignUp() {
             </Typography>
           </Stack>
 
+          {/* Form */}
           <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {['name', 'email', 'password'].map((field) => (
-              <FormControl key={field}>
-                <FormLabel htmlFor={field}>{field.charAt(0).toUpperCase() + field.slice(1)}</FormLabel>
-                <TextField
-                  id={field}
-                  name={field}
-                  type={field === 'password' ? 'password' : 'text'}
-                  placeholder={field === 'name' ? 'Incognito user' : field === 'email' ? 'your@gmail.com' : '••••••'}
-                  autoComplete={field}
-                  required
-                  fullWidth
-                  error={!!errors[field === 'name' ? 'username' : field]}
-                  helperText={errors[field === 'name' ? 'username' : field] || ''}
-                />
-              </FormControl>
-            ))}
+            {/* Name */}
+            <FormControl>
+              <FormLabel htmlFor="name">Name</FormLabel>
+              <TextField
+                id="name"
+                name="name"
+                type="text"
+                placeholder="Incognito user"
+                autoComplete="name"
+                required
+                fullWidth
+                error={!!errors.username}
+                helperText={errors.username || ''}
+              />
+            </FormControl>
+
+            {/* Email */}
+            <FormControl>
+              <FormLabel htmlFor="email">Email</FormLabel>
+              <TextField
+                id="email"
+                name="email"
+                type="email"
+                placeholder="your@gmail.com"
+                autoComplete="email"
+                required
+                fullWidth
+                error={!!errors.email}
+                helperText={errors.email || ''}
+              />
+            </FormControl>
+
+            {/* Password */}
+            <FormControl>
+              <FormLabel htmlFor="password">Password</FormLabel>
+              <TextField
+                id="password"
+                name="password"
+                type="password"
+                placeholder="••••••"
+                autoComplete="current-password"
+                required
+                fullWidth
+                error={!!errors.password}
+                helperText={errors.password || ''}
+              />
+            </FormControl>
 
             <Box sx={{ display: 'flex', gap: 3, justifyContent: 'center' }}>
               <Button type="submit" variant="contained" size="large" sx={{ px: 4 }}>
@@ -109,13 +166,6 @@ export default function SignUp() {
           </Box>
         </StyledCard>
       </SignUpContainer>
-
-      {/* Snackbar สำหรับแจ้งเตือน */}
-      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
-        <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity} sx={{ width: '100%' }}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </>
   );
 }

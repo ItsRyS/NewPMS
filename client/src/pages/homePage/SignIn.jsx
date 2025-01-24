@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Box, Button, Checkbox, CssBaseline, FormControlLabel, FormLabel, FormControl, TextField, Typography, Stack, Card, Link, Snackbar, Alert } from '@mui/material';
+import { Box, Button, CssBaseline, FormControlLabel,Checkbox, FormLabel, FormControl, TextField, Typography, Stack, Card, Link } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
+import * as z from 'zod';
 import api from '../../services/api';
+import { useSnackbar } from '../../components/ReusableSnackbar';
 
+// สร้าง Styled Component สำหรับ Layout
 const StyledCard = styled(Card)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -24,41 +27,70 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
   [theme.breakpoints.up('sm')]: { padding: theme.spacing(4) },
 }));
 
+// สร้าง Zod Schema สำหรับ Sign In
+const signInSchema = z.object({
+  email: z.string().email('Please enter a valid email address.'),
+  password: z.string().min(6, 'Password must be at least 6 characters long.'),
+});
+
 export default function SignIn() {
   const [errors, setErrors] = useState({});
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'error' });
   const navigate = useNavigate();
+  const showSnackbar = useSnackbar(); // ดึงฟังก์ชัน showSnackbar จาก context
 
+  // สร้าง tabId ให้แต่ละแท็บ (sessionStorage) ในกรณีที่ยังไม่มี
   useEffect(() => {
     if (!sessionStorage.getItem('tabId')) {
       sessionStorage.setItem('tabId', `${Date.now()}-${Math.random()}`);
     }
   }, []);
 
-  const validateInputs = ({ email, password }) => {
-    const newErrors = {
-      email: !/\S+@\S+\.\S+/.test(email) ? 'Please enter a valid email address.' : '',
-      password: password.length < 6 ? 'Password must be at least 6 characters long.' : '',
-    };
-    setErrors(newErrors);
-    return Object.values(newErrors).every((error) => error === '');
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const { email, password } = Object.fromEntries(new FormData(event.currentTarget).entries());
+    const formData = new FormData(event.currentTarget);
+
+    const data = {
+      email: formData.get('email'),
+      password: formData.get('password'),
+    };
     const tabId = sessionStorage.getItem('tabId');
 
-    if (!validateInputs({ email, password })) return;
-
+    // ตรวจสอบข้อมูลด้วย Zod
     try {
-      const response = await api.post('/auth/login', { email, password, tabId }, { withCredentials: true });
+      signInSchema.parse(data); // ถ้าผ่านจะทำงานต่อไป
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        const fieldErrors = err.formErrors?.fieldErrors || {};
+        setErrors({
+          email: fieldErrors.email ? fieldErrors.email[0] : '',
+          password: fieldErrors.password ? fieldErrors.password[0] : '',
+        });
+      }
+      return; // หากมี error ไม่ต้องเรียก API
+    }
+
+    // ไม่มี Error -> เคลียร์ Errors ก่อน
+    setErrors({});
+
+    // เรียก API
+    try {
+      const response = await api.post('/auth/login', { ...data, tabId }, { withCredentials: true });
       const { role } = response.data;
 
-      setSnackbar({ open: true, message: 'Sign in successful!', severity: 'success' });
-      setTimeout(() => navigate(role === 'teacher' ? '/adminHome' : '/studentHome'), 2000);
+      // แจ้งเตือนผ่าน Snackbar
+      showSnackbar('Sign in successful!', 'success');
+
+      // เมื่อสำเร็จ ให้ redirect หน้า
+      setTimeout(() => {
+        if (role === 'teacher') {
+          navigate('/adminHome');
+        } else {
+          navigate('/studentHome');
+        }
+      }, 1500);
     } catch (error) {
-      setSnackbar({ open: true, message: error.response?.data?.error || 'Sign-in failed. Please check your credentials.', severity: 'error' });
+      // แสดงข้อผิดพลาดผ่าน Snackbar
+      showSnackbar(error.response?.data?.error || 'Sign-in failed. Please check your credentials.', 'error');
     }
   };
 
@@ -76,23 +108,39 @@ export default function SignIn() {
             </Typography>
           </Stack>
 
+          {/* Form */}
           <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {['email', 'password'].map((field) => (
-              <FormControl key={field}>
-                <FormLabel htmlFor={field}>{field.charAt(0).toUpperCase() + field.slice(1)}</FormLabel>
-                <TextField
-                  id={field}
-                  name={field}
-                  type={field === 'password' ? 'password' : 'email'}
-                  placeholder={field === 'email' ? 'your@email.com' : '••••••'}
-                  autoComplete={field}
-                  required
-                  fullWidth
-                  error={!!errors[field]}
-                  helperText={errors[field] || ''}
-                />
-              </FormControl>
-            ))}
+            {/* Email */}
+            <FormControl>
+              <FormLabel htmlFor="email">Email</FormLabel>
+              <TextField
+                id="email"
+                name="email"
+                type="email"
+                placeholder="your@email.com"
+                autoComplete="email"
+                required
+                fullWidth
+                error={!!errors.email}
+                helperText={errors.email || ''}
+              />
+            </FormControl>
+
+            {/* Password */}
+            <FormControl>
+              <FormLabel htmlFor="password">Password</FormLabel>
+              <TextField
+                id="password"
+                name="password"
+                type="password"
+                placeholder="••••••"
+                autoComplete="current-password"
+                required
+                fullWidth
+                error={!!errors.password}
+                helperText={errors.password || ''}
+              />
+            </FormControl>
 
             <FormControlLabel control={<Checkbox value="remember" color="primary" />} label="Remember me" />
 
@@ -114,13 +162,6 @@ export default function SignIn() {
           </Box>
         </StyledCard>
       </SignInContainer>
-
-      {/* Snackbar สำหรับแจ้งเตือน */}
-      <Snackbar open={snackbar.open} autoHideDuration={5000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
-        <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity} sx={{ width: '100%' }}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </>
   );
 }
