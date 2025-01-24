@@ -117,3 +117,21 @@ exports.refreshSession = (req, res) => {
     res.status(401).json({ success: false, message: 'Session expired' });
   }
 };
+// ฟังก์ชันอัปเดตเซสชัน
+exports.updateSession = async (req, res) => {
+  const { tabId, username, profileImage } = req.body;
+
+  if (!tabId) {
+    return res.status(400).json({ error: 'Missing tabId', success: false });
+  }
+
+  if (req.session && req.session.tabs && req.session.tabs[tabId]) {
+    // อัปเดตข้อมูลผู้ใช้ในเซสชัน
+    if (username) req.session.tabs[tabId].username = username;
+    if (profileImage) req.session.tabs[tabId].profileImage = profileImage;
+
+    res.status(200).json({ success: true, message: 'Session updated successfully' });
+  } else {
+    res.status(400).json({ error: 'Invalid tabId', success: false });
+  }
+};

@@ -44,7 +44,7 @@ exports.updateUser = async (req, res) => {
 
   console.log('Request Payload:', { username, email, role, password }); // Log the payload
 
-  if (!username || !email || !role) {
+  if (!username || !email || !role) { // ตรวจสอบ role ด้วย
     return res.status(400).json({ error: 'Missing required fields' });
   }
 

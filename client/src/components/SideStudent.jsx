@@ -14,7 +14,7 @@ import {
   Toolbar,
 } from '@mui/material';
 import { Home, School, Assignment, PresentToAll } from '@mui/icons-material';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useOutletContext } from 'react-router-dom';
 import LogoutIcon from '@mui/icons-material/Logout';
 import api from '../services/api';
 import { useSnackbar } from '../components/ReusableSnackbar';
@@ -27,6 +27,15 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
   const [loading, setLoading] = useState(true);
   const showSnackbar = useSnackbar();
   const navigate = useNavigate();
+
+  // ฟังก์ชันสำหรับอัปเดตข้อมูลผู้ใช้
+  const updateUserData = (newUsername, newProfileImage) => {
+    if (newUsername) setUsername(newUsername);
+    if (newProfileImage) setProfileImage(newProfileImage);
+  };
+
+  // ส่งฟังก์ชันนี้ไปยัง ProfileUser ผ่าน useOutletContext
+  useOutletContext({ updateUserData });
 
   useEffect(() => {
     const fetchSession = async () => {
@@ -209,7 +218,7 @@ SideStudent.propTypes = {
   mobileOpen: PropTypes.bool.isRequired,
   handleDrawerToggle: PropTypes.func.isRequired,
   setTitle: PropTypes.func.isRequired,
-  profileImage: PropTypes.string, // เพิ่ม PropTypes
+  profileImage: PropTypes.string,
 };
 
 export default SideStudent;

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useOutletContext } from 'react-router-dom';
+import { useOutletContext } from 'react-router-dom';
 import {
   TextField,
   Button,
@@ -12,10 +12,10 @@ import {
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import api from '../../services/api';
-import { useSnackbar } from '../../components/ReusableSnackbar'; // Import hook
+import { useSnackbar } from '../../components/ReusableSnackbar';
 
 const ProfileUser = () => {
-  const { updateProfileImage } = useOutletContext();
+  const { updateProfileImage, updateUserData } = useOutletContext(); // รับฟังก์ชันจาก SideStudent
   const [user, setUser] = useState({
     id: '',
     username: '',
@@ -30,7 +30,6 @@ const ProfileUser = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const showSnackbar = useSnackbar();
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -78,8 +77,22 @@ const ProfileUser = () => {
         ...prevUser,
         profileImage: response.data.profileImage,
       }));
+
+      // อัปเดตเซสชัน
+      const tabId = sessionStorage.getItem('tabId');
+      if (tabId) {
+        await api.post('/auth/update-session', {
+          tabId,
+          profileImage: response.data.profileImage,
+        });
+      }
+
+      // อัปเดตรูปโปรไฟล์ใน SideStudent
       if (updateProfileImage) {
-        updateProfileImage(response.data.profileImage); // อัปเดตรูปภาพใน SideStudent
+        updateProfileImage(response.data.profileImage);
+      }
+      if (updateUserData) {
+        updateUserData(user.username, response.data.profileImage);
       }
 
       showSnackbar('Profile picture updated successfully', 'success');
@@ -100,13 +113,30 @@ const ProfileUser = () => {
       const payload = {
         username: user.username,
         email: user.email,
+        role: user.role,
         ...(user.password && { password: user.password }),
       };
 
       const response = await api.put(`/users/${user.id}`, payload);
       if (response.status === 200) {
         showSnackbar('Profile updated successfully', 'success');
-        setTimeout(() => navigate('/dashboard'), 2000);
+
+        // อัปเดตเซสชัน
+        const tabId = sessionStorage.getItem('tabId');
+        if (tabId) {
+          await api.post('/auth/update-session', {
+            tabId,
+            username: user.username,
+            profileImage: user.profileImage,
+          });
+        }
+
+        // อัปเดตข้อมูลผู้ใช้ใน SideStudent
+        if (updateUserData) {
+          updateUserData(user.username, user.profileImage);
+        }
+
+
       }
     } catch (err) {
       showSnackbar(err.response?.data?.error || 'Failed to update profile', 'error');
@@ -205,7 +235,9 @@ const ProfileUser = () => {
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
-                  <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                  <IconButton
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
                     {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
                   </IconButton>
                 </InputAdornment>
