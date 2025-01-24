@@ -28,19 +28,23 @@ const drawerWidth = 240;
 const SideAdmin = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
   const [username, setUsername] = useState('Loading...');
   const navigate = useNavigate();
+  const [profileImage, setProfileImage] = useState('');
 
   useEffect(() => {
-    const fetchUsername = async () => {
+    const fetchSession = async () => {
       try {
-        const response = await api.get('/auth/check-session');
+        const response = await api.get('/auth/check-session', {
+          headers: { 'x-tab-id': sessionStorage.getItem('tabId') },
+        });
         if (response.data.isAuthenticated) {
           setUsername(response.data.user.username);
+          setProfileImage(response.data.user.profileImage);
         }
       } catch (error) {
-        console.error('Failed to fetch session info:', error);
+        console.error('Failed to fetch session:', error);
       }
     };
-    fetchUsername();
+    fetchSession();
   }, []);
 
   const handleLogout = async () => {
@@ -69,7 +73,15 @@ const SideAdmin = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
           padding: 2,
         }}
       >
-        <Avatar alt={username} src="https://i.pravatar.cc/300" />
+        <Avatar
+          src={
+            profileImage
+              ? `http://localhost:5000/${profileImage}`
+              : '/default-avatar.png'
+          } // เพิ่ม fallback
+          alt={username}
+          sx={{ width: 100, height: 100 }}
+        />
         <Typography
           variant="body1"
           sx={{

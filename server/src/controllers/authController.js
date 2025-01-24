@@ -30,6 +30,7 @@ exports.login = async (req, res) => {
       user_id: user.user_id,
       role: user.role,
       username: user.username,
+      profileImage: user.profile_image,
     };
 
     res.status(200).json({
@@ -37,6 +38,7 @@ exports.login = async (req, res) => {
       user_id: user.user_id,
       role: user.role,
       username: user.username,
+      profileImage: user.profile_image,
     });
   } catch (error) {
     console.error('เกิดข้อผิดพลาดในการเข้าสู่ระบบ:', error.message);
@@ -100,7 +102,7 @@ exports.checkSession = (req, res) => {
   if (req.session && req.session.tabs && req.session.tabs[tabId]) {
     res
       .status(200)
-      .json({ isAuthenticated: true, user: req.session.tabs[tabId] });
+      .json({ isAuthenticated: true,user: req.session.tabs[tabId]  });
   } else {
     res.status(401).json({ isAuthenticated: false });
   }

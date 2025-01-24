@@ -105,7 +105,7 @@ exports.updateTeacher = async (req, res) => {
 
   try {
     const [result] = await db.query(
-      `UPDATE teacher_info 
+      `UPDATE teacher_info
        SET teacher_name = ?, teacher_phone = ?, teacher_email = ?, teacher_position = ?, teacher_expert = ?, teacher_image = ?
        WHERE teacher_id = ?`,
       [

@@ -66,7 +66,7 @@ export default function SignUp() {
         <StyledCard variant="outlined">
           <Stack direction="row" alignItems="center" justifyContent="center" gap={4} sx={{ mb: 4 }}>
             <Box sx={{ width: '60px', height: '60px' }}>
-              <img src="/it_logo.png" alt="IT-PMS Logo" style={{ width: '100%', height: '100%', objectFit: 'scale-down' }} />
+              <img src="/PMS-logo2.svg" alt="IT-PMS Logo" style={{ width: '100%', height: '100%', objectFit: 'scale-down' }} />
             </Box>
             <Typography component="h1" variant="h4" sx={{ fontSize: 'clamp(2rem, 10vw, 2.15rem)', textAlign: 'center' }}>
               Sign up
