@@ -51,7 +51,7 @@ const TeacherPage = () => {
 
         // Extract unique expertise options
         const uniquePosition = [
-          ...new Set(response.data.map((teacher) => teacher.teacher_academi)),
+          ...new Set(response.data.map((teacher) => teacher.teacher_position)),
         ];
         setPositionOptions(uniquePosition);
       })
@@ -68,7 +68,7 @@ const TeacherPage = () => {
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
       const matchesExpertise =
-        positionFilter === '' || teacher.teacher_academi === positionFilter;
+        positionFilter === '' || teacher.teacher_position === positionFilter;
 
       return matchesName && matchesExpertise;
     });
@@ -162,7 +162,7 @@ const TeacherPage = () => {
                         {teacher.teacher_name}
                       </Typography>
                       <Typography variant="body2" color="textSecondary">
-                        ตำแหน่ง: {teacher.teacher_academi}
+                        ตำแหน่ง: {teacher.teacher_position}
                       </Typography>
                     </CardContent>
                   </Card>
@@ -225,7 +225,7 @@ const TeacherPage = () => {
                     </Typography>
                     <Typography variant="body1">
                       <strong>ข้อมูลเพิ่มเติม:</strong>{' '}
-                      {selectedTeacher.teacher_academi}
+                      {selectedTeacher.teacher_position}
                     </Typography>
                     <Button
                       onClick={handleClose}

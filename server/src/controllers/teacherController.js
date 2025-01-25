@@ -59,7 +59,7 @@ exports.createTeacher = async (req, res) => {
     teacher_name,
     teacher_phone,
     teacher_email,
-    teacher_academi,
+    teacher_position,
     teacher_expert,
   } = req.body;
   const teacher_image = req.file ? req.file.filename : null;
@@ -70,13 +70,13 @@ exports.createTeacher = async (req, res) => {
 
   try {
     const [result] = await db.query(
-      `INSERT INTO teacher_info (teacher_name, teacher_phone, teacher_email, teacher_academi, teacher_expert, teacher_image)
+      `INSERT INTO teacher_info (teacher_name, teacher_phone, teacher_email, teacher_position, teacher_expert, teacher_image)
        VALUES (?, ?, ?, ?, ?, ?)`,
       [
         teacher_name,
         teacher_phone,
         teacher_email,
-        teacher_academi,
+        teacher_position,
         teacher_expert,
         teacher_image,
       ]
@@ -98,7 +98,7 @@ exports.updateTeacher = async (req, res) => {
     teacher_name,
     teacher_phone,
     teacher_email,
-    teacher_academi,
+    teacher_position,
     teacher_expert,
   } = req.body;
   const teacher_image = req.file ? req.file.filename : req.body.teacher_image;
@@ -106,13 +106,13 @@ exports.updateTeacher = async (req, res) => {
   try {
     const [result] = await db.query(
       `UPDATE teacher_info
-       SET teacher_name = ?, teacher_phone = ?, teacher_email = ?, teacher_academi = ?, teacher_expert = ?, teacher_image = ?
+       SET teacher_name = ?, teacher_phone = ?, teacher_email = ?, teacher_position = ?, teacher_expert = ?, teacher_image = ?
        WHERE teacher_id = ?`,
       [
         teacher_name,
         teacher_phone,
         teacher_email,
-        teacher_academi,
+        teacher_position,
         teacher_expert,
         teacher_image,
         id,
