@@ -79,7 +79,6 @@ const projectRequestsRoutes = require("./src/routes/projectRequests");
 const projectDocumentsRoutes = require("./src/routes/project_documents");
 const projectReleaseRoutes = require('./src/routes/projectRelease');
 const projectTypesRoutes = require('./src/routes/projectTypes');
-const studentsRoutes = require('./src/routes/students'); // เพิ่ม Routes สำหรับจัดการนักศึกษา
 const { Server } = require("http");
 
 // API Routes
@@ -93,7 +92,6 @@ app.use("/api/document-types", projectDocumentsRoutes);
 app.use("/api/project-documents", projectDocumentsRoutes);
 app.use("/api/project-release", projectReleaseRoutes);
 app.use('/api/project-types', projectTypesRoutes);
-app.use('/api/students', studentsRoutes); // เพิ่ม Routes สำหรับจัดการนักศึกษา
 
 // Test Endpoint
 app.get("/api/test", (req, res) => {

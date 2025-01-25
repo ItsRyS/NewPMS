@@ -156,12 +156,7 @@ const SideAdmin = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
               icon: <CloudUploadIcon sx={{ color: '#9CA3AF' }} />,
               title: 'จัดการประเภทโครงการ',
             },
-            {
-              to: '/adminHome/ManageStudentsPage',
-              text: 'จัดการรายชื่อนักศึกษา',
-              icon: <PeopleIcon sx={{ color: '#9CA3AF' }} />,
-              title: 'จัดการรายชื่อนักศึกษา',
-            },
+            
             {
               to: '/adminHome/CheckProject',
               text: 'อนุมัติโครงการ',
