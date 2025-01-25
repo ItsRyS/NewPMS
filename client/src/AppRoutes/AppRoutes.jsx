@@ -24,6 +24,7 @@ const TeacherInfo = lazy(() => import('../pages/adminPage/TeacherInfo'));
 const ViewProjectDocuments = lazy(
   () => import('../pages/adminPage/ViewProjectDocuments')
 );
+const ProjectTypesPage = lazy(() => import('../pages/adminPage/ProjectTypesPage'));
 const ProfileUser = lazy(() => import('../pages/studentPage/ProfileUser'));
 const Documentation = lazy(() => import('../pages/studentPage/Documentation'));
 const SendProject = lazy(() => import('../pages/studentPage/SendProject'));
@@ -33,6 +34,7 @@ const ProjectRequest = lazy(
 const UploadProjectDocument = lazy(
   () => import('../pages/studentPage/UploadProjectDocument')
 );
+
 // สร้าง Router โดยใช้ Lazy Components
 const router = createBrowserRouter([
   {
@@ -143,6 +145,14 @@ const router = createBrowserRouter([
           </Suspense>
         ),
       },
+      {
+        path: 'project-types',
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <ProjectTypesPage />
+          </Suspense>
+        ),
+      }
     ],
   },
   {

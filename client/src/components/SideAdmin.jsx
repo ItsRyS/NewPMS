@@ -151,6 +151,12 @@ const SideAdmin = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
         <List component="div" disablePadding>
           {[
             {
+              to: '/adminHome/project-types',
+              text: 'จัดการประเภทโครงการ',
+              icon: <CloudUploadIcon sx={{ color: '#9CA3AF' }} />,
+              title: 'จัดการประเภทโครงการ',
+            },
+            {
               to: '/adminHome/CheckProject',
               text: 'อนุมัติโครงการ',
               icon: <CheckCircleIcon sx={{ color: '#9CA3AF' }} />,
@@ -168,6 +174,7 @@ const SideAdmin = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
               icon: <CloudUploadIcon sx={{ color: '#9CA3AF' }} />,
               title: 'ปล่อยโครงการ',
             },
+
           ].map(({ to, text, icon, title }, index) => (
             <NavLink
               key={index}
