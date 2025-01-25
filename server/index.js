@@ -6,6 +6,7 @@ const bodyParser = require("body-parser");
 const session = require("express-session");
 const MySQLStore = require("express-mysql-session")(session);
 
+
 const app = express();
 
 // Check current environment
@@ -65,6 +66,9 @@ app.use('/upload', express.static(path.join(__dirname, 'upload'), {
 }));
 
 
+
+
+
 // นำเข้า Routes
 const authRoutes = require("./src/routes/auth");
 const projectRoutes = require("./src/routes/projects");
@@ -75,6 +79,8 @@ const projectRequestsRoutes = require("./src/routes/projectRequests");
 const projectDocumentsRoutes = require("./src/routes/project_documents");
 const projectReleaseRoutes = require('./src/routes/projectRelease');
 const projectTypesRoutes = require('./src/routes/projectTypes');
+const studentsRoutes = require('./src/routes/students'); // เพิ่ม Routes สำหรับจัดการนักศึกษา
+const { Server } = require("http");
 
 // API Routes
 app.use("/api/auth", authRoutes);
@@ -87,7 +93,7 @@ app.use("/api/document-types", projectDocumentsRoutes);
 app.use("/api/project-documents", projectDocumentsRoutes);
 app.use("/api/project-release", projectReleaseRoutes);
 app.use('/api/project-types', projectTypesRoutes);
-
+app.use('/api/students', studentsRoutes); // เพิ่ม Routes สำหรับจัดการนักศึกษา
 
 // Test Endpoint
 app.get("/api/test", (req, res) => {
@@ -126,5 +132,13 @@ app.use((err, req, res) => {
 
 // Start Server
 app.listen(PORT, () => {
-  console.log(`index.js say : ${ENV} Server on http://localhost:${PORT}`);
+  console.log(`index.js  : ${ENV} Server on http://localhost:${PORT}`);
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT received. Exiting...');
+  Server.close(() => {
+    console.log('Server closed.');
+    process.exit(0);
+  });
 });

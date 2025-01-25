@@ -19,6 +19,9 @@ const ManageUser = lazy(() => import('../pages/adminPage/ManageUser'));
 const ReleaseProjectPage = lazy(
   () => import('../pages/adminPage/ReleaseProjectPage')
 );
+const ManageStudentsPage = lazy(
+  () => import('../pages/adminPage/ManageStudentsPage')
+);
 const UploadDoc = lazy(() => import('../pages/adminPage/UploadDoc'));
 const TeacherInfo = lazy(() => import('../pages/adminPage/TeacherInfo'));
 const ViewProjectDocuments = lazy(
@@ -150,6 +153,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <ProjectTypesPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'ManageStudentsPage',
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <ManageStudentsPage />
           </Suspense>
         ),
       }

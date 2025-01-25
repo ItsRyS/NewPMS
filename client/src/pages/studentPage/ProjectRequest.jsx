@@ -19,7 +19,7 @@ const ProjectRequest = () => {
   const [projectType, setProjectType] = useState('');
   const [groupMembers, setGroupMembers] = useState(['']);
   const [advisors, setAdvisors] = useState([]);
-  const [students, setStudents] = useState([]);
+  const [students, setStudents] = useState([]); // ตั้งค่าเริ่มต้นเป็น array ว่าง
   const [selectedAdvisor, setSelectedAdvisor] = useState('');
   const [projectStatus, setProjectStatus] = useState([]);
   const [projectTypes, setProjectTypes] = useState([]);
@@ -33,26 +33,38 @@ const ProjectRequest = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [advisorResponse, studentResponse, sessionResponse, projectTypeResponse] =
-          await Promise.all([
-            api.get('/teacher'),
-            api.get('/users'),
-            api.get('/auth/check-session'),
-            api.get('/projects/project-types'),
-          ]);
+
+        // ดึงข้อมูลอาจารย์, นักศึกษา, session, และประเภทโครงงาน
+        const [
+          advisorResponse,
+          studentResponse,
+          sessionResponse,
+          projectTypeResponse,
+        ] = await Promise.all([
+          api.get('/teacher'),
+          api.get('/students'), // ดึงข้อมูลจากตาราง students
+          api.get('/auth/check-session'),
+          api.get('/projects/project-types'),
+        ]);
 
         console.log('Project Types Response:', projectTypeResponse.data);
 
-        const studentUsers = studentResponse.data.filter(
-          (user) => user.role === 'student'
-        );
+        // ตรวจสอบว่า studentResponse.data.data เป็น array
+        if (Array.isArray(studentResponse.data.data)) {
+          setStudents(studentResponse.data.data); // ใช้ข้อมูลจากตาราง students
+        } else {
+          console.error('Invalid student data:', studentResponse.data);
+          setStudents([]); // ตั้งค่าเป็น array ว่างถ้าข้อมูลไม่ถูกต้อง
+        }
+
         setAdvisors(advisorResponse.data);
-        setStudents(studentUsers);
         setProjectTypes(projectTypeResponse.data.data);
 
+        // ดึง user_id จาก session
         const { user_id } = sessionResponse.data.user;
         setGroupMembers([user_id]);
 
+        // ดึงสถานะคำร้องโครงงาน
         const statusResponse = await api.get('/project-requests/status', {
           params: { studentId: user_id },
         });
@@ -61,11 +73,13 @@ const ProjectRequest = () => {
         );
         setProjectStatus(statuses);
 
+        // ตรวจสอบว่ามีคำร้องที่ได้รับการอนุมัติหรือไม่
         const hasApproved = statuses.some(
           (status) => status.status === 'approved'
         );
         setLatestStatus(hasApproved ? 'approved' : statuses[0]?.status || '');
 
+        // ตั้งค่า canSubmit ตามสถานะคำร้อง
         setCanSubmit(
           !(
             statuses.some((status) => status.status === 'pending') ||
@@ -105,6 +119,7 @@ const ProjectRequest = () => {
       const sessionResponse = await api.get('/auth/check-session');
       const { user_id } = sessionResponse.data.user;
 
+      // ส่งคำร้องโครงงาน
       await api.post('/project-requests/create', {
         project_name: projectNameTh,
         project_name_eng: projectNameEng,
@@ -116,6 +131,7 @@ const ProjectRequest = () => {
 
       showSnackbar('ส่งคำร้องสำเร็จ', 'success');
 
+      // ดึงสถานะคำร้องใหม่หลังจากส่งสำเร็จ
       const updatedStatus = await api.get('/project-requests/status', {
         params: { studentId: user_id },
       });
@@ -133,7 +149,6 @@ const ProjectRequest = () => {
         'error'
       );
     }
-
   }, [
     projectNameTh,
     projectNameEng,
@@ -142,7 +157,6 @@ const ProjectRequest = () => {
     selectedAdvisor,
     showSnackbar,
   ]);
-
 
   if (loading) {
     return (
@@ -181,7 +195,7 @@ const ProjectRequest = () => {
               color: 'white',
               p: 2,
               borderRadius: 1,
-              mb: 2
+              mb: 2,
             }}
           >
             <Typography>
@@ -217,7 +231,10 @@ const ProjectRequest = () => {
         >
           {projectTypes.length > 0 ? (
             projectTypes.map((type) => (
-              <MenuItem key={type.project_type_id} value={type.project_type_name}>
+              <MenuItem
+                key={type.project_type_id}
+                value={type.project_type_name}
+              >
                 {type.project_type_name}
               </MenuItem>
             ))
@@ -242,11 +259,15 @@ const ProjectRequest = () => {
                 }}
                 disabled={!canSubmit}
               >
-                {students.map((student) => (
-                  <MenuItem key={student.user_id} value={student.user_id}>
-                    {student.username}
-                  </MenuItem>
-                ))}
+                {Array.isArray(students) &&
+                  students.map((student) => (
+                    <MenuItem
+                      key={student.student_id}
+                      value={student.student_id}
+                    >
+                      {student.student_name} ({student.student_code})
+                    </MenuItem>
+                  ))}
               </TextField>
             </Grid>
             <Grid item xs={2}>
