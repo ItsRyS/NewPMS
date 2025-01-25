@@ -27,7 +27,7 @@ const TeacherInfo = () => {
     teacher_name: '',
     teacher_phone: '',
     teacher_email: '',
-    teacher_position: '',
+    teacher_academi: '',
     teacher_expert: '',
     teacher_image: null,
   });
@@ -79,7 +79,7 @@ const TeacherInfo = () => {
       teacher_name: teacher.teacher_name,
       teacher_phone: teacher.teacher_phone,
       teacher_email: teacher.teacher_email,
-      teacher_position: teacher.teacher_position,
+      teacher_academi: teacher.teacher_academi,
       teacher_expert: teacher.teacher_expert,
       teacher_image: teacher.teacher_image || null,
     });
@@ -102,7 +102,7 @@ const TeacherInfo = () => {
       teacher_name: '',
       teacher_phone: '',
       teacher_email: '',
-      teacher_position: '',
+      teacher_academi: '',
       teacher_expert: '',
       teacher_image: null,
     });
@@ -130,7 +130,7 @@ const TeacherInfo = () => {
     formData.append('teacher_name', form.teacher_name || '');
     formData.append('teacher_phone', form.teacher_phone || '');
     formData.append('teacher_email', form.teacher_email || '');
-    formData.append('teacher_position', form.teacher_position || '');
+    formData.append('teacher_academi', form.teacher_academi || '');
     formData.append('teacher_expert', form.teacher_expert || '');
 
     if (form.teacher_image instanceof File) {
@@ -184,7 +184,7 @@ const TeacherInfo = () => {
                 <TableCell>{teacher.teacher_name}</TableCell>
                 <TableCell>{teacher.teacher_phone}</TableCell>
                 <TableCell>{teacher.teacher_email}</TableCell>
-                <TableCell>{teacher.teacher_position}</TableCell>
+                <TableCell>{teacher.teacher_academi}</TableCell>
                 <TableCell>{teacher.teacher_expert}</TableCell>
                 <TableCell>
                   {teacher.teacher_image ? (
@@ -247,7 +247,7 @@ const TeacherInfo = () => {
               <strong>Email:</strong> {viewTeacher.teacher_email}
             </p>
             <p>
-              <strong>Position:</strong> {viewTeacher.teacher_position}
+              <strong>Position:</strong> {viewTeacher.teacher_academi}
             </p>
             <p>
               <strong>Expertise:</strong> {viewTeacher.teacher_expert}
@@ -302,9 +302,9 @@ const TeacherInfo = () => {
               <InputLabel id="teacher-position-label">Position</InputLabel>
               <Select
                 labelId="teacher-position-label"
-                value={form.teacher_position}
+                value={form.teacher_academi}
                 onChange={(e) =>
-                  setForm({ ...form, teacher_position: e.target.value })
+                  setForm({ ...form, teacher_academi: e.target.value })
                 }
               >
                 <MenuItem value="ครูอัตราจ้าง">ครูอัตราจ้าง</MenuItem>
