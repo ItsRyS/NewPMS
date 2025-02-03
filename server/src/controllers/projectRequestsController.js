@@ -47,7 +47,7 @@ exports.createRequest = async (req, res) => {
     // เพิ่มคำร้องใหม่
     const [result] = await connection.query(
       `
-      INSERT INTO project_requests 
+      INSERT INTO project_requests
       (project_name, project_name_eng, project_type, advisor_id, student_id, status, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, 'pending', NOW(), NOW())
       `,
@@ -109,7 +109,7 @@ exports.getAllRequests = async (req, res) => {
   try {
     const [projects] = await db.query(
       `
-      SELECT pr.request_id, pr.project_name, pr.project_name_eng, pr.status, 
+      SELECT pr.request_id, pr.project_name, pr.project_name_eng, pr.status,
              pr.advisor_id, ti.teacher_name,
              GROUP_CONCAT(DISTINCT u.username) AS students
       FROM project_requests pr
@@ -157,3 +157,41 @@ exports.getAllRequests = async (req, res) => {
 //     res.status(500).json({ success: false, error: "Failed to update status." });
 //   }
 //};
+exports.getStudentRequests = async (req, res) => {
+  const { studentId } = req.query;
+
+  if (!studentId) {
+    return res
+      .status(400)
+      .json({ success: false, error: 'Student ID is required.' });
+  }
+
+  try {
+    const [results] = await db.query(
+      `
+      SELECT pr.request_id, pr.project_name, pr.project_name_eng, pr.status, pr.created_at, pr.student_id
+      FROM project_requests pr
+      JOIN students_projects sp ON pr.request_id = sp.request_id
+      WHERE sp.student_id = ?
+      ORDER BY pr.created_at DESC
+      `,
+      [studentId]
+    );
+
+    const hasPendingOrApproved = results.some(
+      (request) => request.status === 'pending' || request.status === 'approved'
+    );
+
+    res.status(200).json({
+      success: true,
+      data: results,
+      hasPendingOrApproved,
+      ownerRequests: results.filter(request => request.student_id === studentId), // เฉพาะคำร้องที่ผู้ใช้เป็นเจ้าของ
+    });
+  } catch (error) {
+    console.error('Error fetching student requests:', error.message);
+    res
+      .status(500)
+      .json({ success: false, error: 'Failed to fetch requests.' });
+  }
+};

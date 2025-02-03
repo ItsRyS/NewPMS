@@ -26,6 +26,8 @@ const ProjectRequest = () => {
   const [loading, setLoading] = useState(false);
   const [canSubmit, setCanSubmit] = useState(true);
   const [latestStatus, setLatestStatus] = useState('');
+  const [hasPendingOrApproved, setHasPendingOrApproved] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
   const [searchParams] = useSearchParams();
   const showSnackbar = useSnackbar();
 
@@ -41,8 +43,6 @@ const ProjectRequest = () => {
             api.get('/projects/project-types'),
           ]);
 
-        console.log('Project Types Response:', projectTypeResponse.data);
-
         const studentUsers = studentResponse.data.filter(
           (user) => user.role === 'student'
         );
@@ -56,6 +56,7 @@ const ProjectRequest = () => {
         const statusResponse = await api.get('/project-requests/status', {
           params: { studentId: user_id },
         });
+
         const statuses = statusResponse.data.data.sort(
           (a, b) => new Date(b.created_at) - new Date(a.created_at)
         );
@@ -66,12 +67,18 @@ const ProjectRequest = () => {
         );
         setLatestStatus(hasApproved ? 'approved' : statuses[0]?.status || '');
 
-        setCanSubmit(
-          !(
-            statuses.some((status) => status.status === 'pending') ||
-            hasApproved
-          )
+        const hasPendingOrApproved = statuses.some(
+          (status) => status.status === 'pending' || status.status === 'approved'
         );
+        setHasPendingOrApproved(hasPendingOrApproved);
+
+        // ตรวจสอบว่าผู้ใช้เป็นเจ้าของคำร้องหรือไม่
+        const isOwner = statuses.some(
+          (status) => status.student_id === user_id
+        );
+        setIsOwner(isOwner);
+
+        setCanSubmit(!hasPendingOrApproved);
       } catch (error) {
         console.error('Error fetching data:', error);
         showSnackbar('เกิดข้อผิดพลาดในการโหลดข้อมูล', 'error');
@@ -133,7 +140,6 @@ const ProjectRequest = () => {
         'error'
       );
     }
-
   }, [
     projectNameTh,
     projectNameEng,
@@ -142,7 +148,6 @@ const ProjectRequest = () => {
     selectedAdvisor,
     showSnackbar,
   ]);
-
 
   if (loading) {
     return (
@@ -174,14 +179,14 @@ const ProjectRequest = () => {
         <Typography variant="h5" gutterBottom>
           Request a Project
         </Typography>
-        {!canSubmit && latestStatus === 'approved' && (
+        {isOwner && latestStatus === 'approved' ? (
           <Box
             sx={{
               bgcolor: 'success.main',
               color: 'white',
               p: 2,
               borderRadius: 1,
-              mb: 2
+              mb: 2,
             }}
           >
             <Typography>
@@ -189,14 +194,30 @@ const ProjectRequest = () => {
               กรุณาไปยังหน้าส่งเอกสารเพื่อส่งโครงการของคุณ
             </Typography>
           </Box>
-        )}
+        ) : hasPendingOrApproved && !isOwner ? (
+          <Box
+            sx={{
+              bgcolor: 'warning.main',
+              color: 'white',
+              p: 2,
+              borderRadius: 1,
+              mb: 2,
+            }}
+          >
+            <Typography>
+              คุณเป็นสมาชิกของโครงงานอื่นที่อยู่ในสถานะ &quot;pending&quot; หรือ &quot;approved&quot; แล้ว
+              ไม่สามารถส่งคำร้องใหม่ได้
+            </Typography>
+          </Box>
+        ) : null}
+
         <TextField
           fullWidth
           label="ชื่อโครงงาน (ภาษาไทย)"
           value={projectNameTh}
           onChange={(e) => setProjectNameTh(e.target.value)}
           sx={{ marginBottom: 2 }}
-          disabled={!canSubmit}
+          disabled={!canSubmit || hasPendingOrApproved}
         />
         <TextField
           fullWidth
@@ -204,7 +225,7 @@ const ProjectRequest = () => {
           value={projectNameEng}
           onChange={(e) => setProjectNameEng(e.target.value)}
           sx={{ marginBottom: 2 }}
-          disabled={!canSubmit}
+          disabled={!canSubmit || hasPendingOrApproved}
         />
         <TextField
           select
@@ -213,7 +234,7 @@ const ProjectRequest = () => {
           value={projectType}
           onChange={(e) => setProjectType(e.target.value)}
           sx={{ marginBottom: 2 }}
-          disabled={!canSubmit}
+          disabled={!canSubmit || hasPendingOrApproved}
         >
           {projectTypes.length > 0 ? (
             projectTypes.map((type) => (
@@ -226,7 +247,6 @@ const ProjectRequest = () => {
           )}
         </TextField>
 
-        {/* Group Members */}
         {groupMembers.map((member, index) => (
           <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
             <Grid item xs={10}>
@@ -240,7 +260,7 @@ const ProjectRequest = () => {
                   updatedMembers[index] = e.target.value;
                   setGroupMembers(updatedMembers);
                 }}
-                disabled={!canSubmit}
+                disabled={!canSubmit || hasPendingOrApproved}
               >
                 {students.map((student) => (
                   <MenuItem key={student.user_id} value={student.user_id}>
@@ -259,7 +279,7 @@ const ProjectRequest = () => {
                       prev.filter((_, i) => i !== index)
                     )
                   }
-                  disabled={!canSubmit}
+                  disabled={!canSubmit || hasPendingOrApproved}
                 >
                   Remove
                 </Button>
@@ -272,20 +292,19 @@ const ProjectRequest = () => {
             variant="outlined"
             onClick={() => setGroupMembers([...groupMembers, ''])}
             sx={{ marginBottom: 2 }}
-            disabled={!canSubmit}
+            disabled={!canSubmit || hasPendingOrApproved}
           >
             Add Member
           </Button>
         )}
 
-        {/* Advisor */}
         <TextField
           select
           fullWidth
           label="Select Advisor"
           value={selectedAdvisor}
           onChange={(e) => setSelectedAdvisor(e.target.value)}
-          disabled={advisors.length === 0 || !canSubmit}
+          disabled={advisors.length === 0 || !canSubmit || hasPendingOrApproved}
           sx={{ marginBottom: 2 }}
         >
           {advisors.map((advisor) => (
@@ -294,16 +313,22 @@ const ProjectRequest = () => {
             </MenuItem>
           ))}
         </TextField>
-        <Button
-          variant="contained"
-          onClick={handleSubmit}
-          disabled={!canSubmit}
-        >
-          Submit Request
-        </Button>
+        {hasPendingOrApproved && !isOwner ? (
+          <Typography variant="body1" color="error" sx={{ mt: 2 }}>
+            คุณไม่สามารถส่งคำร้องใหม่ได้ เนื่องจากคุณเป็นสมาชิกของโครงงานอื่นอยู่แล้ว
+          </Typography>
+        ) : (
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
+            disabled={!canSubmit}
+            sx={{ mt: 2 }}
+          >
+            Submit Request
+          </Button>
+        )}
       </Paper>
 
-      {/* Status Section */}
       <Paper
         elevation={3}
         sx={{ padding: 4, borderRadius: 3, width: '100%', maxWidth: 800 }}
@@ -322,8 +347,8 @@ const ProjectRequest = () => {
                   status.status === 'pending'
                     ? '#9e9e9e'
                     : status.status === 'approved'
-                      ? '#4caf50'
-                      : '#f44336',
+                    ? '#4caf50'
+                    : '#f44336',
                 color: '#fff',
                 border: index === 0 ? '2px solid #000' : 'none',
               }}

@@ -52,7 +52,8 @@ exports.getPendingProjects = async (req, res) => {
         ti.teacher_name AS advisor_name
       FROM project_release pr
       LEFT JOIN teacher_info ti ON pr.advisor_id = ti.teacher_id
-      WHERE pr.project_status = 'operate'`
+      WHERE pr.project_status = 'operate'
+      ORDER BY pr.project_create_time DESC`
     );
 
     res.status(200).json({ success: true, data: projects });
@@ -62,40 +63,36 @@ exports.getPendingProjects = async (req, res) => {
   }
 };
 
+
 // ฟังก์ชันสำหรับอัปเดตสถานะโครงการ
 exports.updateProjectStatus = async (req, res) => {
   const { projectId } = req.params;
 
   try {
-    // ตรวจสอบเอกสารที่ได้รับการอนุมัติแล้ว
-    const [documentCheck] = await db.query(
-      `SELECT COUNT(*) AS approved_count
-       FROM project_documents pd
-       JOIN students_projects sp ON pd.request_id = sp.request_id
-       WHERE sp.project_id = ? AND pd.status = 'approved'`,
+    const [result] = await db.query(
+      `SELECT
+          (SELECT COUNT(*) FROM project_documents pd
+           JOIN students_projects sp ON pd.request_id = sp.request_id
+           WHERE sp.project_id = ? AND pd.status = 'approved') AS approved_count,
+          (SELECT COUNT(*) FROM document_types) AS total_count
+       HAVING approved_count = total_count;`,
       [projectId]
     );
 
-    const [documentTotal] = await db.query(
-      `SELECT COUNT(*) AS total_count
-       FROM document_types`
-    );
-
-    if (documentCheck[0].approved_count < documentTotal[0].total_count) {
+    if (result.length === 0) {
       return res.status(400).json({
         success: false,
         message: 'Cannot release project. Ensure all documents are approved.',
       });
     }
 
-    // อัปเดตสถานะโครงการเป็น "complete"
-    const [result] = await db.query(
-      'UPDATE project_release SET project_status = "complete" WHERE project_id = ?',
+    const [updateResult] = await db.query(
+      'UPDATE project_release SET project_status = "complete" WHERE project_id = ? AND project_status != "complete";',
       [projectId]
     );
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ success: false, message: 'Project not found.' });
+    if (updateResult.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Project not found or already complete.' });
     }
 
     res.status(200).json({ success: true, message: 'Project released successfully.' });
@@ -105,22 +102,18 @@ exports.updateProjectStatus = async (req, res) => {
   }
 };
 
+
 // ฟังก์ชันตรวจสอบเอกสารที่ยังไม่ได้รับการอนุมัติ
 exports.checkProjectDocuments = async (req, res) => {
   const { projectId } = req.params;
 
   try {
     const [unapprovedDocuments] = await db.query(
-      `SELECT dt.type_name
+      `SELECT dt.type_name, COALESCE(pd.status, 'missing') AS document_status
        FROM document_types dt
        LEFT JOIN project_documents pd
          ON dt.type_id = pd.type_id
-         AND pd.request_id = (
-           SELECT request_id
-           FROM students_projects
-           WHERE project_id = ?
-           LIMIT 1
-         )
+         AND pd.request_id IN (SELECT request_id FROM students_projects WHERE project_id = ?)
        WHERE pd.status IS NULL OR pd.status != 'approved'`,
       [projectId]
     );

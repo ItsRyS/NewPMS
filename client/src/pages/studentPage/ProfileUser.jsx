@@ -67,6 +67,13 @@ const ProfileUser = () => {
     const file = e.target.files[0];
     if (!file) return;
 
+    // ตรวจสอบขนาดไฟล์ (ตัวอย่างกำหนดขนาดสูงสุดเป็น 2MB)
+    const maxSize = 2 * 1024 * 1024; // 2MB
+    if (file.size > maxSize) {
+      showSnackbar('File size exceeds the maximum limit of 2MB', 'error');
+      return;
+    }
+
     const formData = new FormData();
     formData.append('profileImage', file);
 
@@ -128,7 +135,7 @@ const ProfileUser = () => {
           });
         }
 
-        
+
       }
     } catch (err) {
       showSnackbar(err.response?.data?.error || 'Failed to update profile', 'error');
