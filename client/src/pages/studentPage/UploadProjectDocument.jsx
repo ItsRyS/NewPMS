@@ -69,7 +69,7 @@ const UploadProjectDocument = () => {
     const message =
       error.response?.data?.message || defaultMessage || 'เกิดข้อผิดพลาด';
     showSnackbar(message, 'error');
-  }, []);
+  }, [searchParams, showSnackbar]);
 
   const fetchData = useCallback(async () => {
     try {
