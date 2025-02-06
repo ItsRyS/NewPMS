@@ -9,7 +9,7 @@ const MySQLStore = require("express-mysql-session")(session);
 const app = express();
 
 // ตรวจสอบ Environment
-const ENV = process.env.NODE_ENV || "production";
+const ENV = process.env.NODE_ENV || "development";
 const PORT = ENV === "development" ? process.env.DEV_PORT : process.env.PROD_PORT;
 const DB_HOST = ENV === "development" ? process.env.DEV_DB_HOST : process.env.PROD_DB_HOST;
 const DB_PORT = ENV === "development" ? process.env.DEV_DB_PORT : process.env.PROD_DB_PORT;
