@@ -17,7 +17,7 @@ const config = {
     password: process.env.PROD_DB_PASSWORD,
     database: process.env.PROD_DB_NAME,
     port: process.env.PROD_DB_PORT,
-    ssl: { rejectUnauthorized: false }  // ใช้ SSL
+    ssl: { rejectUnauthorized: true }  // ใช้ SSL
   }
 };
 
