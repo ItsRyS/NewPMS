@@ -159,7 +159,7 @@ const ProfileUser = () => {
               <Avatar
                 src={
                   user.profileImage
-                    ? `http://localhost:5000/${user.profileImage}`
+                    ? `https://newpms.onrender.com/${user.profileImage}`
                     : 'https://i.pravatar.cc/300'
                 }
                 sx={{

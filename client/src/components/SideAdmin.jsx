@@ -76,7 +76,7 @@ const SideAdmin = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
         <Avatar
           src={
             profileImage
-              ? `http://localhost:5000/${profileImage}`
+              ? `https://newpms.onrender.com/${profileImage}`
               : '/default-avatar.png'
           } // เพิ่ม fallback
           alt={username}
@@ -156,7 +156,7 @@ const SideAdmin = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
               icon: <CloudUploadIcon sx={{ color: '#9CA3AF' }} />,
               title: 'จัดการประเภทโครงการ',
             },
-            
+
             {
               to: '/adminHome/CheckProject',
               text: 'อนุมัติโครงการ',

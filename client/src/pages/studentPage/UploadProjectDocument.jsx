@@ -123,7 +123,7 @@ const UploadProjectDocument = () => {
 
   const handleViewDocument = (filePath) => {
     if (filePath) {
-      setSelectedFilePath(`http://localhost:5000/${filePath}`);
+      setSelectedFilePath(`https://newpms.onrender.com/${filePath}`);
       setDialog((prev) => ({ ...prev, view: true }));
     } else {
       console.error('Invalid file path:', filePath);

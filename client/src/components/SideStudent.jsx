@@ -89,7 +89,7 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
         <Avatar
           src={
             profileImage
-              ? `http://localhost:5000/${profileImage}`
+              ? `https://newpms.onrender.com/${profileImage}`
               : '/default-avatar.png'
           }
           alt="Profile"
