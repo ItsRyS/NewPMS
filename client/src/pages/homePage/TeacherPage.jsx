@@ -151,7 +151,7 @@ const TeacherPage = () => {
                       }}
                       image={
                         teacher.teacher_image
-                          ? `https://newpms.onrender.com/upload/pic/${teacher.teacher_image}`
+                          ? `http://localhost:5000/upload/pic/${teacher.teacher_image}`
                           : placeholderImage
                       }
                       alt={teacher.teacher_name || 'No Image'}
@@ -199,7 +199,7 @@ const TeacherPage = () => {
                       }}
                       image={
                         selectedTeacher.teacher_image
-                          ? `https://newpms.onrender.com/upload/pic/${selectedTeacher.teacher_image}`
+                          ? `http://localhost:5000/upload/pic/${selectedTeacher.teacher_image}`
                           : placeholderImage
                       }
                       alt={selectedTeacher.teacher_name || 'No Image'}

@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/upload': 'https://newpms.onrender.com', // Proxy เส้นทาง /upload ไปที่ Backend Server
+      '/upload': 'http://localhost:5000',
     },
   },
   build: {

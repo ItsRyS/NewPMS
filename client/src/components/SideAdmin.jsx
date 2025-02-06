@@ -76,7 +76,7 @@ const SideAdmin = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
         <Avatar
           src={
             profileImage
-              ? `https://newpms.onrender.com/${profileImage}`
+              ? `http://localhost:5000/${profileImage}`
               : '/default-avatar.png'
           } // เพิ่ม fallback
           alt={username}

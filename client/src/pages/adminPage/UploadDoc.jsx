@@ -106,7 +106,7 @@ const UploadDoc = () => {
     }
     setLoading(true);
     const normalizedPath = docPath.replace(/\\/g, '/');
-    const fullPath = `https://newpms.onrender.com/${normalizedPath}`;
+    const fullPath = `http://localhost:5000/${normalizedPath}`;
     setPdfPath(fullPath);
     setOpenDialog(true);
   };
