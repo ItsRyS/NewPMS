@@ -2,7 +2,8 @@ import axios from 'axios';
 
 // สร้าง instance ของ Axios
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api', // ตั้งค่าฐาน URL สำหรับ API
+  //baseURL: 'http://localhost:5000/api', // ตั้งค่าฐาน URL สำหรับ API
+  baseURL: 'https://newpms.onrender.com/api', // ตั้งค่าฐาน URL สำหรับ API 
   withCredentials: true, // เปิดใช้งาน cookie สำหรับการร้องขอ
 });
 
