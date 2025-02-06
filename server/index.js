@@ -20,10 +20,15 @@ const DB_NAME = ENV === "development" ? process.env.DEV_DB_NAME : process.env.PR
 // CORS Configuration
 app.use(
   cors({
-    origin: ENV === "development" ? "http://localhost:5173" : "https://itnewpms.vercel.app",
-    credentials: true, // ใช้ cookies ข้าม origin
+    origin: [
+      "http://localhost:5173",
+      "https://itnewpms.vercel.app",
+      "https://newpms.onrender.com"
+    ],
+    credentials: true,
   })
 );
+
 
 // Session Store Configuration
 const sessionStore = new MySQLStore({
