@@ -1,56 +1,104 @@
 import { useState } from 'react';
-import { Box, Button, CssBaseline, FormLabel, FormControl, TextField, Typography, Stack, Card, Link } from '@mui/material';
+import {
+  Box,
+  Button,
+  CssBaseline,
+  FormLabel,
+  FormControl,
+  TextField,
+  Typography,
+  IconButton,
+  Link,
+} from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import * as z from 'zod';
 import api from '../../services/api';
 import { useSnackbar } from '../../components/ReusableSnackbar';
 
-// สร้าง Styled Component สำหรับ Layout
-const StyledCard = styled(Card)(({ theme }) => ({
+// ปรับแต่ง Layout
+const RootContainer = styled(Box)({
+  display: 'flex',
+  height: '100vh',
+});
+
+const LeftContainer = styled(Box)({
+  flex: 1,
+  backgroundColor: '#F7941E', // สีส้มเหมือนในภาพ
   display: 'flex',
   flexDirection: 'column',
-  alignSelf: 'center',
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: '#fff',
+  textAlign: 'center',
+  padding: '2rem',
+});
+
+const LogoImage = styled('img')({
+  width: '580px',
+  height: '580px',
+  objectFit: 'contain',
+
+});
+
+const RightContainer = styled(Box)({
+  flex: 1,
+  backgroundColor: '#fff',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: '2rem',
+  position: 'relative',
+});
+
+const FormContainer = styled(Box)({
   width: '100%',
-  padding: theme.spacing(4),
-  gap: theme.spacing(2),
-  margin: 'auto',
-  backgroundColor: '#ffffff',
-  boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.1)',
-  [theme.breakpoints.up('sm')]: { maxWidth: '450px' },
-}));
+  maxWidth: '400px',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '1.5rem',
+});
 
-const SignUpContainer = styled(Stack)(({ theme }) => ({
-  height: '100vh',
-  padding: theme.spacing(2),
-  backgroundColor: '#ffffff',
-  [theme.breakpoints.up('sm')]: { padding: theme.spacing(4) },
-}));
+const StyledButton = styled(Button)({
+  backgroundColor: '#F7941E',
+  '&:hover': { backgroundColor: '#e6851a' },
+  fontSize: '1rem',
+  padding: '0.75rem',
+  borderRadius: '8px',
+});
 
-// สร้าง Zod Schema สำหรับ Sign Up
+const BackButton = styled(IconButton)({
+  position: 'absolute',
+  bottom: '20px',
+  right: '20px',
+  color: '#000',
+});
+
+// Schema ตรวจสอบข้อมูล
 const signUpSchema = z.object({
-  username: z.string().min(1, 'Username is required.'),
-  email: z.string().email('Please enter a valid email address.'),
-  password: z.string().min(6, 'Password must be at least 6 characters long.'),
+  username: z.string().min(1, 'กรุณากรอกชื่อผู้ใช้'),
+  email: z.string().email('กรุณากรอกอีเมลที่ถูกต้อง'),
+  password: z.string().min(6, 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร'),
 });
 
 export default function SignUp() {
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
-  const showSnackbar = useSnackbar(); // ดึงฟังก์ชัน showSnackbar จาก context
+  const showSnackbar = useSnackbar();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const data = {
-      username: formData.get('name'),
+      username: formData.get('username'),
       email: formData.get('email'),
       password: formData.get('password'),
     };
 
-    // ตรวจสอบข้อมูลด้วย Zod
     try {
-      signUpSchema.parse(data); // ถ้าผ่านจะทำงานต่อไป
+      signUpSchema.parse(data);
     } catch (err) {
       if (err instanceof z.ZodError) {
         const fieldErrors = err.formErrors?.fieldErrors || {};
@@ -60,112 +108,108 @@ export default function SignUp() {
           password: fieldErrors.password ? fieldErrors.password[0] : '',
         });
       }
-      return; // ถ้า Error ไม่เรียก API ต่อ
+      return;
     }
 
-    // ไม่มี Error -> เคลียร์ Errors
     setErrors({});
-
-    // เรียก API
     try {
       const response = await api.post('/auth/register', data, {
         headers: { 'Content-Type': 'application/json' },
       });
-
       if (response.status === 201) {
-        // แสดง Snackbar สำเร็จ
-        showSnackbar('Sign up successful! Redirecting to sign in.', 'success');
-
-        // Redirect
+        showSnackbar('สมัครสมาชิกสำเร็จ! กำลังเปลี่ยนหน้า...', 'success');
         setTimeout(() => navigate('/signin'), 2000);
       }
     } catch (error) {
-      showSnackbar(error.response?.data?.error || 'Connection failed.', 'error');
+      showSnackbar(
+        error.response?.data?.error || 'เกิดข้อผิดพลาด กรุณาลองใหม่',
+        'error'
+      );
     }
   };
 
   return (
     <>
       <CssBaseline />
-      <SignUpContainer direction="column" justifyContent="space-between">
-        <StyledCard variant="outlined">
-          <Stack direction="row" alignItems="center" justifyContent="center" gap={4} sx={{ mb: 4 }}>
-            <Box sx={{ width: '60px', height: '60px' }}>
-              <img src="/PMS-logo2.svg" alt="IT-PMS Logo" style={{ width: '100%', height: '100%', objectFit: 'scale-down' }} />
-            </Box>
-            <Typography component="h1" variant="h4" sx={{ fontSize: 'clamp(2rem, 10vw, 2.15rem)', textAlign: 'center' }}>
-              Sign up
-            </Typography>
-          </Stack>
+      <RootContainer>
+        {/* ด้านซ้าย: โลโก้ และชื่อสถาบัน */}
+        <LeftContainer>
+          <LogoImage src="/software.png" alt="IT Logo" />
+          
+        </LeftContainer>
 
-          {/* Form */}
-          <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {/* Name */}
+        {/* ด้านขวา: ฟอร์มสมัครสมาชิก */}
+        <RightContainer>
+          <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+            สมัครสมาชิก
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'gray', mb: 2 }}>
+            กรุณากรอกข้อมูลเพื่อสมัครสมาชิก
+          </Typography>
+
+          <FormContainer component="form" onSubmit={handleSubmit}>
             <FormControl>
-              <FormLabel htmlFor="name">Name</FormLabel>
+              <FormLabel>ชื่อผู้ใช้</FormLabel>
               <TextField
-                id="name"
-                name="name"
+                id="username"
+                name="username"
                 type="text"
-                placeholder="Incognito user"
-                autoComplete="name"
-                required
+                placeholder="ชื่อของคุณ"
                 fullWidth
+                required
                 error={!!errors.username}
                 helperText={errors.username || ''}
               />
             </FormControl>
 
-            {/* Email */}
             <FormControl>
-              <FormLabel htmlFor="email">Email</FormLabel>
+              <FormLabel>Email</FormLabel>
               <TextField
                 id="email"
                 name="email"
                 type="email"
-                placeholder="your@gmail.com"
-                autoComplete="email"
-                required
+                placeholder="your@email.com"
                 fullWidth
+                required
                 error={!!errors.email}
                 helperText={errors.email || ''}
               />
             </FormControl>
 
-            {/* Password */}
             <FormControl>
-              <FormLabel htmlFor="password">Password</FormLabel>
+              <FormLabel>รหัสผ่าน</FormLabel>
               <TextField
                 id="password"
                 name="password"
                 type="password"
                 placeholder="••••••"
-                autoComplete="current-password"
-                required
                 fullWidth
+                required
                 error={!!errors.password}
                 helperText={errors.password || ''}
               />
             </FormControl>
 
-            <Box sx={{ display: 'flex', gap: 3, justifyContent: 'center' }}>
-              <Button type="submit" variant="contained" size="large" sx={{ px: 4 }}>
-                Sign up
-              </Button>
-              <Button onClick={() => navigate('/')} variant="outlined" size="large" sx={{ px: 4 }}>
-                Back to Home
-              </Button>
-            </Box>
-
-            <Typography sx={{ textAlign: 'center' }}>
-              Already have an account?{' '}
-              <Link href="/signin" variant="body2">
-                Sign in
+            <StyledButton type="submit" variant="contained" fullWidth>
+              สมัครสมาชิก
+            </StyledButton>
+            <Typography sx={{ textAlign: 'center', mt: 2 }}>
+              มีบัญชีอยู่แล้ว?{' '}
+              <Link
+                href="/signin"
+                sx={{ color: '#F7941E', fontWeight: 'bold' }}
+              >
+                เข้าสู่ระบบที่นี่
               </Link>
             </Typography>
-          </Box>
-        </StyledCard>
-      </SignUpContainer>
+          </FormContainer>
+
+          {/* ปุ่มย้อนกลับที่ขวาล่าง */}
+          <BackButton onClick={() => navigate('/')}>
+            <ArrowBackIosNewIcon fontSize="large" />
+          </BackButton>
+        </RightContainer>
+      </RootContainer>
     </>
   );
 }

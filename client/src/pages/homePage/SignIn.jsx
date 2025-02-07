@@ -1,44 +1,92 @@
 import { useState, useEffect } from 'react';
-import { Box, Button, CssBaseline, FormControlLabel,Checkbox, FormLabel, FormControl, TextField, Typography, Stack, Card, Link } from '@mui/material';
+import {
+  Box,
+  Button,
+  CssBaseline,
+  FormLabel,
+  FormControl,
+  TextField,
+  Typography,
+  IconButton,
+  Link
+} from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import * as z from 'zod';
 import api from '../../services/api';
 import { useSnackbar } from '../../components/ReusableSnackbar';
 
-// สร้าง Styled Component สำหรับ Layout
-const StyledCard = styled(Card)(({ theme }) => ({
+// ปรับแต่ง Layout
+const RootContainer = styled(Box)({
+  display: 'flex',
+  height: '100vh',
+});
+
+const LeftContainer = styled(Box)({
+  flex: 1,
+  backgroundColor: '#F7941E', // สีส้มตามต้นฉบับ
   display: 'flex',
   flexDirection: 'column',
-  alignSelf: 'center',
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: '#fff',
+  textAlign: 'center',
+  padding: '2rem',
+});
+
+const LogoImage = styled('img')({
+  width: '580px',
+  height: '580px',
+  objectFit: 'contain',
+
+});
+
+const RightContainer = styled(Box)({
+  flex: 1,
+  backgroundColor: '#fff',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: '2rem',
+  position: 'relative', // ให้สามารถวางปุ่มย้อนกลับที่มุมขวาล่างได้
+});
+
+const FormContainer = styled(Box)({
   width: '100%',
-  padding: theme.spacing(4),
-  gap: theme.spacing(2),
-  margin: 'auto',
-  backgroundColor: '#ffffff',
-  boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.1)',
-  [theme.breakpoints.up('sm')]: { maxWidth: '450px' },
-}));
+  maxWidth: '400px',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '1.5rem',
+});
 
-const SignInContainer = styled(Stack)(({ theme }) => ({
-  height: '100vh',
-  padding: theme.spacing(2),
-  backgroundColor: '#ffffff',
-  [theme.breakpoints.up('sm')]: { padding: theme.spacing(4) },
-}));
+const StyledButton = styled(Button)({
+  backgroundColor: '#F7941E',
+  '&:hover': { backgroundColor: '#e6851a' },
+  fontSize: '1rem',
+  padding: '0.75rem',
+  borderRadius: '8px',
+});
 
-// สร้าง Zod Schema สำหรับ Sign In
+const BackButton = styled(IconButton)({
+  position: 'absolute',
+  bottom: '20px',
+  right: '20px',
+  color: '#000', // ปรับเป็นสี #F7941E ถ้าต้องการให้เข้ากับธีม
+});
+
+// Schema สำหรับตรวจสอบข้อมูล
 const signInSchema = z.object({
-  email: z.string().email('Please enter a valid email address.'),
-  password: z.string().min(6, 'Password must be at least 6 characters long.'),
+  email: z.string().email('กรุณากรอกอีเมลที่ถูกต้อง'),
+  password: z.string().min(6, 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร'),
 });
 
 export default function SignIn() {
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
-  const showSnackbar = useSnackbar(); // ดึงฟังก์ชัน showSnackbar จาก context
+  const showSnackbar = useSnackbar();
 
-  // สร้าง tabId ให้แต่ละแท็บ (sessionStorage) ในกรณีที่ยังไม่มี
   useEffect(() => {
     if (!sessionStorage.getItem('tabId')) {
       sessionStorage.setItem('tabId', `${Date.now()}-${Math.random()}`);
@@ -48,16 +96,14 @@ export default function SignIn() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-
     const data = {
       email: formData.get('email'),
       password: formData.get('password'),
     };
     const tabId = sessionStorage.getItem('tabId');
 
-    // ตรวจสอบข้อมูลด้วย Zod
     try {
-      signInSchema.parse(data); // ถ้าผ่านจะทำงานต่อไป
+      signInSchema.parse(data);
     } catch (err) {
       if (err instanceof z.ZodError) {
         const fieldErrors = err.formErrors?.fieldErrors || {};
@@ -66,102 +112,95 @@ export default function SignIn() {
           password: fieldErrors.password ? fieldErrors.password[0] : '',
         });
       }
-      return; // หากมี error ไม่ต้องเรียก API
+      return;
     }
 
-    // ไม่มี Error -> เคลียร์ Errors ก่อน
     setErrors({});
-
-    // เรียก API
     try {
-      const response = await api.post('/auth/login', { ...data, tabId }, { withCredentials: true });
+      const response = await api.post(
+        '/auth/login',
+        { ...data, tabId },
+        { withCredentials: true }
+      );
       const { role } = response.data;
-
-      // แจ้งเตือนผ่าน Snackbar
-      showSnackbar('Sign in successful!', 'success');
-
-      // เมื่อสำเร็จ ให้ redirect หน้า
+      showSnackbar('เข้าสู่ระบบสำเร็จ!', 'success');
       setTimeout(() => {
-        if (role === 'teacher') {
-          navigate('/adminHome');
-        } else {
-          navigate('/studentHome');
-        }
+        navigate(role === 'teacher' ? '/adminHome' : '/studentHome');
       }, 1500);
     } catch (error) {
-      // แสดงข้อผิดพลาดผ่าน Snackbar
-      showSnackbar(error.response?.data?.error || 'Sign-in failed. Please check your credentials.', 'error');
+      showSnackbar(
+        error.response?.data?.error || 'เข้าสู่ระบบไม่สำเร็จ',
+        'error'
+      );
     }
   };
 
   return (
     <>
       <CssBaseline />
-      <SignInContainer direction="column" justifyContent="space-between">
-        <StyledCard variant="outlined">
-          <Stack direction="row" alignItems="center" justifyContent="center" gap={4} sx={{ mb: 4 }}>
-            <Box sx={{ width: '60px', height: '60px' }}>
-              <img src="/PMS-logo2.svg" alt="IT-PMS Logo" style={{ width: '100%', height: '100%', objectFit: 'scale-down' }} />
-            </Box>
-            <Typography component="h1" variant="h4" sx={{ fontSize: 'clamp(2rem, 10vw, 2.15rem)', textAlign: 'center' }}>
-              Sign in
-            </Typography>
-          </Stack>
+      <RootContainer>
+        {/* ด้านซ้าย: โลโก้ และชื่อสถาบัน */}
+        <LeftContainer>
+          <LogoImage src="/software.png" alt="IT Logo" />
 
-          {/* Form */}
-          <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {/* Email */}
+        </LeftContainer>
+
+        {/* ด้านขวา: ฟอร์มล็อกอิน */}
+        <RightContainer>
+          <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+            ระบบการจัดการโครงงาน
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'gray', mb: 2 }}>
+            กรุณากรอกข้อมูลเพื่อเข้าสู่ระบบ
+          </Typography>
+
+          <FormContainer component="form" onSubmit={handleSubmit}>
             <FormControl>
-              <FormLabel htmlFor="email">Email</FormLabel>
+              <FormLabel>Email</FormLabel>
               <TextField
                 id="email"
                 name="email"
                 type="email"
                 placeholder="your@email.com"
-                autoComplete="email"
-                required
                 fullWidth
+                required
                 error={!!errors.email}
                 helperText={errors.email || ''}
               />
             </FormControl>
 
-            {/* Password */}
             <FormControl>
-              <FormLabel htmlFor="password">Password</FormLabel>
+              <FormLabel>Password</FormLabel>
               <TextField
                 id="password"
                 name="password"
                 type="password"
                 placeholder="••••••"
-                autoComplete="current-password"
-                required
                 fullWidth
+                required
                 error={!!errors.password}
                 helperText={errors.password || ''}
               />
             </FormControl>
 
-            <FormControlLabel control={<Checkbox value="remember" color="primary" />} label="Remember me" />
+            <StyledButton type="submit" variant="contained" fullWidth>
+              เข้าสู่ระบบ
+            </StyledButton>
+            <Typography sx={{ textAlign: 'center', mt: 2 }}>
+    ยังไม่มีบัญชี?{' '}
+    <Link href="/signup" sx={{ color: '#F7941E', fontWeight: 'bold' }}>
+      สมัครสมาชิกที่นี่
+    </Link>
+  </Typography>
 
-            <Box sx={{ display: 'flex', gap: 3, justifyContent: 'center' }}>
-              <Button type="submit" variant="contained" size="large" sx={{ px: 4 }}>
-                Sign in
-              </Button>
-              <Button onClick={() => navigate('/')} variant="outlined" size="large" sx={{ px: 4 }}>
-                Back to Home
-              </Button>
-            </Box>
+          </FormContainer>
 
-            <Typography sx={{ textAlign: 'center' }}>
-              Don&apos;t have an account?{' '}
-              <Link href="/signup" variant="body2">
-                Sign up
-              </Link>
-            </Typography>
-          </Box>
-        </StyledCard>
-      </SignInContainer>
+          {/* ปุ่มย้อนกลับที่ขวาล่าง */}
+          <BackButton onClick={() => navigate('/')}>
+            <ArrowBackIosNewIcon fontSize="large" />
+          </BackButton>
+        </RightContainer>
+      </RootContainer>
     </>
   );
 }

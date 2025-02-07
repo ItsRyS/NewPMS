@@ -49,19 +49,14 @@ api.interceptors.response.use(
 );
 // Interceptor for response handling
 api.interceptors.response.use(
-  (response) => {
-    // Return response if status is OK
-    return response;
-  },
+  (response) => response,
   (error) => {
-    // Handle error and display message
     if (error.response) {
-      alert(`Error: ${error.response.status} - ${error.response.data.message || 'Something went wrong'}`);
+      console.error(`API Error: ${error.response.status} - ${error.response.data.message || 'Something went wrong'}`);
     } else {
-      alert('Network Error: Please check your connection.');
+      console.error('Network Error: Please check your connection.');
     }
-    return Promise.reject(error);
+    return Promise.reject(error); // ให้แต่ละหน้าใช้ .catch() จัดการ error เอง
   }
 );
-
 export default api;
