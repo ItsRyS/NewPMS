@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import HomeIcon from "@mui/icons-material/Home";
 import * as z from 'zod';
 import api from '../../services/api';
 import { useSnackbar } from '../../components/ReusableSnackbar';
@@ -36,8 +36,8 @@ const LeftContainer = styled(Box)({
 });
 
 const LogoImage = styled('img')({
-  width: '580px',
-  height: '580px',
+  width: '400px',
+  height: '400px',
   objectFit: 'contain',
 
 });
@@ -135,7 +135,10 @@ export default function SignUp() {
         {/* ด้านซ้าย: โลโก้ และชื่อสถาบัน */}
         <LeftContainer>
           <LogoImage src="/software.png" alt="IT Logo" />
-          
+          <Typography variant="h5" textTransform={'uppercase'} sx={{ mt: 2, fontWeight: 'bold' }}>
+            Information Technology
+          </Typography>
+          <Typography textTransform={'uppercase'} variant="body1">Lampang Technical College</Typography>
         </LeftContainer>
 
         {/* ด้านขวา: ฟอร์มสมัครสมาชิก */}
@@ -206,7 +209,7 @@ export default function SignUp() {
 
           {/* ปุ่มย้อนกลับที่ขวาล่าง */}
           <BackButton onClick={() => navigate('/')}>
-            <ArrowBackIosNewIcon fontSize="large" />
+            <HomeIcon fontSize="large" />
           </BackButton>
         </RightContainer>
       </RootContainer>
