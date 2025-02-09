@@ -108,7 +108,7 @@ exports.getApprovedProjects = async (req, res) => {
           pr.project_status,
           pr.project_type,
           pr.project_create_time,
-          pr.project_path,
+          pr.file_path,
           ti.teacher_name AS project_advisor,
           GROUP_CONCAT(DISTINCT u.username SEPARATOR ', ') AS team_members
       FROM project_release pr
