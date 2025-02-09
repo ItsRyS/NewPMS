@@ -21,7 +21,6 @@ const ReleaseProjectPage = lazy(
 );
 
 const UploadDoc = lazy(() => import('../pages/adminPage/UploadDoc'));
-const UploadProject = lazy(() => import('../pages/adminPage/UploadProject'));
 const TeacherInfo = lazy(() => import('../pages/adminPage/TeacherInfo'));
 const ViewProjectDocuments = lazy(
   () => import('../pages/adminPage/ViewProjectDocuments')
@@ -152,14 +151,6 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<div>Loading...</div>}>
             <ProjectTypesPage />
-          </Suspense>
-        ),
-      },
-      {
-        path: 'UploadProject',
-        element: (
-          <Suspense fallback={<div>Loading...</div>}>
-            <UploadProject />
           </Suspense>
         ),
       },
