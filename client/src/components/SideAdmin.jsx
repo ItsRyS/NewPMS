@@ -128,6 +128,13 @@ const SideAdmin = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
               icon: <PeopleIcon sx={{ color: '#9CA3AF' }} />,
               title: 'ข้อมูลอาจารย์',
             },
+            {
+              to: '/adminHome/UploadProject',
+              text: 'เพิ่มโครงการ',
+              icon: <CloudUploadIcon sx={{ color: '#9CA3AF' }} />,
+              title: 'เพิ่มโครงการ',
+            },
+            
           ].map(({ to, text, icon, title }, index) => (
             <NavLink
               key={index}
@@ -171,9 +178,9 @@ const SideAdmin = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
             },
             {
               to: '/adminHome/release-project',
-              text: 'ปล่อยโครงการ',
+              text: ' เผยแพร่โครงการ',
               icon: <CloudUploadIcon sx={{ color: '#9CA3AF' }} />,
-              title: 'ปล่อยโครงการ',
+              title: 'เผยแพร่โครงการ',
             },
 
           ].map(({ to, text, icon, title }, index) => (
