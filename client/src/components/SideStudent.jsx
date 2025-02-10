@@ -17,7 +17,7 @@ import {
 import { Home, School, Assignment, PresentToAll } from '@mui/icons-material';
 import { NavLink, useNavigate, useOutletContext } from 'react-router-dom';
 import LogoutIcon from '@mui/icons-material/Logout';
-import api from '../services/api';
+import api,{ API_BASE_URL } from '../services/api';
 import { useSnackbar } from '../components/ReusableSnackbar';
 
 // Constants
@@ -53,7 +53,7 @@ const UserInfo = React.memo(({ username, role, profileImage, loading }) => (
         <Avatar
           src={
             profileImage
-              ? `http://localhost:5000/${profileImage}`
+              ? `${API_BASE_URL}/${profileImage}`
               : '/default-avatar.png'
           }
           alt={username}

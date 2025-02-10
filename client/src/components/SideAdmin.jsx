@@ -22,7 +22,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useSnackbar } from '../components/ReusableSnackbar';
-import api from '../services/api';
+import api ,{ API_BASE_URL } from '../services/api';
 
 // Constants
 const drawerWidth = 240;
@@ -57,7 +57,7 @@ const UserInfo = React.memo(({ username, role, profileImage, loading }) => (
         <Avatar
           src={
             profileImage
-              ? `http://localhost:5000/${profileImage}`
+              ? `${API_BASE_URL}/${profileImage}`
               : '/default-avatar.png'
           }
           alt={username}

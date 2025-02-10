@@ -1,9 +1,14 @@
 import axios from 'axios';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 // สร้าง instance ของ Axios
-const api = axios.create({
-  baseURL: 'http://localhost:5000/api', // ตั้งค่าฐาน URL สำหรับ API
+//const api = axios.create({
+  //baseURL: 'http://localhost:5000/api', // ตั้งค่าฐาน URL สำหรับ API
   //baseURL: 'https://newpms.onrender.com/api', // ตั้งค่าฐาน URL สำหรับ API
+  //withCredentials: true, // เปิดใช้งาน cookie สำหรับการร้องขอ
+//});
+const api = axios.create({
+  baseURL: `${API_BASE_URL}/api`, // ใช้ค่าที่กำหนดจาก .env
   withCredentials: true, // เปิดใช้งาน cookie สำหรับการร้องขอ
 });
 
@@ -60,3 +65,4 @@ api.interceptors.response.use(
   }
 );
 export default api;
+export { API_BASE_URL };
