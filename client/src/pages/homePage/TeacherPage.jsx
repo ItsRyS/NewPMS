@@ -20,16 +20,18 @@ import NavbarHome from '../../components/NavHome';
 import FooterHome from '../../components/FooterHome';
 
 const TeacherPage = () => {
-  const [teachers, setTeachers] = useState([]); // All teachers data
-  const [filteredTeachers, setFilteredTeachers] = useState([]); // Filtered data
-  const [selectedTeacher, setSelectedTeacher] = useState(null); // For modal
-  const [open, setOpen] = useState(false); // Modal open state
-  const [error, setError] = useState(null); // Error handling
-  const [searchTerm, setSearchTerm] = useState(''); // Name search term
-  const [positionFilter, setPositionFilter] = useState(''); // Position filter
-  const [positionOptions, setPositionOptions] = useState([]); // Dropdown options
+  const [teachers, setTeachers] = useState([]);
+  const [filteredTeachers, setFilteredTeachers] = useState([]);
+  const [selectedTeacher, setSelectedTeacher] = useState(null);
+  const [open, setOpen] = useState(false);
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [academicFilter, setAcademicFilter] = useState('');
+  const [expertiseFilter, setExpertiseFilter] = useState(''); // New state for expertise filter
+  const [academicOptions, setAcademicOptions] = useState([]);
+  const [expertiseOptions, setExpertiseOptions] = useState([]); // New state for expertise options
 
-  const placeholderImage = 'https://via.placeholder.com/140x100?text=No+Image'; // Placeholder URL
+  const placeholderImage = 'https://via.placeholder.com/140x100?text=No+Image';
 
   const handleOpen = (teacher) => {
     setSelectedTeacher(teacher);
@@ -42,18 +44,18 @@ const TeacherPage = () => {
   };
 
   useEffect(() => {
-    // Fetch teacher data from API
     api
-      .get('/teacher') // Adjust your endpoint
+      .get('/teacher')
       .then((response) => {
         setTeachers(response.data);
         setFilteredTeachers(response.data);
 
-        // Extract unique expertise options
-        const uniquePosition = [
-          ...new Set(response.data.map((teacher) => teacher.teacher_position)),
-        ];
-        setPositionOptions(uniquePosition);
+        // Extract unique academic and expertise options
+        const uniqueAcademic = [...new Set(response.data.map((teacher) => teacher.teacher_academic))];
+        const uniqueExpertise = [...new Set(response.data.map((teacher) => teacher.teacher_expert))];
+
+        setAcademicOptions(uniqueAcademic);
+        setExpertiseOptions(uniqueExpertise);
       })
       .catch((err) => {
         console.error('Error fetching data:', err);
@@ -62,24 +64,25 @@ const TeacherPage = () => {
   }, []);
 
   useEffect(() => {
-    // Combine search and expertise filters
+    // Combined filter for name, academic position, and expertise
     const filtered = teachers.filter((teacher) => {
       const matchesName = teacher.teacher_name
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
+      const matchesAcademic =
+        academicFilter === '' || teacher.teacher_academic === academicFilter;
       const matchesExpertise =
-        positionFilter === '' || teacher.teacher_position === positionFilter;
+        expertiseFilter === '' || teacher.teacher_expert === expertiseFilter;
 
-      return matchesName && matchesExpertise;
+      return matchesName && matchesAcademic && matchesExpertise;
     });
     setFilteredTeachers(filtered);
-  }, [searchTerm, positionFilter, teachers]);
+  }, [searchTerm, academicFilter, expertiseFilter, teachers]);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <NavbarHome />
       <Box sx={{ flex: 1, paddingBottom: '64px' }}>
-        {/* Adds space for the fixed footer */}
         <Container
           className="content-teacher"
           maxWidth="lg"
@@ -96,16 +99,15 @@ const TeacherPage = () => {
           }}
         >
           <Box sx={{ width: '100%', padding: 2 }}>
-            {/* Error Message */}
             {error && (
               <Typography variant="body1" color="error" sx={{ mb: 3 }}>
                 {error}
               </Typography>
             )}
 
-            {/* Search and Filter Row */}
+            {/* Search and Filters Row */}
             <Grid container spacing={2} sx={{ mb: 4 }}>
-              <Grid item xs={12} sm={8}>
+              <Grid item xs={12} sm={4}>
                 <TextField
                   label="ค้นหาชื่ออาจารย์"
                   variant="outlined"
@@ -118,13 +120,29 @@ const TeacherPage = () => {
                 <FormControl fullWidth>
                   <InputLabel>ค้นหาตามตำแหน่ง</InputLabel>
                   <Select
-                    value={positionFilter}
-                    onChange={(e) => setPositionFilter(e.target.value)}
+                    value={academicFilter}
+                    onChange={(e) => setAcademicFilter(e.target.value)}
                   >
                     <MenuItem value="">แสดงทั้งหมด</MenuItem>
-                    {positionOptions.map((position, index) => (
-                      <MenuItem key={index} value={position}>
-                        {position}
+                    {academicOptions.map((academic, index) => (
+                      <MenuItem key={index} value={academic}>
+                        {academic}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <FormControl fullWidth>
+                  <InputLabel>ค้นหาตามความชำนาญ</InputLabel>
+                  <Select
+                    value={expertiseFilter}
+                    onChange={(e) => setExpertiseFilter(e.target.value)}
+                  >
+                    <MenuItem value="">แสดงทั้งหมด</MenuItem>
+                    {expertiseOptions.map((expertise, index) => (
+                      <MenuItem key={index} value={expertise}>
+                        {expertise}
                       </MenuItem>
                     ))}
                   </Select>
@@ -143,10 +161,10 @@ const TeacherPage = () => {
                     <CardMedia
                       component="img"
                       sx={{
-                        height: 300, // ปรับความสูงให้เล็กลง
-                        width: 'auto', // ปรับความกว้างอัตโนมัติให้สัมพันธ์กับความสูง
-                        objectFit: 'contain', // ทำให้ภาพพอดีกับกรอบโดยคงสัดส่วน
-                        margin: 'auto', // จัดภาพให้อยู่ตรงกลาง
+                        height: 300,
+                        width: 'auto',
+                        objectFit: 'contain',
+                        margin: 'auto',
                         padding: '10px',
                       }}
                       image={
@@ -156,13 +174,15 @@ const TeacherPage = () => {
                       }
                       alt={teacher.teacher_name || 'No Image'}
                     />
-
                     <CardContent sx={{ textAlign: 'center' }}>
                       <Typography variant="h6">
                         {teacher.teacher_name}
                       </Typography>
                       <Typography variant="body2" color="textSecondary">
-                        ตำแหน่ง: {teacher.teacher_position}
+                        ตำแหน่ง: {teacher.teacher_academic}
+                      </Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        ความชำนาญ: {teacher.teacher_expert}
                       </Typography>
                     </CardContent>
                   </Card>
@@ -180,7 +200,7 @@ const TeacherPage = () => {
                   transform: 'translate(-50%, -50%)',
                   maxWidth: '90vw',
                   maxHeight: '90vh',
-                  overflow: 'auto', // เพิ่ม scroll หากเนื้อหาเกิน
+                  overflow: 'auto',
                   bgcolor: 'background.paper',
                   border: '2px solid #000',
                   boxShadow: 24,
@@ -193,8 +213,8 @@ const TeacherPage = () => {
                       component="img"
                       sx={{
                         maxWidth: '100%',
-                        maxHeight: '50vh', // จำกัดความสูงของรูปให้ไม่เกิน 60% ของหน้าจอ
-                        objectFit: 'contain', // คงสัดส่วนรูปภาพ
+                        maxHeight: '50vh',
+                        objectFit: 'contain',
                         marginBottom: '24px',
                       }}
                       image={
@@ -211,7 +231,6 @@ const TeacherPage = () => {
                     >
                       {selectedTeacher.teacher_name}
                     </Typography>
-
                     <Typography variant="body1">
                       <strong>เบอร์โทรศัพท์:</strong>{' '}
                       {selectedTeacher.teacher_phone}
@@ -224,8 +243,8 @@ const TeacherPage = () => {
                       {selectedTeacher.teacher_expert}
                     </Typography>
                     <Typography variant="body1">
-                      <strong>ข้อมูลเพิ่มเติม:</strong>{' '}
-                      {selectedTeacher.teacher_position}
+                      <strong>ตำแหน่ง:</strong>{' '}
+                      {selectedTeacher.teacher_academic}
                     </Typography>
                     <Button
                       onClick={handleClose}

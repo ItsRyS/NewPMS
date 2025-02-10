@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import {
   Drawer,
@@ -12,6 +12,7 @@ import {
   Typography,
   Avatar,
   Toolbar,
+  Skeleton,
 } from '@mui/material';
 import { Home, School, Assignment, PresentToAll } from '@mui/icons-material';
 import { NavLink, useNavigate, useOutletContext } from 'react-router-dom';
@@ -19,10 +20,86 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import api from '../services/api';
 import { useSnackbar } from '../components/ReusableSnackbar';
 
+// Constants
 const drawerWidth = 240;
+const COLORS = {
+  drawer: '#2d3a46',
+  divider: '#374151',
+  text: {
+    primary: '#ffffff',
+    secondary: '#9CA3AF',
+  },
+};
+
+// Memoized User Info Component
+const UserInfo = React.memo(({ username, role, profileImage, loading }) => (
+  <Box
+    sx={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      padding: 2,
+      minHeight: { xs: 'auto', sm: '200px' },
+    }}
+  >
+    {loading ? (
+      <>
+        <Skeleton variant="circular" width={100} height={100} />
+        <Skeleton variant="text" width={120} sx={{ mt: 1 }} />
+        <Skeleton variant="text" width={80} />
+      </>
+    ) : (
+      <>
+        <Avatar
+          src={
+            profileImage
+              ? `http://localhost:5000/${profileImage}`
+              : '/default-avatar.png'
+          }
+          alt={username}
+          sx={{ width: 100, height: 100 }}
+        />
+        <Typography
+          variant="body1"
+          sx={{
+            color: COLORS.text.primary,
+            marginTop: 1,
+            display: { xs: 'none', sm: 'block' },
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {username}
+        </Typography>
+        <Typography
+          variant="body2"
+          sx={{
+            color: COLORS.text.secondary,
+            display: { xs: 'none', sm: 'block' },
+            textTransform: 'capitalize',
+          }}
+        >
+          {role}
+        </Typography>
+      </>
+    )}
+    <Divider sx={{ borderColor: '#ff0000', width: '100%', mt: 2 }} />
+  </Box>
+));
+
+UserInfo.displayName = 'UserInfo';
+
+UserInfo.propTypes = {
+  username: PropTypes.string,
+  role: PropTypes.string,
+  profileImage: PropTypes.string,
+  loading: PropTypes.bool,
+};
 
 const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
   const [username, setUsername] = useState('Loading...');
+  const [role, setRole] = useState('');
   const [profileImage, setProfileImage] = useState('');
   const [loading, setLoading] = useState(true);
   const showSnackbar = useSnackbar();
@@ -45,13 +122,17 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
         });
         if (response.data.isAuthenticated) {
           setUsername(response.data.user.username);
+          setRole(response.data.user.role);
           setProfileImage(response.data.user.profileImage);
         } else {
           navigate('/SignIn');
         }
       } catch (error) {
         console.error('Failed to fetch session:', error);
-        showSnackbar('Failed to load session data', 'error');
+        showSnackbar(
+          error.response?.data?.message || 'Failed to load user data',
+          'error'
+        );
       } finally {
         setLoading(false);
       }
@@ -75,75 +156,51 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
     }
   };
 
+  const menuItems = [
+    {
+      to: '/studentHome',
+      text: 'หน้าหลัก',
+      icon: <Home sx={{ color: COLORS.text.secondary }} />,
+      title: 'หน้าหลัก',
+    },
+    {
+      to: '/studentHome/ProfileUser',
+      text: 'ข้อมูลส่วนตัว',
+      icon: <Home sx={{ color: COLORS.text.secondary }} />,
+      title: 'ข้อมูลส่วนตัว',
+    },
+    {
+      to: '/studentHome/Documentation',
+      text: 'แบบร่างเอกสาร',
+      icon: <School sx={{ color: COLORS.text.secondary }} />,
+      title: 'แบบร่างเอกสาร',
+    },
+    {
+      to: '/studentHome/projectRequest',
+      text: 'คำร้องโครงการ',
+      icon: <Assignment sx={{ color: COLORS.text.secondary }} />,
+      title: 'คำร้องโครงการ',
+    },
+    {
+      to: '/studentHome/uploadProjectDocument',
+      text: 'ส่งเอกสาร',
+      icon: <PresentToAll sx={{ color: COLORS.text.secondary }} />,
+      title: 'ส่งเอกสาร',
+    },
+  ];
+
   const drawerContent = (
     <>
       <Toolbar />
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          padding: 2,
-        }}
-      >
-        <Avatar
-          src={
-            profileImage
-              ? `http://localhost:5000/${profileImage}`
-              : '/default-avatar.png'
-          }
-          alt="Profile"
-          sx={{ width: 100, height: 100 }}
-        />
-        <Typography
-          variant="body1"
-          sx={{
-            color: '#ffffff',
-            marginTop: 1,
-            display: { xs: 'none', sm: 'block' },
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {username}
-        </Typography>
-        <Divider sx={{ borderColor: '#ff0000', width: '100%', mt: 2 }} />
-      </Box>
+      <UserInfo
+        username={username}
+        role={role}
+        profileImage={profileImage}
+        loading={loading}
+      />
 
       <List>
-        {[
-          {
-            to: '/studentHome',
-            text: 'หนักหลัก',
-            icon: <Home sx={{ color: '#9CA3AF' }} />,
-            title: 'หนักหลัก',
-          },
-          {
-            to: '/studentHome/ProfileUser',
-            text: 'ข้อมูลส่วนตัว',
-            icon: <Home sx={{ color: '#9CA3AF' }} />,
-            title: 'ข้อมูลส่วนตัว',
-          },
-          {
-            to: '/studentHome/Documentation',
-            text: 'แบบร่างเอกสาร',
-            icon: <School sx={{ color: '#9CA3AF' }} />,
-            title: 'แบบร่างเอกสาร',
-          },
-          {
-            to: '/studentHome/projectRequest',
-            text: 'คำร้องโครงการ',
-            icon: <Assignment sx={{ color: '#9CA3AF' }} />,
-            title: 'คำร้องโครงการ',
-          },
-          {
-            to: '/studentHome/uploadProjectDocument',
-            text: 'ส่งเอกสาร',
-            icon: <PresentToAll sx={{ color: '#9CA3AF' }} />,
-            title: 'ส่งเอกสาร',
-          },
-        ].map(({ to, text, icon, title }, index) => (
+        {menuItems.map(({ to, text, icon, title }, index) => (
           <NavLink
             key={index}
             to={{ pathname: to }}
@@ -157,7 +214,7 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
         ))}
       </List>
 
-      <Divider sx={{ borderColor: '#374151', mt: 2 }} />
+      <Divider sx={{ borderColor: COLORS.divider, mt: 2 }} />
       <Box sx={{ padding: 2 }}>
         <Button
           variant="contained"
@@ -190,6 +247,8 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
             width: drawerWidth,
             padding: 1,
             overflowY: 'auto',
+            backgroundColor: COLORS.drawer,
+            color: COLORS.text.primary,
           },
         }}
       >
@@ -202,8 +261,8 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
           '& .MuiDrawer-paper': {
             width: drawerWidth,
             boxSizing: 'border-box',
-            backgroundColor: '#2d3a46',
-            color: '#ffffff',
+            backgroundColor: COLORS.drawer,
+            color: COLORS.text.primary,
           },
         }}
         open
@@ -218,7 +277,6 @@ SideStudent.propTypes = {
   mobileOpen: PropTypes.bool.isRequired,
   handleDrawerToggle: PropTypes.func.isRequired,
   setTitle: PropTypes.func.isRequired,
-  profileImage: PropTypes.string,
 };
 
 export default SideStudent;
