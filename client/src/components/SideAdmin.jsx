@@ -237,6 +237,12 @@ const SideAdmin = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
               icon: <CloudUploadIcon sx={{ color: COLORS.text.secondary }} />,
               title: 'เผยแพร่โครงการ',
             },
+            {
+              to: '/adminHome/AddOldProject',
+              text: 'โครงงานเก่า',
+              icon: <CloudUploadIcon sx={{ color: COLORS.text.secondary }} />,
+              title: 'โครงงานเก่า',
+            },
           ].map(({ to, text, icon, title }, index) => (
             <NavLink
               key={index}

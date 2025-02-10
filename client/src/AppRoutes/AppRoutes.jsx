@@ -22,6 +22,8 @@ const ReleaseProjectPage = lazy(
 
 const UploadDoc = lazy(() => import('../pages/adminPage/UploadDoc'));
 const TeacherInfo = lazy(() => import('../pages/adminPage/TeacherInfo'));
+const AddOldProject = lazy(() => import('../pages/adminPage/AddOldProject'));
+const OldProject = lazy(() => import('../pages/homePage/OldProject'));
 const ViewProjectDocuments = lazy(
   () => import('../pages/adminPage/ViewProjectDocuments')
 );
@@ -79,6 +81,14 @@ const router = createBrowserRouter([
           </Suspense>
         ),
       },
+      {
+        path: 'OldProject',
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <OldProject />
+          </Suspense>
+        ),
+      }
     ],
   },
   {
@@ -154,6 +164,14 @@ const router = createBrowserRouter([
           </Suspense>
         ),
       },
+      {
+        path: 'AddOldProject',
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <AddOldProject />
+          </Suspense>
+        ),
+      }
 
     ],
   },

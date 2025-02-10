@@ -15,6 +15,14 @@ const menuItems = [
     variant: 'text', // default
   },
   {
+    text: 'โครงงานเก่า',
+    icon: <AssignmentIndTwoToneIcon />,
+    to: '/OldProject',
+    variant: 'contained', // special case
+    color: 'primary',
+    fontWeight: 'bold',
+  },
+  {
     text: 'เข้าสู่ระบบ',
     icon: <LoginTwoToneIcon />,
     to: '/SignIn',
