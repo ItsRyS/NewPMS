@@ -21,6 +21,9 @@ import {
 } from '@mui/material';
 import api from '../../services/api'; // Axios instance
 import { useSearchParams } from 'react-router-dom';
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
 const TeacherInfo = () => {
   const [teachers, setTeachers] = useState([]);
   const [form, setForm] = useState({
@@ -41,7 +44,7 @@ const TeacherInfo = () => {
   const [searchParams] = useSearchParams();
   useEffect(() => {
     fetchTeachers();
-  }, [ searchParams]);
+  }, [searchParams]);
 
   const fetchTeachers = async () => {
     try {
@@ -58,12 +61,7 @@ const TeacherInfo = () => {
   };
 
   const confirmDeleteTeacher = async () => {
-    if (!teacherToDelete || !teacherToDelete.teacher_id) {
-      console.error('Teacher ID is undefined. Cannot delete.');
-      setConfirmDelete(false);
-      return;
-    }
-
+    if (!teacherToDelete?.teacher_id) return;
     try {
       await api.delete(`/teacher/${teacherToDelete.teacher_id}`);
       fetchTeachers();
@@ -81,9 +79,9 @@ const TeacherInfo = () => {
       teacher_email: teacher.teacher_email,
       teacher_academic: teacher.teacher_academic,
       teacher_expert: teacher.teacher_expert,
-      teacher_image: teacher.teacher_image || null,
+      teacher_image: null,
     });
-    setSelectedFileName(teacher.teacher_image ? teacher.teacher_image : '');
+    setSelectedFileName(teacher.teacher_image || '');
     setIsEdit(true);
     setEditId(teacher.teacher_id);
     setOpenForm(true);
@@ -127,16 +125,13 @@ const TeacherInfo = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
-    formData.append('teacher_name', form.teacher_name || '');
-    formData.append('teacher_phone', form.teacher_phone || '');
-    formData.append('teacher_email', form.teacher_email || '');
-    formData.append('teacher_academic', form.teacher_academic || '');
-    formData.append('teacher_expert', form.teacher_expert || '');
-
+    formData.append('teacher_name', form.teacher_name);
+    formData.append('teacher_phone', form.teacher_phone);
+    formData.append('teacher_email', form.teacher_email);
+    formData.append('teacher_academic', form.teacher_academic);
+    formData.append('teacher_expert', form.teacher_expert);
     if (form.teacher_image instanceof File) {
       formData.append('teacher_image', form.teacher_image);
-    } else if (isEdit && selectedFileName) {
-      formData.append('teacher_image', selectedFileName);
     }
 
     try {
@@ -150,9 +145,9 @@ const TeacherInfo = () => {
         });
       }
       fetchTeachers();
-      handleCloseForm();
+      setOpenForm(false);
     } catch (error) {
-      console.error('Failed to submit form:', error.response?.data || error);
+      console.error('Failed to submit form:', error);
     }
   };
 
@@ -189,7 +184,7 @@ const TeacherInfo = () => {
                 <TableCell>
                   {teacher.teacher_image ? (
                     <img
-                      src={`http://localhost:5000/upload/pic/${teacher.teacher_image}`}
+                      src={`${API_BASE_URL}/upload/pic/${teacher.teacher_image}`}
                       alt={teacher.teacher_name}
                       style={{ width: 50, height: 50, objectFit: 'cover' }}
                     />

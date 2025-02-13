@@ -18,6 +18,7 @@ import {
 import api from '../../services/api';
 import NavbarHome from '../../components/NavHome';
 import FooterHome from '../../components/FooterHome';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 const TeacherPage = () => {
   const [teachers, setTeachers] = useState([]);
@@ -169,7 +170,7 @@ const TeacherPage = () => {
                       }}
                       image={
                         teacher.teacher_image
-                          ? `http://localhost:5000/upload/pic/${teacher.teacher_image}`
+                          ? `${API_BASE_URL}/upload/pic/${teacher.teacher_image}`
                           : placeholderImage
                       }
                       alt={teacher.teacher_name || 'No Image'}

@@ -62,8 +62,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Static Files สำหรับอัปโหลด PDF และรูปภาพ
 app.use('/upload', express.static(path.join(__dirname, 'upload'), {
   setHeaders: (res, filePath) => {
-    if (path.extname(filePath) === '.pdf') {
-      res.setHeader('Content-Disposition', 'inline');
+    if (path.extname(filePath) === '.pdf'|| path.extname(filePath) === '.jpg' || path.extname(filePath) === '.png') {
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
     }
   },
 }));
