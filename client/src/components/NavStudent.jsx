@@ -8,7 +8,7 @@ const NavStudent = ({ handleDrawerToggle, title }) => {
       position="fixed"
       sx={{
         zIndex: (theme) => theme.zIndex.drawer + 1,
-        backgroundColor: '#01153e',
+        backgroundColor: '#FFA64D',
         color: '#fff',
         width: '100%',
       }}

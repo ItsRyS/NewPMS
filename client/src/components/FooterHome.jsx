@@ -12,7 +12,7 @@ const FooterHome = () => {
         alignItems: 'center',
         justifyContent: 'space-between', // Space between text and icons
         padding: '16px',
-        backgroundColor: '#110f01',
+        backgroundColor: '#FFA64D',
         color: '#f0f4f8',
         width: '100%',
         boxSizing: 'border-box',

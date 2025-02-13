@@ -3,7 +3,6 @@ import { DataGrid } from '@mui/x-data-grid';
 import {
   Box,
   Paper,
-  Typography,
   TextField,
   Grid,
   MenuItem,
@@ -14,6 +13,8 @@ import {
   IconButton,
   useMediaQuery,
   useTheme,
+  Typography,
+  Container,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import PropTypes from 'prop-types';
@@ -31,9 +32,7 @@ const ProjectTable = ({ rows, loading }) => {
 
   const handleViewDocument = async (projectId) => {
     try {
-      const response = await api.get(
-        `/project-release/complete-report/${projectId}`
-      );
+      const response = await api.get(`/project-release/complete-report/${projectId}`);
       if (response.data.success) {
         const fullDocumentUrl = response.data.documentPath.startsWith('/')
           ? `${window.location.origin}${response.data.documentPath}`
@@ -52,155 +51,175 @@ const ProjectTable = ({ rows, loading }) => {
   const columns = [
     {
       field: 'project_name_th',
-      headerName: 'ชื่อโครงการ (TH)',
-      flex: 1.5,
-      minWidth: 250,
+      headerName: 'ชื่อโครงงาน (TH)',
+      flex: 2,
+      minWidth: 200,
     },
     {
       field: 'project_name_eng',
-      headerName: 'ชื่อโครงการ (EN)',
-      flex: 1.5,
-      minWidth: 250,
+      headerName: 'ชื่อโครงงาน (EN)',
+      flex: 2,
+      minWidth: 200,
     },
     {
       field: 'team_members',
       headerName: 'สมาชิกในทีม',
-      flex: 1.2,
-      minWidth: 300,
+      flex: 1.5,
+      minWidth: 150,
       renderCell: (params) => (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-          {params.row.team_members
-            ? params.row.team_members.split(', ').map((member, index) => (
-                <Typography key={index} variant="body2">
-                  {member}
-                </Typography>
-              ))
-            : <Typography variant="body2" color="textSecondary">ไม่มีสมาชิก</Typography>}
+        <Box>
+          {params.value?.split(', ').map((member, index) => (
+            <Typography key={index} variant="body2">
+              {member}
+            </Typography>
+          )) || 'ไม่มีสมาชิก'}
         </Box>
       ),
-    }
-    ,
+    },
     {
       field: 'project_advisor',
       headerName: 'ที่ปรึกษา',
       flex: 1,
-      minWidth: 200,
+      minWidth: 120,
     },
-    { field: 'project_type', headerName: 'ประเภท', flex: 0.8, minWidth: 150 },
-    { field: 'project_status', headerName: 'สถานะ', flex: 0.5, minWidth: 100 },
+    {
+      field: 'project_type',
+      headerName: 'ประเภท',
+      flex: 1,
+      minWidth: 100,
+    },
+    {
+      field: 'project_status',
+      headerName: 'สถานะ',
+      flex: 1,
+      minWidth: 100,
+    },
     {
       field: 'project_create_time',
       headerName: 'วันที่สร้าง',
-      flex: 0.5,
+      flex: 1,
       minWidth: 100,
     },
     {
       field: 'actions',
-      headerName: 'Actions',
-      width: 200,
-      renderCell: (params) => {
-        const isCompleted = params.row.project_status === 'complete';
-        const isOperate = params.row.project_status === 'operate';
-        return (
-          <Button
-            variant="contained"
-            color={isCompleted ? 'primary' : 'secondary'}
-            size="medium"
-            onClick={() =>
-              isCompleted && handleViewDocument(params.row.project_id)
-            }
-            disabled={isOperate}
-          >
-            {isCompleted ? 'ดูเอกสาร' : 'กำลังดำเนินการ'}
-          </Button>
-        );
-      },
+      headerName: 'รายละเอียดเอกสาร',
+      flex: 1,
+      minWidth: 130,
+      renderCell: (params) => (
+        <Button
+          variant="contained"
+          size="small"
+          color={params.row.project_status === 'complete' ? 'primary' : 'inherit'}
+          disabled={params.row.project_status !== 'complete'}
+          onClick={() => params.row.project_status === 'complete' && handleViewDocument(params.row.project_id)}
+          sx={{
+            textTransform: 'none',
+            fontSize: '0.8rem',
+            height: '30px',
+          }}
+        >
+          {params.row.project_status === 'complete' ? 'ดูเอกสาร' : 'กำลังดำเนินการ'}
+        </Button>
+      ),
     },
   ];
 
   const filteredRows = rows.filter((row) =>
-    row[searchField]
-      ?.toString()
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
+    row[searchField]?.toString().toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <Box
-    sx={{
+    <Box sx={{
       display: 'flex',
-      justifyContent: 'center', // จัดให้อยู่ตรงกลางแนวนอน
-      alignItems: 'center', // จัดให้อยู่ตรงกลางแนวตั้ง
-      minHeight: '100vh', // ครอบคลุมความสูงของหน้าจอ
-      backgroundColor: '#f5f5f5', // เพิ่มสีพื้นหลัง
-
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '90vh',
+      width: '100%',
+      py: 4,
     }}>
-      <Paper
-        elevation={3}
-        sx={{
-          p: 2,
-          display: 'flex',
-          flexDirection: 'column',
-          height: '100%', // ใช้พื้นที่เต็ม container
-          width: '100%', // ครอบคลุมความกว้างทั้งหมด
-          overflow: 'hidden', // ป้องกัน scroll bar เกินความจำเป็น
-        }}
-      >
-        {/* ส่วนค้นหา */}
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12} md={4}>
-            <TextField
-              select
-              label="ค้นหาตาม"
-              value={searchField}
-              onChange={(e) => setSearchField(e.target.value)}
-              fullWidth
-            >
-              <MenuItem value="project_name_th">ชื่อโครงการ (TH)</MenuItem>
-              <MenuItem value="project_name_eng">ชื่อโครงการ (EN)</MenuItem>
-              <MenuItem value="project_advisor">ที่ปรึกษา</MenuItem>
-              <MenuItem value="team_members">สมาชิกในทีม</MenuItem>
-              <MenuItem value="project_type">ประเภท</MenuItem>
-              <MenuItem value="project_status">สถานะ</MenuItem>
-            </TextField>
-          </Grid>
-          <Grid item xs={12} md={8}>
-            <TextField
-              placeholder="ค้นหาข้อมูล"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              fullWidth
+      <Container maxWidth="xl" sx={{ width: '100%' }}>
+        <Paper
+          elevation={3}
+          sx={{
+            width: '100%',
+            flexDirection: 'column',
+            padding: 2,
+            overflow: 'hidden',
+            backgroundColor: '#fff',
+            borderRadius: '8px',
+            maxWidth: '1400px',
+            mx: 'auto',
+          }}
+        >
+          {/* Search Section */}
+          <Box sx={{ p: 3, borderBottom: '1px solid #e0e0e0' }}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={4}>
+                <TextField
+                  select
+                  label="ค้นหาตาม"
+                  value={searchField}
+                  onChange={(e) => setSearchField(e.target.value)}
+                  fullWidth
+                  size="small"
+                >
+                  <MenuItem value="project_name_th">ชื่อโครงการ (TH)</MenuItem>
+                  <MenuItem value="project_name_eng">ชื่อโครงการ (EN)</MenuItem>
+                  <MenuItem value="project_advisor">ที่ปรึกษา</MenuItem>
+                  <MenuItem value="team_members">สมาชิกในทีม</MenuItem>
+                  <MenuItem value="project_type">ประเภท</MenuItem>
+                  <MenuItem value="project_status">สถานะ</MenuItem>
+                </TextField>
+              </Grid>
+              <Grid item xs={12} md={8}>
+                <TextField
+                  placeholder="ค้นหาข้อมูล"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  fullWidth
+                  size="small"
+                />
+              </Grid>
+            </Grid>
+          </Box>
+
+          {/* Table Section */}
+          <Box sx={{ height: 400, width: '100%' }}>
+            <DataGrid
+              rows={filteredRows}
+              columns={columns}
+              pageSize={5}
+              rowsPerPageOptions={[5]}
+              disableSelectionOnClick
+              getRowId={(row) => row.project_id}
+              density='comfortable'
+              loading={loading}
+              sx={{
+                '& .MuiDataGrid-columnHeaders': {
+                  backgroundColor: '#f5f5f5',
+                  color: '#000',
+                  fontSize: '0.9rem',
+                  fontWeight: 'bold',
+                },
+                '& .MuiDataGrid-cell': {
+                  fontSize: '0.9rem',
+                  padding: '8px',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                },
+                '& .MuiDataGrid-row:nth-of-type(odd)': {
+                  backgroundColor: '#fafafa',
+                },
+                border: 'none',
+              }}
             />
-          </Grid>
-        </Grid>
+          </Box>
+        </Paper>
+      </Container>
 
-        {/* ตาราง */}
-        <div style={{ flexGrow: 1, width: '100%' }}>
-          <DataGrid
-            rows={filteredRows}
-            columns={columns}
-            pageSize={10} // กำหนดจำนวนแถวต่อหน้า
-            rowsPerPageOptions={[10]} // แสดงตัวเลือกสำหรับ 10 แถว
-            disableSelectionOnClick
-            getRowId={(row) => row.project_id}
-            density="comfortable"
-            loading={loading}
-            sx={{
-              width: '100%',
-              '& .MuiDataGrid-columnHeaders': {
-                backgroundColor: theme.palette.grey[200], // พื้นหลังของ header
-              },
-              '& .MuiDataGrid-cell': {
-                textOverflow: 'ellipsis', // ตัดข้อความยาวเกิน
-                overflow: 'hidden',
-                whiteSpace: 'nowrap', // ไม่ตัดข้อความขึ้นบรรทัดใหม่
-              },
-            }}
-          />
-        </div>
-      </Paper>
-
-      {/* Dialog สำหรับดูเอกสาร */}
+      {/* Document Dialog */}
       <Dialog
         open={openDocument}
         onClose={() => setOpenDocument(false)}
@@ -213,13 +232,12 @@ const ProjectTable = ({ rows, loading }) => {
         <DialogTitle>
           เอกสารฉบับสมบูรณ์
           <IconButton
-            aria-label="close"
             onClick={() => setOpenDocument(false)}
             sx={{
               position: 'absolute',
               right: 8,
               top: 8,
-              color: (theme) => theme.palette.grey[500],
+              color: theme.palette.grey[500],
             }}
           >
             <CloseIcon />
@@ -241,7 +259,6 @@ const ProjectTable = ({ rows, loading }) => {
       </Dialog>
     </Box>
   );
-
 };
 
 ProjectTable.propTypes = {

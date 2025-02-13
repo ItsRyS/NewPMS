@@ -27,11 +27,11 @@ import api ,{ API_BASE_URL } from '../services/api';
 // Constants
 const drawerWidth = 240;
 const COLORS = {
-  drawer: '#2d3a46',
+  drawer: '#EEEDED',
   divider: '#374151',
   text: {
-    primary: '#ffffff',
-    secondary: '#9CA3AF',
+    primary: '#000000',
+    secondary: '#374151',
   },
 };
 
