@@ -78,7 +78,7 @@ const projectRequestsRoutes = require("./src/routes/projectRequests");
 const projectDocumentsRoutes = require("./src/routes/project_documents");
 const projectReleaseRoutes = require('./src/routes/projectRelease');
 const projectTypesRoutes = require('./src/routes/projectTypes');
-
+const oldProjectsRoutes = require("./src/routes/oldProjects");
 // API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);
@@ -90,7 +90,7 @@ app.use("/api/document-types", projectDocumentsRoutes);
 app.use("/api/project-documents", projectDocumentsRoutes);
 app.use("/api/project-release", projectReleaseRoutes);
 app.use('/api/project-types', projectTypesRoutes);
-
+app.use("/api/old-projects", oldProjectsRoutes);
 // Test API
 app.get("/api/test", (req, res) => {
   res.json({ message: "API is working!" });

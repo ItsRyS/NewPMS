@@ -6,25 +6,52 @@ import {
   TextField,
   Button,
   MenuItem,
-  Typography,
   Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Typography,
+  CircularProgress,
+  Select,
+  FormControl,
+  InputLabel,
+
 } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import SaveIcon from '@mui/icons-material/Save';
+import AddIcon from '@mui/icons-material/Add';
 import { useSnackbar } from '../../components/ReusableSnackbar';
 import api from '../../services/api';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 
 const AddOldProject = () => {
+  const [projects, setProjects] = useState([]);
   const [projectTypes, setProjectTypes] = useState([]);
-  const [formData, setFormData] = useState({
-    projectNameTh: '',
-    projectNameEng: '',
-    projectType: '',
-    projectYear: '',
-    file: null,
-  });
+  const [editingProject, setEditingProject] = useState(null);
+  const [editedData, setEditedData] = useState({});
+  const [file, setFile] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [openPdfDialog, setOpenPdfDialog] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState('');
+  const [pdfLoading, setPdfLoading] = useState(true);
+  const years = Array.from(new Array(50), (_, index) => new Date().getFullYear() - index);
+  const [openYearDialog, setOpenYearDialog] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const showSnackbar = useSnackbar();
 
   useEffect(() => {
     fetchProjectTypes();
+    fetchProjects();
   }, []);
 
   const fetchProjectTypes = async () => {
@@ -36,118 +63,311 @@ const AddOldProject = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const formDataToSend = new FormData();
-    formDataToSend.append('projectNameTh', formData.projectNameTh);
-    formDataToSend.append('projectNameEng', formData.projectNameEng);
-    formDataToSend.append('projectType', formData.projectType);
-    formDataToSend.append('projectYear', formData.projectYear);
-    formDataToSend.append('file', formData.file);
-
+  const fetchProjects = async () => {
     try {
-      await api.post('/project-release/old-project', formDataToSend, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      showSnackbar('Old project added successfully', 'success');
-
-      // Reset form
-      setFormData({
-        projectNameTh: '',
-        projectNameEng: '',
-        projectType: '',
-        projectYear: '',
-        file: null,
-      });
-    } catch (error) {
-      showSnackbar(error.response?.data?.message || 'Failed to add project', 'error');
+      const response = await api.get('/old-projects');
+      setProjects(response.data);
+    } catch {
+      showSnackbar('Failed to fetch old projects', 'error');
     }
   };
 
+  const handleOpenEditDialog = (project) => {
+    setEditingProject(project);
+    setEditedData({ ...project });
+    setFile(null);
+    setIsEditMode(true);
+    setOpenDialog(true);
+  };
+
+  const handleOpenAddDialog = () => {
+    setEditingProject(null);
+    setEditedData({
+      old_project_name_th: '',
+      old_project_name_eng: '',
+      project_type: '',
+      document_year: '',
+    });
+    setFile(null);
+    setIsEditMode(false);
+    setOpenDialog(true);
+  };
+  const handleOpenPdfDialog = (filePath) => {
+    if (!filePath) {
+      showSnackbar('No document available', 'error');
+      return;
+    }
+    setPdfLoading(true);
+    setPdfUrl(`http://localhost:5000/${filePath}`);
+    setOpenPdfDialog(true);
+  };
+  const handleInputChange = (field, value) => {
+    setEditedData((prev) => ({ ...prev, [field]: value }));
+  };
+
   const handleFileChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      file: e.target.files[0],
-    }));
+    setFile(e.target.files[0]);
+  };
+  const handleYearSelection = (year) => {
+    setEditedData((prev) => ({ ...prev, document_year: year }));
+    setOpenYearDialog(false);
+  };
+  const handleSave = async () => {
+    if (
+      !editedData.old_project_name_th ||
+      !editedData.old_project_name_eng ||
+      !editedData.project_type ||
+      !editedData.document_year
+    ) {
+      showSnackbar('Please fill out all fields', 'error');
+      return;
+    }
+
+    const formData = new FormData();
+    Object.entries(editedData).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        formData.append(key, value);
+      }
+    });
+    if (file) {
+      formData.append('file', file);
+    }
+
+    try {
+      if (isEditMode) {
+        await api.put(`/old-projects/${editingProject.old_id}`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        showSnackbar('Project updated successfully', 'success');
+      } else {
+        await api.post('/old-projects', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        showSnackbar('Project added successfully', 'success');
+      }
+
+      fetchProjects();
+      setOpenDialog(false);
+    } catch {
+      showSnackbar('Failed to save project', 'error');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this project?'))
+      return;
+    try {
+      await api.delete(`/old-projects/${id}`);
+      showSnackbar('Project deleted successfully', 'success');
+      fetchProjects();
+    } catch {
+      showSnackbar('Failed to delete project', 'error');
+    }
   };
 
   return (
-    <Card sx={{ maxWidth: 600, mx: 'auto', mt: 4 }}>
-      <CardHeader title="Add Old Project Document" />
-      <CardContent>
-        <form onSubmit={handleSubmit}>
-          <Box sx={{ mb: 2 }}>
-            <TextField
-              fullWidth
-              label="Project Name (Thai)"
-              value={formData.projectNameTh}
-              onChange={(e) => setFormData((prev) => ({ ...prev, projectNameTh: e.target.value }))}
-              required
-            />
-          </Box>
+    <Box sx={{ maxWidth: 1200, mx: 'auto', mt: 4 }}>
+      <Card>
+        <CardHeader title="Manage Old Project Documents" />
+        <CardContent>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddIcon />}
+            onClick={handleOpenAddDialog}
+            sx={{ mb: 2 }}
+          >
+            Add New Project
+          </Button>
 
-          <Box sx={{ mb: 2 }}>
-            <TextField
-              fullWidth
-              label="Project Name (English)"
-              value={formData.projectNameEng}
-              onChange={(e) => setFormData((prev) => ({ ...prev, projectNameEng: e.target.value }))}
-              required
-            />
-          </Box>
-
-          <Box sx={{ mb: 2 }}>
-            <TextField
-              select
-              fullWidth
-              label="Project Type"
-              value={formData.projectType}
-              onChange={(e) => setFormData((prev) => ({ ...prev, projectType: e.target.value }))}
-              required
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Project Name (Thai)</TableCell>
+                  <TableCell>Project Name (English)</TableCell>
+                  <TableCell>Type</TableCell>
+                  <TableCell>Year</TableCell>
+                  <TableCell>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {projects.map((project) => (
+                  <TableRow key={project.old_id}>
+                    <TableCell>{project.old_project_name_th}</TableCell>
+                    <TableCell>{project.old_project_name_eng}</TableCell>
+                    <TableCell>{project.project_type}</TableCell>
+                    <TableCell>{project.document_year}</TableCell>
+                    <TableCell>
+                      {project.file_path ? (
+                        <IconButton
+                          color="primary"
+                          onClick={() => handleOpenPdfDialog(project.file_path)}
+                        >
+                          <VisibilityIcon />
+                        </IconButton>
+                      ) : (
+                        <Typography variant="body2" color="textSecondary">
+                          No File
+                        </Typography>
+                      )}
+                      <IconButton
+                        color="primary"
+                        onClick={() => handleOpenEditDialog(project)}
+                      >
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton
+                        color="error"
+                        onClick={() => handleDelete(project.old_id)}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </CardContent>
+      </Card>
+      {/* ✅ Dialog สำหรับดูเอกสาร PDF */}
+      <Dialog
+        open={openPdfDialog}
+        onClose={() => setOpenPdfDialog(false)}
+        fullWidth
+        maxWidth="lg"
+      >
+        <DialogTitle>View Document</DialogTitle>
+        <DialogContent
+          sx={{
+            height: '80vh',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          {pdfLoading && <CircularProgress />}
+          <iframe
+            src={pdfUrl}
+            width="100%"
+            height="100%"
+            onLoad={() => setPdfLoading(false)}
+            style={{ display: pdfLoading ? 'none' : 'block', border: 'none' }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenPdfDialog(false)} color="secondary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* ✅ Dialog สำหรับเพิ่ม/แก้ไขโครงงาน */}
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle>
+          {isEditMode ? 'Edit Project' : 'Add New Project'}
+        </DialogTitle>
+        <DialogContent sx={{ p: 3 }}>
+          <TextField
+            fullWidth
+            label="Project Name (Thai)"
+            value={editedData.old_project_name_th}
+            onChange={(e) =>
+              handleInputChange('old_project_name_th', e.target.value)
+            }
+            sx={{ my: 1 }}
+            required
+          />
+          <TextField
+            fullWidth
+            label="Project Name (English)"
+            value={editedData.old_project_name_eng}
+            onChange={(e) =>
+              handleInputChange('old_project_name_eng', e.target.value)
+            }
+            sx={{ my: 1 }}
+            required
+          />
+          <TextField
+            select
+            fullWidth
+            label="Project Type"
+            value={editedData.project_type}
+            onChange={(e) => handleInputChange('project_type', e.target.value)}
+            sx={{ my: 1 }}
+            required
+          >
+            {projectTypes.map((type) => (
+              <MenuItem
+                key={type.project_type_id}
+                value={type.project_type_name}
+              >
+                {type.project_type_name}
+              </MenuItem>
+            ))}
+          </TextField>
+          <FormControl fullWidth sx={{ my: 1 }}>
+            <InputLabel>Document Year *</InputLabel>
+            <Select
+              value={editedData.document_year}
+              onChange={(e) => handleInputChange('document_year', e.target.value)}
             >
-              {projectTypes.map((type) => (
-                <MenuItem key={type.project_type_id} value={type.project_type_name}>
-                  {type.project_type_name}
+              {years.map((year) => (
+                <MenuItem key={year} value={year}>
+                  {year}
                 </MenuItem>
               ))}
-            </TextField>
-          </Box>
-
-          <Box sx={{ mb: 2 }}>
-            <TextField
-              fullWidth
-              label="Project Year"
-              type="number"
-              inputProps={{ min: 2000, max: 2100 }}
-              value={formData.projectYear}
-              onChange={(e) => setFormData((prev) => ({ ...prev, projectYear: e.target.value }))}
-              required
+            </Select>
+          </FormControl>
+          <Button variant="contained" component="label" sx={{ my: 1 }}>
+            Upload File
+            <input
+              type="file"
+              accept=".pdf"
+              hidden
+              onChange={handleFileChange}
             />
-          </Box>
-
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="body1">Project Document</Typography>
-            <Button variant="contained" component="label">
-              Choose File
-              <input type="file" accept=".pdf" hidden onChange={handleFileChange} required />
-            </Button>
-            {formData.file && (
-              <Typography variant="body2" sx={{ mt: 1 }}>
-                {formData.file.name}
-              </Typography>
-            )}
-          </Box>
-
-          <Button type="submit" variant="contained" color="primary" fullWidth>
-            Add Project
           </Button>
-        </form>
-      </CardContent>
-    </Card>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)} color="secondary">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSave}
+            variant="contained"
+            color="primary"
+            startIcon={<SaveIcon />}
+          >
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
+        {/* ✅ Dialog เลือกปีของเอกสาร */}
+        <Dialog open={openYearDialog} onClose={() => setOpenYearDialog(false)}>
+        <DialogTitle>Select Document Year</DialogTitle>
+        <DialogContent>
+          <FormControl fullWidth sx={{ my: 1 }}>
+            <InputLabel>Document Year</InputLabel>
+            <Select
+              value={editedData.document_year || ''}
+              onChange={(e) => handleYearSelection(e.target.value)}
+            >
+              {years.map((year) => (
+                <MenuItem key={year} value={year}>
+                  {year}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenYearDialog(false)} color="secondary">
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 };
 

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
 const { authenticateSession } = require('../middleware/authMiddleware');
-const upload = require('../config/multer'); // Import Multer configuration
+const { uploadProfile } = require('../config/multer');
 
 // Fetch current user data
 router.get('/me', authenticateSession, userController.getCurrentUser);
@@ -14,7 +14,7 @@ router.put('/:id', authenticateSession, userController.updateUser);
 router.post(
   '/upload-profile-image',
   authenticateSession,
-  upload.single('profileImage'),
+  uploadProfile.single('profileImage'),
   userController.uploadProfileImage
 );
 
