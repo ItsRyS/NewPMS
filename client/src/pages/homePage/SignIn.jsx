@@ -99,41 +99,30 @@ export default function SignIn() {
     const data = {
       email: formData.get("email"),
       password: formData.get("password"),
-      tabId: sessionStorage.getItem("tabId"), // ✅ เพิ่ม tabId
+      tabId: sessionStorage.getItem("tabId"),
     };
 
     try {
+      // ตรวจสอบข้อมูลด้วย Zod
       signInSchema.parse(data);
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        setErrors({
-          email: err.formErrors?.fieldErrors?.email?.[0] || "",
-          password: err.formErrors?.fieldErrors?.password?.[0] || "",
-        });
-      }
-      return;
-    }
+      setErrors({});
 
-    setErrors({});
-    try {
-      const response = await api.post(
-        "/auth/login",
-        JSON.stringify(data), // ✅ แปลงเป็น JSON string
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "x-tab-id": data.tabId, // ✅ ส่งค่า tabId
-          },
-        }
-      );
+      const response = await api.post("/auth/login", data);
+      const { role } = response.data.user; // เปลี่ยนจาก response.data เป็น response.data.user
 
-      const { role } = response.data;
+      // ทดสอบ session ทันทีหลัง login
+      await api.get("/auth/check-session");
+
       showSnackbar("เข้าสู่ระบบสำเร็จ!", "success");
       setTimeout(() => {
         navigate(role === "teacher" ? "/adminHome" : "/studentHome");
       }, 1500);
     } catch (error) {
-      showSnackbar(error.response?.data?.error || "เข้าสู่ระบบไม่สำเร็จ", "error");
+      console.error("Login error:", error);
+      showSnackbar(
+        error.response?.data?.error || "เข้าสู่ระบบไม่สำเร็จ",
+        "error"
+      );
     }
   };
 

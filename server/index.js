@@ -14,37 +14,45 @@ const ENV = process.env.NODE_ENV || "development";
 const PORT = ENV === "development" ? process.env.DEV_PORT : process.env.PROD_PORT;
 
 // ✅ CORS Configuration
-const allowedOrigins = [
-  process.env.DEV_ORIGIN || "http://localhost:5173",
-  process.env.PROD_ORIGIN || "https://new-pms.vercel.app",
-];
+const corsOptions = {
+  origin: [
+    process.env.DEV_ORIGIN || "http://localhost:5173",
+    process.env.PROD_ORIGIN || "https://new-pms.vercel.app"
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization", "x-tab-id"],
+};
+app.use(cors(corsOptions));
 
+// ✅ CORS Configuration
 app.use(
   cors({
-    origin: allowedOrigins,
-    methods: "GET,POST,PUT,DELETE",
+    origin: corsOptions,
+    methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization", "x-tab-id"],
     credentials: true,
+    exposedHeaders: ["set-cookie"]
   })
 );
 
 // ✅ Session Store Configuration (ใช้ db.js)
 const sessionStore = new MySQLStore({}, db);
 
-app.use(
-  session({
-    key: "user_sid",
-    secret: "itpms2024",
-    resave: false,
-    saveUninitialized: false,
-    store: sessionStore,
-    cookie: {
-      maxAge: 1000 * 60 * 60 * 24, // อายุ 1 วัน
-      secure: process.env.NODE_ENV === "production",
-      httpOnly: true,
-    },
-  })
-);
+app.use(session({
+  key: "user_sid",
+  secret: process.env.JWT_SECRET || "itpms2024",
+  resave: false,
+  saveUninitialized: false,
+  store: sessionStore,
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax',
+    httpOnly: true,
+    domain: process.env.NODE_ENV === "production" ? ".onrender.com" : undefined
+  }
+}));
 
 // ✅ Middleware
 app.use(express.json());

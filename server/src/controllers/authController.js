@@ -20,50 +20,50 @@ const logoutSchema = z.object({
 // ฟังก์ชันเข้าสู่ระบบ
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, tabId } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email and password are required" });
+    if (!email || !password || !tabId) {
+      return res.status(400).json({ error: "Missing required fields" });
     }
 
     const [userResult] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
     const user = userResult[0];
 
-    if (!user) {
+    if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" });
     }
 
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!passwordMatch) {
-      return res.status(401).json({ error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" });
+    // Initialize tabs object if it doesn't exist
+    if (!req.session.tabs) {
+      req.session.tabs = {};
     }
 
-    // ✅ บันทึกข้อมูล Session
-    req.session.user = {
+    // Store user data for this tab
+    req.session.tabs[tabId] = {
       user_id: user.user_id,
       role: user.role,
       username: user.username,
-      profileImage: user.profile_image,
+      profileImage: user.profile_image
     };
 
-    console.log("Session Created:", req.session); // 🛠 Debugging
-
-    req.session.save((err) => {
-      if (err) {
-        console.error("Session Save Error:", err);
-        return res.status(500).json({ error: "Session save failed" });
-      }
-      res.status(200).json({
-        message: "Login successful",
-        user: req.session.user,
+    await new Promise((resolve, reject) => {
+      req.session.save((err) => {
+        if (err) reject(err);
+        resolve();
       });
     });
 
+    res.status(200).json({
+      message: "Login successful",
+      user: req.session.tabs[tabId]
+    });
+
   } catch (error) {
-    console.error("Login Error:", error.message);
-    res.status(500).json({ error: "Internal Server Error" });
+    console.error("Login Error:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 
 
