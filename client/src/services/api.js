@@ -26,32 +26,34 @@ api.interceptors.request.use(
   }
 );
 
-// Interceptor สำหรับจัดการคำตอบ และลอง Refresh Session เมื่อพบ 401 Unauthorized
 api.interceptors.response.use(
-  (response) => response, // ส่งคืนคำตอบที่สำเร็จ
+  (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // ตรวจสอบสถานะ 401 Unauthorized และยังไม่ได้ลองคำขอนี้ใหม่
     if (
       error.response &&
       error.response.status === 401 &&
       !originalRequest._retry &&
-      originalRequest.url !== '/auth/login' // เพิ่มเงื่อนไขไม่ให้ refresh session ระหว่าง login
+      originalRequest.url !== '/auth/login' &&
+      originalRequest.url !== '/auth/refresh-session' // ✅ ป้องกันการวนลูป refresh-session
     ) {
-      originalRequest._retry = true; // ป้องกันการวนลูปคำขอ
+      originalRequest._retry = true;
 
       try {
-        await api.get('/auth/refresh-session'); // เรียก API เพื่อ Refresh Session
-        return api(originalRequest); // ส่งคำขอเดิมอีกครั้ง
+        const refreshResponse = await api.get('/auth/refresh-session');
+        if (refreshResponse.data.success) {
+          return api(originalRequest);
+        }
       } catch (refreshError) {
-        return Promise.reject(refreshError); // ส่งคืนข้อผิดพลาดถ้า Refresh ล้มเหลว
+        return Promise.reject(refreshError);
       }
     }
 
-    return Promise.reject(error); // ส่งคืนข้อผิดพลาดเดิมถ้าไม่ใช่กรณี 401
+    return Promise.reject(error);
   }
 );
+
 // Interceptor for response handling
 api.interceptors.response.use(
   (response) => response,

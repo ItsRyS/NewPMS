@@ -135,16 +135,21 @@ exports.checkSession = (req, res) => {
 };
 
 // ฟังก์ชันต่ออายุ Session
-exports.refreshSession = (req, res) => {
-  const tabId = req.headers['x-tab-id'];
+exports.refreshSession = async (req, res) => {
+  if (!req.session || !req.session.user) {
+    return res.status(401).json({ success: false, message: "Session expired" });
+  }
 
-  if (req.session && req.session.tabs && req.session.tabs[tabId]) {
-    req.session.touch(); // ต่ออายุ Session
-    res.status(200).json({ success: true, message: 'Session refreshed' });
-  } else {
-    res.status(401).json({ success: false, message: 'Session expired' });
+  try {
+    // ต่ออายุ Session
+    req.session.cookie.maxAge = 1000 * 60 * 60 * 24; // ต่ออายุ 1 วัน
+    res.json({ success: true, message: "Session refreshed", user: req.session.user });
+  } catch (error) {
+    console.error("Error refreshing session:", error);
+    res.status(500).json({ success: false, message: "Failed to refresh session" });
   }
 };
+
 
 // ฟังก์ชันอัปเดตเซสชัน
 exports.updateSession = async (req, res) => {

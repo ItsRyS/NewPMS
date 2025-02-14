@@ -41,7 +41,7 @@ app.use(
     store: sessionStore,
     cookie: {
       maxAge: 1000 * 60 * 60 * 24, // อายุ 1 วัน
-      secure: ENV === "production",
+      secure: process.env.NODE_ENV === "production",
       httpOnly: true,
     },
   })
