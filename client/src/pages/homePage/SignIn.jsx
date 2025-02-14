@@ -119,8 +119,11 @@ export default function SignIn() {
     try {
       const response = await api.post(
         '/auth/login',
-        { ...data, tabId },
-        { withCredentials: true }
+        { ...data },
+        {
+          withCredentials: true,
+          headers: { 'x-tab-id': tabId }, // ✅ ส่ง Header x-tab-id
+        }
       );
       const { role } = response.data;
       showSnackbar('เข้าสู่ระบบสำเร็จ!', 'success');
@@ -134,6 +137,7 @@ export default function SignIn() {
       );
     }
   };
+
 
   return (
     <>

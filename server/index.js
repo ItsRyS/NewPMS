@@ -23,7 +23,7 @@ app.use(
   cors({
     origin: allowedOrigins,
     methods: "GET,POST,PUT,DELETE",
-    allowedHeaders: "Content-Type,Authorization",
+    allowedHeaders: ["Content-Type", "Authorization", "x-tab-id"],
     credentials: true,
   })
 );
