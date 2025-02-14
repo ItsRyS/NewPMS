@@ -8,8 +8,8 @@ const dbConfig = {
   user: process.env[ENV === "development" ? "DEV_DB_USER" : "PROD_DB_USER"],
   password: process.env[ENV === "development" ? "DEV_DB_PASSWORD" : "PROD_DB_PASSWORD"],
   database: process.env[ENV === "development" ? "DEV_DB_NAME" : "PROD_DB_NAME"],
-  port: process.env[ENV === "development" ? "DEV_DB_PORT" : "PROD_DB_PORT"],
-  ssl: ENV === "production" ? { rejectUnauthorized: true } : false, // ใช้ SSL เฉพาะ Production
+  port: parseInt(process.env[ENV === "development" ? "DEV_DB_PORT" : "PROD_DB_PORT"], 10), // 🔹 แปลง PORT เป็นตัวเลข
+  ssl: ENV === "production" ? { rejectUnauthorized: false } : false, // ✅ ใช้ SSL เฉพาะ Production
   waitForConnections: true,
   connectionLimit: 10, // จำกัดการเชื่อมต่อพร้อมกัน
   queueLimit: 0, // ไม่จำกัดจำนวนคิวรอ
