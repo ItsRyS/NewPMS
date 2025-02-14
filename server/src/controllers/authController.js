@@ -7,11 +7,7 @@ const { z } = require('zod');
 
 
 
-const loginSchema = z.object({
-  email: z.string().email("Invalid email format"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  tabId: z.string().nonempty("TabId is required")
-});
+
 
 // สร้าง Zod schema สำหรับ register
 const registerSchema = z.object({
@@ -28,46 +24,39 @@ const logoutSchema = z.object({
 // ฟังก์ชันเข้าสู่ระบบ
 exports.login = async (req, res) => {
   try {
-    const { email, password, tabId } = loginSchema.parse(req.body);
+    const { email, password } = req.body;
+    const [user] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
 
-    const [userResult] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
-    const user = userResult[0];
-
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res.status(401).json({ error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" });
+    if (!user[0] || !(await bcrypt.compare(password, user[0].password))) {
+      return res.status(401).json({ error: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
     }
 
-    if (!req.session.tabs) {
-      req.session.tabs = {};
-    }
-
-    req.session.tabs[tabId] = {
-      user_id: user.user_id,
-      role: user.role,
-      username: user.username,
-      profileImage: user.profile_image
+    // สร้าง session
+    req.session.user = {
+      id: user[0].id,
+      email: user[0].email,
+      role: user[0].role,
+      username: user[0].username
     };
 
-    await new Promise((resolve, reject) => {
-      req.session.save((err) => {
-        if (err) reject(err);
-        resolve();
+    // บันทึก session
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({ error: 'Failed to create session' });
+      }
+      res.status(200).json({
+        message: 'Login successful',
+        user: req.session.user
       });
     });
 
-    res.status(200).json({
-      message: "Login successful",
-      user: req.session.tabs[tabId]
-    });
-
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: error.errors[0].message });
-    }
-    console.error("Login Error:", error);
-    res.status(500).json({ error: "Internal server error" });
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 
 exports.register = async (req, res) => {
   try {
@@ -125,22 +114,18 @@ exports.logout = (req, res) => {
   }
 };
 
-exports.checkSession = async (req, res) => {
-  const tabId = req.headers["x-tab-id"];
-
-  if (!tabId) {
-    return res.status(400).json({ error: "Missing tab ID" });
-  }
-
-  if (req.session?.tabs?.[tabId]) {
-    return res.status(200).json({
+exports.checkSession = (req, res) => {
+  console.log('Session:', req.session); // For debugging
+  if (req.session && req.session.user) {
+    res.json({
       isAuthenticated: true,
-      user: req.session.tabs[tabId]
+      user: req.session.user
     });
+  } else {
+    res.status(401).json({ isAuthenticated: false });
   }
-
-  res.status(401).json({ isAuthenticated: false });
 };
+
 
 exports.refreshSession = async (req, res) => {
   const tabId = req.headers["x-tab-id"];

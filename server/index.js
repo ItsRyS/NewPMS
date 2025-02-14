@@ -27,27 +27,22 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // Session Store Configuration
-const sessionStore = new MySQLStore({
-  clearExpired: true,
-  checkExpirationInterval: 900000, // 15 minutes
-  expiration: 86400000, // 24 hours
-}, db);
-
-// Session Configuration
-app.use(session({
-  key: "user_sid",
-  secret: process.env.JWT_SECRET || "itpms2024",
+const sessionConfig = {
+  key: 'user_sid',
+  secret: process.env.JWT_SECRET || 'itpms2024',
   resave: false,
   saveUninitialized: false,
-  store: sessionStore,
+  store: new MySQLStore({}, db),
   cookie: {
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax',
     httpOnly: true,
-    domain: process.env.NODE_ENV === "production" ? ".onrender.com" : undefined
+    secure: true, // ต้องเป็น true เมื่อใช้ HTTPS
+    sameSite: 'none', // จำเป็นสำหรับ cross-origin
+    domain: '.onrender.com' // domain หลักของ backend
   }
-}));
+};
+
+app.use(session(sessionConfig));
 
 app.use(express.json());
 app.use(bodyParser.json());

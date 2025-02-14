@@ -1,15 +1,26 @@
 import axios from "axios";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
-let refreshTokenPromise = null;
+
 const api = axios.create({
-  baseURL: `${API_BASE_URL}/api`,
-  withCredentials: true,
+  baseURL: 'https://newpms.onrender.com/api',
+  withCredentials: true, // สำคัญมาก
   headers: {
-    "Content-Type": "application/json"
+    'Content-Type': 'application/json',
   }
 });
-
+let isRefreshing = false;
+let failedQueue = [];
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
@@ -28,44 +39,42 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // เช็คว่าเป็น 401 และยังไม่เคย retry
-    if (
-      error.response?.status === 401 &&
-      !originalRequest._retry &&
-      !originalRequest.url.includes("/auth/login") &&
-      !originalRequest.url.includes("/auth/refresh-session")
-    ) {
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        try {
+          return new Promise((resolve, reject) => {
+            failedQueue.push({ resolve, reject });
+          }).then(() => {
+            return api(originalRequest);
+          }).catch(err => {
+            return Promise.reject(err);
+          });
+        } catch (err) {
+          return Promise.reject(err);
+        }
+      }
+
       originalRequest._retry = true;
+      isRefreshing = true;
 
       try {
-        // ถ้ายังไม่มีการ refresh token ที่กำลังทำงานอยู่
-        if (!refreshTokenPromise) {
-          refreshTokenPromise = api.get("/auth/refresh-session").finally(() => {
-            refreshTokenPromise = null;
-          });
-        }
-
-        // รอให้ refresh token เสร็จ
-        const response = await refreshTokenPromise;
-
-        if (response?.data?.success) {
-          // ทำ request เดิมอีกครั้ง
+        const response = await api.get('/auth/refresh-session');
+        if (response.data.success) {
+          isRefreshing = false;
+          processQueue(null);
           return api(originalRequest);
         } else {
-          // ถ้า refresh ไม่สำเร็จ ให้ logout
-          sessionStorage.clear();
-          window.location.href = "/signin";
+          processQueue(new Error('Refresh failed'));
+          window.location.href = '/signin';
           return Promise.reject(error);
         }
       } catch (refreshError) {
-        // กรณี refresh token error
-        console.error("Session refresh failed:", refreshError);
-        sessionStorage.clear();
-        window.location.href = "/signin";
+        processQueue(refreshError);
+        isRefreshing = false;
+        window.location.href = '/signin';
         return Promise.reject(refreshError);
       }
     }
-
     return Promise.reject(error);
   }
 );

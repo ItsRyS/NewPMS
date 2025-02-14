@@ -93,28 +93,24 @@ export default function SignIn() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    const data = {
-      email: formData.get("email"),
+    try {
+      const response = await api.post('/auth/login', {
+        email: formData.get("email"),
       password: formData.get("password"),
       tabId: sessionStorage.getItem("tabId")
-    };
+      });
 
-    try {
-      const response = await api.post("/auth/login", data);
-      showSnackbar("เข้าสู่ระบบสำเร็จ!", "success");
-
-      setTimeout(() => {
-        navigate(response.data.user.role === "teacher" ? "/adminHome" : "/studentHome");
-      }, 1500);
+      if (response.data.user) {
+        // ทำการ redirect หลังจาก login สำเร็จ
+        setTimeout(() => {
+          navigate(response.data.user.role === 'teacher' ? '/adminHome' : '/studentHome');
+        }, 1000);
+      }
     } catch (error) {
-      showSnackbar(
-        error.response?.data?.error || "เข้าสู่ระบบไม่สำเร็จ",
-        "error"
-      );
+      console.error('Login error:', error);
+      showSnackbar(error.response?.data?.error || 'เข้าสู่ระบบไม่สำเร็จ', 'error');
     }
   };
-
-
 
   return (
     <>
