@@ -24,23 +24,24 @@ const logoutSchema = z.object({
 // ฟังก์ชันเข้าสู่ระบบ
 exports.login = async (req, res) => {
   try {
-    // ตรวจสอบข้อมูล req.body ด้วย Zod
     const { email, password, tabId } = loginSchema.parse(req.body);
 
-    // ทำงาน logic ต่อเมื่อ parse ผ่านแล้ว (ไม่มี error)
-    const [userResult] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+    if (!email || !password || !tabId) {
+      return res.status(400).json({ error: "Email, password, and tabId are required" });
+    }
+
+    const [userResult] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
     const user = userResult[0];
 
     if (!user) {
-      return res.status(401).json({ error: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
+      return res.status(401).json({ error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" });
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
-      return res.status(401).json({ error: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
+      return res.status(401).json({ error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" });
     }
 
-    // เก็บข้อมูลใน session โดยใช้ tabId เป็น key
     if (!req.session.tabs) req.session.tabs = {};
     req.session.tabs[tabId] = {
       user_id: user.user_id,
@@ -50,22 +51,18 @@ exports.login = async (req, res) => {
     };
 
     res.status(200).json({
-      message: 'Login successful',
+      message: "Login successful",
       user_id: user.user_id,
       role: user.role,
       username: user.username,
       profileImage: user.profile_image,
     });
   } catch (error) {
-    // ดัก Zod error
-    if (error.name === 'ZodError') {
-      const messages = error.errors.map((e) => e.message).join(', ');
-      return res.status(400).json({ error: messages });
+    if (error.name === "ZodError") {
+      return res.status(400).json({ error: error.errors.map((e) => e.message).join(", ") });
     }
-
-    // ถ้าเป็น error อื่น (เช่น DB error) ส่ง 500
-    console.error('เกิดข้อผิดพลาดในการเข้าสู่ระบบ:', error.message);
-    res.status(500).json({ error: 'เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์' });
+    console.error("Login Error:", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 

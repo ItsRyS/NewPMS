@@ -97,19 +97,18 @@ export default function SignIn() {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const data = {
-      email: formData.get('email'),
-      password: formData.get('password'),
+      email: formData.get("email"),
+      password: formData.get("password"),
+      tabId: sessionStorage.getItem("tabId"), // ✅ เพิ่ม tabId
     };
-    const tabId = sessionStorage.getItem('tabId');
 
     try {
       signInSchema.parse(data);
     } catch (err) {
       if (err instanceof z.ZodError) {
-        const fieldErrors = err.formErrors?.fieldErrors || {};
         setErrors({
-          email: fieldErrors.email ? fieldErrors.email[0] : '',
-          password: fieldErrors.password ? fieldErrors.password[0] : '',
+          email: err.formErrors?.fieldErrors?.email?.[0] || "",
+          password: err.formErrors?.fieldErrors?.password?.[0] || "",
         });
       }
       return;
@@ -118,25 +117,26 @@ export default function SignIn() {
     setErrors({});
     try {
       const response = await api.post(
-        '/auth/login',
-        { ...data },
+        "/auth/login",
+        JSON.stringify(data), // ✅ แปลงเป็น JSON string
         {
-          withCredentials: true,
-          headers: { 'x-tab-id': tabId }, // ✅ ส่ง Header x-tab-id
+          headers: {
+            "Content-Type": "application/json",
+            "x-tab-id": data.tabId, // ✅ ส่งค่า tabId
+          },
         }
       );
+
       const { role } = response.data;
-      showSnackbar('เข้าสู่ระบบสำเร็จ!', 'success');
+      showSnackbar("เข้าสู่ระบบสำเร็จ!", "success");
       setTimeout(() => {
-        navigate(role === 'teacher' ? '/adminHome' : '/studentHome');
+        navigate(role === "teacher" ? "/adminHome" : "/studentHome");
       }, 1500);
     } catch (error) {
-      showSnackbar(
-        error.response?.data?.error || 'เข้าสู่ระบบไม่สำเร็จ',
-        'error'
-      );
+      showSnackbar(error.response?.data?.error || "เข้าสู่ระบบไม่สำเร็จ", "error");
     }
   };
+
 
 
   return (
