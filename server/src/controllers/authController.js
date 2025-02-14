@@ -115,49 +115,22 @@ exports.logout = (req, res) => {
 };
 
 exports.checkSession = (req, res) => {
-  console.log('Session:', req.session); // For debugging
+  console.log("🔍 Checking Session:", req.session); // ✅ Debug
   if (req.session && req.session.user) {
-    res.json({
-      isAuthenticated: true,
-      user: req.session.user
-    });
+    return res.status(200).json({ isAuthenticated: true, user: req.session.user });
   } else {
-    res.status(401).json({ isAuthenticated: false });
+    return res.status(401).json({ isAuthenticated: false });
   }
 };
 
-
-exports.refreshSession = async (req, res) => {
-  const tabId = req.headers["x-tab-id"];
-
-  if (!tabId || !req.session?.tabs?.[tabId]) {
-    return res.status(401).json({
-      success: false,
-      message: "Session expired"
-    });
+exports.refreshSession = (req, res) => {
+  console.log("🔄 Refreshing Session:", req.session); // ✅ Debug
+  if (!req.session || !req.session.user) {
+    return res.status(401).json({ success: false, message: "Session expired" });
   }
-
-  try {
-    req.session.cookie.maxAge = 24 * 60 * 60 * 1000; // Reset to 24 hours
-    await new Promise((resolve, reject) => {
-      req.session.save((err) => {
-        if (err) reject(err);
-        resolve();
-      });
-    });
-
-    res.json({
-      success: true,
-      message: "Session refreshed",
-      user: req.session.tabs[tabId]
-    });
-  } catch (error) {
-    console.error("Session refresh error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to refresh session"
-    });
-  }
+  req.session.cookie.maxAge = 1000 * 60 * 60 * 24;
+  req.session.save();
+  res.json({ success: true, message: "Session refreshed", user: req.session.user });
 };
 
 

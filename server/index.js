@@ -13,36 +13,35 @@ const app = express();
 const ENV = process.env.NODE_ENV || "development";
 const PORT = ENV === "development" ? process.env.DEV_PORT : process.env.PROD_PORT;
 
-// CORS Configuration
-const corsOptions = {
-  origin: [
-    process.env.DEV_ORIGIN || "http://localhost:5173",
-    process.env.PROD_ORIGIN || "https://new-pms.vercel.app"
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization", "x-tab-id"],
-};
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://new-pms.vercel.app"
+    ],
+    methods: "GET,POST,PUT,DELETE",
+    credentials: true, // ✅ เปิดใช้งาน Credentials (สำคัญ)
+  })
+);
 
-app.use(cors(corsOptions));
+const sessionStore = new MySQLStore(db);
 
-// Session Store Configuration
-const sessionConfig = {
-  key: 'user_sid',
-  secret: process.env.JWT_SECRET || 'itpms2024',
-  resave: false,
-  saveUninitialized: false,
-  store: new MySQLStore({}, db),
-  cookie: {
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    httpOnly: true,
-    secure: true, // ต้องเป็น true เมื่อใช้ HTTPS
-    sameSite: 'none', // จำเป็นสำหรับ cross-origin
-    domain: '.onrender.com' // domain หลักของ backend
-  }
-};
+app.use(
+  session({
+    key: "user_sid",
+    secret: "itpms2024",
+    resave: false,
+    saveUninitialized: false,
+    store: sessionStore,
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24, // 1 วัน
+      secure: process.env.NODE_ENV === "production", // ✅ ต้องเป็น true ถ้าใช้งาน HTTPS
+      httpOnly: false, // ✅ อนุญาตให้ JavaScript เข้าถึง cookie
+      sameSite: "None", // ✅ สำคัญสำหรับ cross-site session
+    },
+  })
+);
 
-app.use(session(sessionConfig));
 
 app.use(express.json());
 app.use(bodyParser.json());
