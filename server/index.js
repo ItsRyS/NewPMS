@@ -1,3 +1,4 @@
+// index.js
 require("dotenv").config();
 const express = require("express");
 const path = require("path");
@@ -5,15 +6,14 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const session = require("express-session");
 const MySQLStore = require("express-mysql-session")(session);
-const db = require("./src/config/db"); // ใช้ Connection Pool จาก db.js
+const db = require("./src/config/db");
 
 const app = express();
 
-// ตรวจสอบ Environment
 const ENV = process.env.NODE_ENV || "development";
 const PORT = ENV === "development" ? process.env.DEV_PORT : process.env.PROD_PORT;
 
-// ✅ CORS Configuration
+// CORS Configuration
 const corsOptions = {
   origin: [
     process.env.DEV_ORIGIN || "http://localhost:5173",
@@ -23,22 +23,17 @@ const corsOptions = {
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization", "x-tab-id"],
 };
+
 app.use(cors(corsOptions));
 
-// ✅ CORS Configuration
-app.use(
-  cors({
-    origin: corsOptions,
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization", "x-tab-id"],
-    credentials: true,
-    exposedHeaders: ["set-cookie"]
-  })
-);
+// Session Store Configuration
+const sessionStore = new MySQLStore({
+  clearExpired: true,
+  checkExpirationInterval: 900000, // 15 minutes
+  expiration: 86400000, // 24 hours
+}, db);
 
-// ✅ Session Store Configuration (ใช้ db.js)
-const sessionStore = new MySQLStore({}, db);
-
+// Session Configuration
 app.use(session({
   key: "user_sid",
   secret: process.env.JWT_SECRET || "itpms2024",
@@ -54,7 +49,6 @@ app.use(session({
   }
 }));
 
-// ✅ Middleware
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));

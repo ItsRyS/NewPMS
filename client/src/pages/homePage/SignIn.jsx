@@ -13,7 +13,7 @@ import {
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import HomeIcon from "@mui/icons-material/Home";
-import * as z from 'zod';
+
 import api from '../../services/api';
 import { useSnackbar } from '../../components/ReusableSnackbar';
 
@@ -77,19 +77,16 @@ const BackButton = styled(IconButton)({
 });
 
 // Schema สำหรับตรวจสอบข้อมูล
-const signInSchema = z.object({
-  email: z.string().email('กรุณากรอกอีเมลที่ถูกต้อง'),
-  password: z.string().min(6, 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร'),
-});
+
 
 export default function SignIn() {
-  const [errors, setErrors] = useState({});
+  const [errors] = useState({});
   const navigate = useNavigate();
   const showSnackbar = useSnackbar();
 
   useEffect(() => {
-    if (!sessionStorage.getItem('tabId')) {
-      sessionStorage.setItem('tabId', `${Date.now()}-${Math.random()}`);
+    if (!sessionStorage.getItem("tabId")) {
+      sessionStorage.setItem("tabId", `${Date.now()}-${Math.random()}`);
     }
   }, []);
 
@@ -99,26 +96,17 @@ export default function SignIn() {
     const data = {
       email: formData.get("email"),
       password: formData.get("password"),
-      tabId: sessionStorage.getItem("tabId"),
+      tabId: sessionStorage.getItem("tabId")
     };
 
     try {
-      // ตรวจสอบข้อมูลด้วย Zod
-      signInSchema.parse(data);
-      setErrors({});
-
       const response = await api.post("/auth/login", data);
-      const { role } = response.data.user; // เปลี่ยนจาก response.data เป็น response.data.user
-
-      // ทดสอบ session ทันทีหลัง login
-      await api.get("/auth/check-session");
-
       showSnackbar("เข้าสู่ระบบสำเร็จ!", "success");
+
       setTimeout(() => {
-        navigate(role === "teacher" ? "/adminHome" : "/studentHome");
+        navigate(response.data.user.role === "teacher" ? "/adminHome" : "/studentHome");
       }, 1500);
     } catch (error) {
-      console.error("Login error:", error);
       showSnackbar(
         error.response?.data?.error || "เข้าสู่ระบบไม่สำเร็จ",
         "error"

@@ -5,6 +5,14 @@ const { z } = require('zod');
 // สร้าง Zod schema สำหรับ login
 
 
+
+
+const loginSchema = z.object({
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  tabId: z.string().nonempty("TabId is required")
+});
+
 // สร้าง Zod schema สำหรับ register
 const registerSchema = z.object({
   username: z.string().min(1, 'Username is required'),
@@ -20,11 +28,7 @@ const logoutSchema = z.object({
 // ฟังก์ชันเข้าสู่ระบบ
 exports.login = async (req, res) => {
   try {
-    const { email, password, tabId } = req.body;
-
-    if (!email || !password || !tabId) {
-      return res.status(400).json({ error: "Missing required fields" });
-    }
+    const { email, password, tabId } = loginSchema.parse(req.body);
 
     const [userResult] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
     const user = userResult[0];
@@ -33,12 +37,10 @@ exports.login = async (req, res) => {
       return res.status(401).json({ error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" });
     }
 
-    // Initialize tabs object if it doesn't exist
     if (!req.session.tabs) {
       req.session.tabs = {};
     }
 
-    // Store user data for this tab
     req.session.tabs[tabId] = {
       user_id: user.user_id,
       role: user.role,
@@ -59,17 +61,14 @@ exports.login = async (req, res) => {
     });
 
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: error.errors[0].message });
+    }
     console.error("Login Error:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
 
-
-
-
-
-
-// ฟังก์ชันลงทะเบียน
 exports.register = async (req, res) => {
   try {
     // ตรวจสอบข้อมูล req.body ด้วย Zod
@@ -126,34 +125,53 @@ exports.logout = (req, res) => {
   }
 };
 
-// ฟังก์ชันตรวจสอบสถานะ Session
-exports.checkSession = (req, res) => {
+exports.checkSession = async (req, res) => {
   const tabId = req.headers["x-tab-id"];
 
-  if (req.session && req.session.tabs && req.session.tabs[tabId]) {
-    res.status(200).json({ isAuthenticated: true, user: req.session.tabs[tabId] });
-  } else {
-    res.status(401).json({ isAuthenticated: false });
+  if (!tabId) {
+    return res.status(400).json({ error: "Missing tab ID" });
   }
+
+  if (req.session?.tabs?.[tabId]) {
+    return res.status(200).json({
+      isAuthenticated: true,
+      user: req.session.tabs[tabId]
+    });
+  }
+
+  res.status(401).json({ isAuthenticated: false });
 };
 
-
-// ฟังก์ชันต่ออายุ Session
 exports.refreshSession = async (req, res) => {
   const tabId = req.headers["x-tab-id"];
 
-  if (!req.session || !req.session.tabs || !req.session.tabs[tabId]) {
-    return res.status(401).json({ success: false, message: "Session expired" });
+  if (!tabId || !req.session?.tabs?.[tabId]) {
+    return res.status(401).json({
+      success: false,
+      message: "Session expired"
+    });
   }
 
   try {
-    req.session.cookie.maxAge = 1000 * 60 * 60 * 24; // ✅ ต่ออายุ Session
-    req.session.save();
+    req.session.cookie.maxAge = 24 * 60 * 60 * 1000; // Reset to 24 hours
+    await new Promise((resolve, reject) => {
+      req.session.save((err) => {
+        if (err) reject(err);
+        resolve();
+      });
+    });
 
-    res.json({ success: true, message: "Session refreshed", user: req.session.tabs[tabId] });
+    res.json({
+      success: true,
+      message: "Session refreshed",
+      user: req.session.tabs[tabId]
+    });
   } catch (error) {
-    console.error("Error refreshing session:", error);
-    res.status(500).json({ success: false, message: "Failed to refresh session" });
+    console.error("Session refresh error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to refresh session"
+    });
   }
 };
 
