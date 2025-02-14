@@ -2,17 +2,19 @@ const mysql = require("mysql2");
 
 const ENV = process.env.NODE_ENV || "development";
 
-// ✅ ตั้งค่าการเชื่อมต่อฐานข้อมูล โดยใช้ process.env โดยตรง
+// ✅ ตั้งค่าการเชื่อมต่อฐานข้อมูล
 const dbConfig = {
   host: process.env[ENV === "development" ? "DEV_DB_HOST" : "PROD_DB_HOST"],
   user: process.env[ENV === "development" ? "DEV_DB_USER" : "PROD_DB_USER"],
   password: process.env[ENV === "development" ? "DEV_DB_PASSWORD" : "PROD_DB_PASSWORD"],
   database: process.env[ENV === "development" ? "DEV_DB_NAME" : "PROD_DB_NAME"],
-  port: parseInt(process.env[ENV === "development" ? "DEV_DB_PORT" : "PROD_DB_PORT"], 10), // 🔹 แปลง PORT เป็นตัวเลข
-  ssl: ENV === "production" ? { rejectUnauthorized: false } : false, // ✅ ใช้ SSL เฉพาะ Production
+  port: parseInt(process.env[ENV === "development" ? "DEV_DB_PORT" : "PROD_DB_PORT"], 10),
+  ssl: ENV === "production" ? { rejectUnauthorized: false } : false, // ✅ TiDB ใช้ SSL แต่ไม่เซ็นรับรอง
   waitForConnections: true,
   connectionLimit: 10, // จำกัดการเชื่อมต่อพร้อมกัน
-  queueLimit: 0, // ไม่จำกัดจำนวนคิวรอ
+  queueLimit: 0,
+  acquireTimeout: 10000, // ✅ กำหนด timeout
+  debug: ENV === "development" // ✅ เปิด debug mode เฉพาะ dev
 };
 
 // ✅ ใช้ Pool + Promise
@@ -33,9 +35,15 @@ const checkConnection = async () => {
 // ✅ ฟังก์ชัน Reconnect กรณีฐานข้อมูลล่ม
 const reconnectDatabase = () => {
   console.log("🔄 Attempting to reconnect to database...");
-  setTimeout(async () => {
-    await checkConnection();
-  }, 5000);
+  pool.on("error", (err) => {
+    console.error("❌ Database error:", err);
+    if (err.code === "PROTOCOL_CONNECTION_LOST" || err.code === "ECONNRESET") {
+      reconnectDatabase();
+    } else {
+      throw err;
+    }
+  });
+  checkConnection();
 };
 
 // ✅ ตรวจสอบการเชื่อมต่อเมื่อเริ่มต้นเซิร์ฟเวอร์

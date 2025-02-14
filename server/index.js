@@ -1,12 +1,11 @@
-// index.js
 require("dotenv").config();
 const express = require("express");
 const path = require("path");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const session = require("express-session");
-const MySQLStore = require("express-mysql-session")(session);
-const db = require("./src/config/db");
+const MemoryStore = require("memorystore")(session); // ✅ ใช้ MemoryStore แทน
+
 
 const app = express();
 
@@ -20,11 +19,14 @@ app.use(
       "https://new-pms.vercel.app"
     ],
     methods: "GET,POST,PUT,DELETE",
-    credentials: true, // ✅ เปิดใช้งาน Credentials (สำคัญ)
+    credentials: true,
   })
 );
 
-const sessionStore = new MySQLStore(db);
+// ✅ ใช้ Memory Store สำหรับจัดเก็บเซสชันชั่วคราว
+const sessionStore = new MemoryStore({
+  checkPeriod: 86400000, // ล้างข้อมูลทุก 24 ชั่วโมง
+});
 
 app.use(
   session({
@@ -34,20 +36,18 @@ app.use(
     saveUninitialized: false,
     store: sessionStore,
     cookie: {
-      maxAge: 1000 * 60 * 60 * 24, // 1 วัน
-      secure: process.env.NODE_ENV === "production", // ✅ ต้องเป็น true ถ้าใช้งาน HTTPS
-      httpOnly: false, // ✅ อนุญาตให้ JavaScript เข้าถึง cookie
-      sameSite: "None", // ✅ สำคัญสำหรับ cross-site session
-    },
+      maxAge: 1000 * 60 * 60 * 24, // อายุ 1 วัน
+      secure: process.env.NODE_ENV === "production",
+      httpOnly: false,
+      sameSite: "None",
+    }
   })
 );
-
 
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// ✅ Static Files สำหรับอัปโหลด PDF และรูปภาพ
 app.use(
   "/upload",
   express.static(path.join(__dirname, "upload"), {
@@ -84,33 +84,27 @@ app.use("/api/project-release", projectReleaseRoutes);
 app.use("/api/project-types", projectTypesRoutes);
 app.use("/api/old-projects", oldProjectsRoutes);
 
-// ✅ Test API
 app.get("/api/test", (req, res) => {
   res.json({ message: "API is working!" });
 });
 
-// ✅ Root Endpoint
 app.get("/", (req, res) => {
   res.send("Hello from server");
 });
 
-// ✅ Health Check
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "OK", uptime: process.uptime() });
 });
 
-// ✅ Handle 404 Not Found
 app.use((req, res) => {
   res.status(404).json({ error: "Endpoint not found" });
 });
 
-// ✅ Global Error Handler
 app.use((err, req, res) => {
   console.error("Error:", err);
   res.status(500).json({ error: "Unexpected error occurred", details: err.message });
 });
 
-// ✅ Start Server
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
 });
