@@ -98,7 +98,7 @@ const AddOldProject = () => {
       return;
     }
     setPdfLoading(true);
-    setPdfUrl(`http://localhost:5000/${filePath}`);
+    setPdfUrl(filePath); // ใช้ URL จาก Supabase
     setOpenPdfDialog(true);
   };
   const handleInputChange = (field, value) => {

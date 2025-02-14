@@ -22,8 +22,8 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://itnewpms.vercel.app",
-      "https://newpms.onrender.com"
+      "https://newpms.onrender.com",
+      "https://new-pms.vercel.app/",
     ],
     credentials: true,
   })
