@@ -31,31 +31,30 @@ exports.login = async (req, res) => {
       return res.status(401).json({ error: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
     }
 
-    // สร้าง session
     req.session.user = {
       id: user[0].id,
       email: user[0].email,
       role: user[0].role,
-      username: user[0].username
+      username: user[0].username,
     };
 
-    // บันทึก session
     req.session.save((err) => {
       if (err) {
-        console.error('Session save error:', err);
-        return res.status(500).json({ error: 'Failed to create session' });
+        console.error("❌ Session save error:", err);
+        return res.status(500).json({ error: "Failed to create session" });
       }
+      console.log("✅ Session Created:", req.session);
       res.status(200).json({
-        message: 'Login successful',
-        user: req.session.user
+        message: "Login successful",
+        user: req.session.user,
       });
     });
-
   } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("❌ Login error:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 
 exports.register = async (req, res) => {
@@ -115,8 +114,10 @@ exports.logout = (req, res) => {
 };
 
 exports.checkSession = (req, res) => {
-  console.log("🔍 Checking Session:", req.session); // ✅ Debug
+  console.log("🔍 Checking Session:", req.session);
   if (req.session && req.session.user) {
+    req.session.touch(); // ✅ ต่ออายุ Session
+    req.session.save(); // ✅ บันทึก Session ใหม่
     return res.status(200).json({ isAuthenticated: true, user: req.session.user });
   } else {
     return res.status(401).json({ isAuthenticated: false });
@@ -124,17 +125,14 @@ exports.checkSession = (req, res) => {
 };
 
 exports.refreshSession = (req, res) => {
-  console.log("🔄 Refreshing Session:", req.session); // ✅ Debug
+  console.log("🔄 Refreshing Session:", req.session);
   if (!req.session || !req.session.user) {
     return res.status(401).json({ success: false, message: "Session expired" });
   }
-  req.session.cookie.maxAge = 1000 * 60 * 60 * 24;
+  req.session.touch();
   req.session.save();
   res.json({ success: true, message: "Session refreshed", user: req.session.user });
 };
-
-
-
 
 // ฟังก์ชันอัปเดตเซสชัน
 exports.updateSession = async (req, res) => {

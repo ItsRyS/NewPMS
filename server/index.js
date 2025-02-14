@@ -4,7 +4,8 @@ const path = require("path");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const session = require("express-session");
-const MemoryStore = require("memorystore")(session); // ✅ ใช้ MemoryStore แทน
+const MemoryStore = require("memorystore")(session);
+
 
 
 const app = express();
@@ -23,24 +24,22 @@ app.use(
   })
 );
 
-// ✅ ใช้ Memory Store สำหรับจัดเก็บเซสชันชั่วคราว
 const sessionStore = new MemoryStore({
-  checkPeriod: 86400000, // ล้างข้อมูลทุก 24 ชั่วโมง
+  checkPeriod: 86400000, // ลบ session ที่หมดอายุทุก 24 ชั่วโมง
 });
 
 app.use(
   session({
-    key: "user_sid",
-    secret: "itpms2024",
+    store: sessionStore,
+    secret: process.env.JWT_SECRET || "itPmsKey",
     resave: false,
     saveUninitialized: false,
-    store: sessionStore,
     cookie: {
       maxAge: 1000 * 60 * 60 * 24, // อายุ 1 วัน
-      secure: process.env.NODE_ENV === "production",
-      httpOnly: false,
+      secure: process.env.NODE_ENV === "production", // ✅ เปิด secure mode ใน Production เท่านั้น
+      httpOnly: true, // ✅ อนุญาตให้ JavaScript เข้าถึง cookie
       sameSite: "None",
-    }
+    },
   })
 );
 
