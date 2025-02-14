@@ -3,11 +3,7 @@ const db = require('../config/db');
 const { z } = require('zod');
 
 // สร้าง Zod schema สำหรับ login
-const loginSchema = z.object({
-  email: z.string().email('Invalid email format'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  tabId: z.string().nonempty('Missing tabId'),
-});
+
 
 // สร้าง Zod schema สำหรับ register
 const registerSchema = z.object({
@@ -24,8 +20,11 @@ const logoutSchema = z.object({
 // ฟังก์ชันเข้าสู่ระบบ
 exports.login = async (req, res) => {
   try {
-    // ✅ ใช้ Zod ตรวจสอบข้อมูลก่อน
-    const { email, password, tabId } = loginSchema.parse(req.body);
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
+    }
 
     const [userResult] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
     const user = userResult[0];
@@ -40,16 +39,14 @@ exports.login = async (req, res) => {
     }
 
     // ✅ บันทึกข้อมูล Session
-    if (!req.session.tabs) {
-      req.session.tabs = {};
-    }
-
-    req.session.tabs[tabId] = {
+    req.session.user = {
       user_id: user.user_id,
       role: user.role,
       username: user.username,
       profileImage: user.profile_image,
     };
+
+    console.log("Session Created:", req.session); // 🛠 Debugging
 
     req.session.save((err) => {
       if (err) {
@@ -58,20 +55,16 @@ exports.login = async (req, res) => {
       }
       res.status(200).json({
         message: "Login successful",
-        user: req.session.tabs[tabId],
+        user: req.session.user,
       });
     });
 
   } catch (error) {
-    // ✅ จัดการ Error จาก Zod
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: error.errors.map(e => e.message).join(", ") });
-    }
-
     console.error("Login Error:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 
 
 

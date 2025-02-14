@@ -16,7 +16,7 @@ const PORT = ENV === "development" ? process.env.DEV_PORT : process.env.PROD_POR
 // ✅ CORS Configuration
 const allowedOrigins = [
   process.env.DEV_ORIGIN || "http://localhost:5173",
-  process.env.PROD_ORIGIN || "https://new-pms.vercel.app"
+  process.env.PROD_ORIGIN || "https://new-pms.vercel.app",
 ];
 
 app.use(
@@ -30,7 +30,6 @@ app.use(
 
 // ✅ Session Store Configuration (ใช้ db.js)
 const sessionStore = new MySQLStore({}, db);
-
 
 app.use(
   session({
