@@ -4,7 +4,7 @@ const path = require("path");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const session = require("express-session");
-const MemoryStore = require("memorystore")(session);
+const MySQLStore = require("express-mysql-session")(session);
 
 
 
@@ -15,30 +15,38 @@ const PORT = ENV === "development" ? process.env.DEV_PORT : process.env.PROD_POR
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://new-pms.vercel.app"
-    ],
-    methods: "GET,POST,PUT,DELETE",
-    credentials: true,
+    origin: ["https://new-pms.vercel.app"],
+    credentials: true, // ✅ ต้องใช้ true เพื่อให้เบราว์เซอร์ส่ง Cookie กลับไป
+    methods: ["GET", "POST", "PUT", "DELETE"],
   })
 );
 
-const sessionStore = new MemoryStore({
-  checkPeriod: 86400000, // ลบ session ที่หมดอายุทุก 24 ชั่วโมง
+const sessionStore = new MySQLStore({
+  clearExpired: true,
+  checkExpirationInterval: 900000, // ลบเซสชันที่หมดอายุทุก 15 นาที
+  expiration: 86400000, // อายุเซสชัน 1 วัน
+  createDatabaseTable: true,
+  connectionLimit: 10,
+  host: process.env.PROD_DB_HOST,
+  user: process.env.PROD_DB_USER,
+  password: process.env.PROD_DB_PASSWORD,
+  database: process.env.PROD_DB_NAME,
+  port: process.env.PROD_DB_PORT,
 });
 
 app.use(
   session({
-    store: sessionStore,
+    key: "user_sid",
     secret: process.env.JWT_SECRET || "itPmsKey",
+    store: sessionStore,
     resave: false,
     saveUninitialized: false,
     cookie: {
-      maxAge: 1000 * 60 * 60 * 24, // อายุ 1 วัน
-      secure: process.env.NODE_ENV === "production", // ✅ เปิด secure mode ใน Production เท่านั้น
-      httpOnly: true, // ✅ อนุญาตให้ JavaScript เข้าถึง cookie
-      sameSite: "None",
+      path: "/",
+      httpOnly: true,
+      secure: true, // สำคัญ: ต้องใช้ `true` เพราะ production ใช้ HTTPS
+      sameSite: "None", // สำคัญ: ต้องเป็น None เพื่อให้ Cookie ส่งข้ามโดเมนได้
+      maxAge: 24 * 60 * 60 * 1000, // 1 วัน
     },
   })
 );
