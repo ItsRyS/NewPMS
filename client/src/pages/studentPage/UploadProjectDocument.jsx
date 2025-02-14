@@ -380,7 +380,7 @@ const UploadProjectDocument = () => {
                 {sortOrder === 'desc' ? 'ใหม่ไปเก่า' : 'เก่าไปใหม่'}
               </Button>
             </Box>
-            <TableContainer sx={{ maxHeight: 550, overflowY: 'auto' }}>
+            <TableContainer sx={{ maxHeight: 600, overflowY: 'auto' }}>
               <Table stickyHeader>
                 <TableHead>
                   <TableRow>

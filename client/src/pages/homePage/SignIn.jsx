@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import HomeIcon from "@mui/icons-material/Home";
 import * as z from 'zod';
 import api from '../../services/api';
 import { useSnackbar } from '../../components/ReusableSnackbar';
@@ -197,7 +197,7 @@ export default function SignIn() {
 
           {/* ปุ่มย้อนกลับที่ขวาล่าง */}
           <BackButton onClick={() => navigate('/')}>
-            <ArrowBackIosNewIcon fontSize="large" />
+            <HomeIcon fontSize="large" />
           </BackButton>
         </RightContainer>
       </RootContainer>
