@@ -1,77 +1,44 @@
-import axios from "axios";
+import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 const api = axios.create({
-  baseURL: 'https://newpms.onrender.com/api',
-  withCredentials: true, // สำคัญมาก
-  headers: {
-    'Content-Type': 'application/json',
-  }
+  baseURL: `${API_BASE_URL}/api`,
+  withCredentials: true,
 });
-let isRefreshing = false;
-let failedQueue = [];
-const processQueue = (error, token = null) => {
-  failedQueue.forEach(prom => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
-  });
-  failedQueue = [];
-};
-// Request interceptor
+
+// Interceptor สำหรับใส่ Tab ID ลงใน Headers ของทุกคำขอ
 api.interceptors.request.use(
   (config) => {
-    const tabId = sessionStorage.getItem("tabId");
+    const tabId = sessionStorage.getItem('tabId');
     if (tabId) {
-      config.headers["x-tab-id"] = tabId;
+      config.headers['x-tab-id'] = tabId;
     }
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-
+// Interceptor สำหรับจัดการคำตอบ และลอง Refresh Session เมื่อพบ 401 Unauthorized
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      if (isRefreshing) {
-        try {
-          return new Promise((resolve, reject) => {
-            failedQueue.push({ resolve, reject });
-          }).then(() => {
-            return api(originalRequest);
-          }).catch(err => {
-            return Promise.reject(err);
-          });
-        } catch (err) {
-          return Promise.reject(err);
-        }
-      }
-
+    if (
+      error.response &&
+      error.response.status === 401 &&
+      !originalRequest._retry &&
+      originalRequest.url !== '/auth/login'
+    ) {
       originalRequest._retry = true;
-      isRefreshing = true;
-
       try {
-        const response = await api.get('/auth/refresh-session');
-        if (response.data.success) {
-          isRefreshing = false;
-          processQueue(null);
+        const refreshResponse = await api.get('/auth/refresh-session');
+        if (refreshResponse.data.success) {
           return api(originalRequest);
-        } else {
-          processQueue(new Error('Refresh failed'));
-          window.location.href = '/signin';
-          return Promise.reject(error);
         }
       } catch (refreshError) {
-        processQueue(refreshError);
-        isRefreshing = false;
-        window.location.href = '/signin';
+        sessionStorage.removeItem('tabId'); // ✅ ลบ tabId เมื่อ session หมดอายุ
         return Promise.reject(refreshError);
       }
     }

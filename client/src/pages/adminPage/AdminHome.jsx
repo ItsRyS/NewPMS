@@ -8,29 +8,22 @@ const AdminHome = () => {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const tabId = sessionStorage.getItem("tabId");
-        if (!sessionStorage.getItem("sessionActive")) {
-          navigate("/signin"); // ✅ Redirect ถ้าไม่มี session
-        }
-
-        const response = await api.get("/auth/check-session", {
-          headers: { "x-tab-id": tabId },
+        const tabId = sessionStorage.getItem('tabId'); // ดึง tabId จาก sessionStorage
+        const response = await api.get('/auth/check-session', {
+          headers: { 'x-tab-id': tabId }, // ส่ง tabId ใน Header
         });
 
         if (!response.data.isAuthenticated) {
-          sessionStorage.removeItem("sessionActive"); // ✅ เคลียร์ session ถ้าหมดอายุ
-          navigate("/signin");
+          navigate('/SignIn'); // Redirect ถ้า session หมดอายุหรือไม่ถูกต้อง
         }
       } catch (error) {
-        console.error("❌ Session check failed:", error);
-        sessionStorage.removeItem("sessionActive");
-        navigate("/signin");
+        console.error('Session check failed:', error);
+        navigate('/SignIn'); // Redirect ในกรณีที่ API ล้มเหลว
       }
     };
 
     checkSession();
   }, [navigate]);
-
 
   return (
     <div>

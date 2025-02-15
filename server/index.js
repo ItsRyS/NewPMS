@@ -16,15 +16,11 @@ const DB_PORT = ENV === "development" ? process.env.DEV_DB_PORT : process.env.PR
 const DB_USER = ENV === "development" ? process.env.DEV_DB_USER : process.env.PROD_DB_USER;
 const DB_PASSWORD = ENV === "development" ? process.env.DEV_DB_PASSWORD : process.env.PROD_DB_PASSWORD;
 const DB_NAME = ENV === "development" ? process.env.DEV_DB_NAME : process.env.PROD_DB_NAME;
-
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 // CORS Configuration
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://itnewpms.vercel.app",
-      "https://newpms.onrender.com"
-    ],
+    origin: FRONTEND_URL,
     credentials: true,
   })
 );
@@ -58,7 +54,11 @@ app.use(
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
+// ✅ Debug Middleware สำหรับตรวจสอบ Session
+app.use((req, res, next) => {
+  console.log("🔍 Session Debug:", req.session);
+  next();
+});
 // Static Files สำหรับอัปโหลด PDF และรูปภาพ
 app.use('/upload', express.static(path.join(__dirname, 'upload'), {
   setHeaders: (res, filePath) => {
