@@ -1,26 +1,20 @@
 const mysql = require("mysql2");
 
-const ENV = process.env.NODE_ENV || "development";
-
 // ✅ ตั้งค่าการเชื่อมต่อฐานข้อมูล
+
 const dbConfig = {
-  host: process.env[ENV === "development" ? "DEV_DB_HOST" : "PROD_DB_HOST"],
-  user: process.env[ENV === "development" ? "DEV_DB_USER" : "PROD_DB_USER"],
-  password: process.env[ENV === "development" ? "DEV_DB_PASSWORD" : "PROD_DB_PASSWORD"],
-  database: process.env[ENV === "development" ? "DEV_DB_NAME" : "PROD_DB_NAME"],
-  port: parseInt(process.env[ENV === "development" ? "DEV_DB_PORT" : "PROD_DB_PORT"], 10),
-  ssl: ENV === "production" ? { rejectUnauthorized: false } : false, // ✅ TiDB ใช้ SSL แต่ไม่เซ็นรับรอง
+  host: process.env.PROD_DB_HOST,
+  user: process.env.PROD_DB_USER,
+  password: process.env.PROD_DB_PASSWORD,
+  database: process.env.PROD_DB_NAME,
+  port: process.env.PROD_DB_PORT || 3306,
   waitForConnections: true,
-  connectionLimit: 10, // จำกัดการเชื่อมต่อพร้อมกัน
-  queueLimit: 0,
-  acquireTimeout: 10000, // ✅ กำหนด timeout
-  debug: ENV === "development" // ✅ เปิด debug mode เฉพาะ dev
+  connectionLimit: 10,
+  queueLimit: 0
 };
 
-// ✅ ใช้ Pool + Promise
-const pool = mysql.createPool(dbConfig).promise();
+const pool = mysql.createPool(dbConfig);
 
-// ✅ ตรวจสอบการเชื่อมต่อฐานข้อมูล
 const checkConnection = async () => {
   try {
     const connection = await pool.getConnection();
@@ -28,7 +22,6 @@ const checkConnection = async () => {
     connection.release();
   } catch (error) {
     console.error("❌ Database connection failed:", error.message);
-    reconnectDatabase();
   }
 };
 

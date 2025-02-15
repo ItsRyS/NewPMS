@@ -22,17 +22,16 @@ exports.login = async (req, res) => {
       return res.status(401).json({ error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" });
     }
 
-    // ✅ บันทึกข้อมูล Session
     req.session.user = {
-      user_id: user.user_id,
+      user_id: user.user_id,   // ✅ ต้องใช้ user_id ที่ดึงมาจากฐานข้อมูล
       role: user.role,
       username: user.username,
-      profileImage: user.profile_image,
+      email: user.email
     };
 
-    req.session.save((err) => {
+    await req.session.save((err) => {
       if (err) {
-        console.error("❌ Session Save Error:", err);
+        console.error("Session Save Error:", err);
         return res.status(500).json({ error: "Failed to create session" });
       }
       console.log("✅ Session Created:", req.session);
@@ -43,10 +42,11 @@ exports.login = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("❌ Login Error:", error.message);
+    console.error("Login Error:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 
 
 
@@ -107,14 +107,14 @@ exports.logout = (req, res) => {
 
 exports.checkSession = (req, res) => {
   console.log("🔍 Checking Session:", req.session);
+
   if (req.session && req.session.user) {
-    req.session.touch(); // ✅ ต่ออายุ Session
-    req.session.save(); // ✅ บันทึก Session ใหม่
     return res.status(200).json({ isAuthenticated: true, user: req.session.user });
   } else {
     return res.status(401).json({ isAuthenticated: false });
   }
 };
+
 
 exports.refreshSession = (req, res) => {
   console.log("🔄 Refreshing Session:", req.session);

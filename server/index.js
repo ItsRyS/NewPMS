@@ -5,14 +5,19 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const session = require("express-session");
 const MySQLStore = require("express-mysql-session")(session);
-
+const db = require("./src/config/db");
 
 
 const app = express();
 
 const ENV = process.env.NODE_ENV || "development";
 const PORT = ENV === "development" ? process.env.DEV_PORT : process.env.PROD_PORT;
+// ✅ ตั้งค่า Session Store
+const sessionStore = new MySQLStore({}, db);
 
+// ✅ Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 // 🟢 ใช้ CORS ให้รองรับ Credential + Cookie
 app.use(
   cors({
@@ -21,36 +26,24 @@ app.use(
   })
 );
 
-// 🟢 ตั้งค่าการเชื่อมต่อ MySQL Store
-const sessionStore = new MySQLStore({
-  clearExpired: true,
-  checkExpirationInterval: 900000, // 15 นาที
-  expiration: 86400000, // 24 ชั่วโมง
-  createDatabaseTable: true, // ✅ สร้างตารางถ้ายังไม่มี
-  connectionLimit: 10,
-  host: process.env.PROD_DB_HOST,
-  user: process.env.PROD_DB_USER,
-  password: process.env.PROD_DB_PASSWORD,
-  database: process.env.PROD_DB_NAME,
-  port: process.env.PROD_DB_PORT,
+app.use(session({
+  secret: 'itPmsKey',
+  resave: false,
+  saveUninitialized: false,
+  store: sessionStore,
+  cookie: {
+    httpOnly: true,
+    secure: true, // ✅ ใช้ secure: true ใน production เท่านั้น
+    sameSite: 'None' ,
+    maxAge: 1000 * 60 * 60 * 24, // 1 วัน
+  }
+}));
+
+app.use((req, res, next) => {
+  console.log("🔍 Session Middleware:", req.session);
+  next();
 });
 
-app.use(
-  session({
-    key: "user_sid",
-    secret: process.env.JWT_SECRET || "itPmsKey",
-    store: sessionStore, // ✅ เชื่อมกับ MySQL Store
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      path: "/",
-      httpOnly: true,
-      secure: true, // ✅ ใช้ HTTPS เท่านั้น
-      sameSite: "None", // ✅ รองรับ CORS
-      maxAge: 24 * 60 * 60 * 1000, // 24 ชั่วโมง
-    },
-  })
-);
 
 // 🔹 Debug log ดูว่ามีเซสชันสร้างหรือไม่
 app.use((req, res, next) => {
