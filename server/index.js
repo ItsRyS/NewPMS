@@ -13,6 +13,7 @@ const app = express();
 const ENV = process.env.NODE_ENV || "development";
 const PORT = ENV === "development" ? process.env.DEV_PORT : process.env.PROD_PORT;
 
+// 🟢 ใช้ CORS ให้รองรับ Credential + Cookie
 app.use(
   cors({
     origin: ["https://new-pms.vercel.app"],
@@ -20,12 +21,12 @@ app.use(
   })
 );
 
-
+// 🟢 ตั้งค่าการเชื่อมต่อ MySQL Store
 const sessionStore = new MySQLStore({
   clearExpired: true,
-  checkExpirationInterval: 900000,
-  expiration: 86400000,
-  createDatabaseTable: true,
+  checkExpirationInterval: 900000, // 15 นาที
+  expiration: 86400000, // 24 ชั่วโมง
+  createDatabaseTable: true, // ✅ สร้างตารางถ้ายังไม่มี
   connectionLimit: 10,
   host: process.env.PROD_DB_HOST,
   user: process.env.PROD_DB_USER,
@@ -38,18 +39,24 @@ app.use(
   session({
     key: "user_sid",
     secret: process.env.JWT_SECRET || "itPmsKey",
-    store: sessionStore,
+    store: sessionStore, // ✅ เชื่อมกับ MySQL Store
     resave: false,
     saveUninitialized: false,
     cookie: {
       path: "/",
       httpOnly: true,
-      secure: true,
-      sameSite: "None",
-      maxAge: 24 * 60 * 60 * 1000,
+      secure: true, // ✅ ใช้ HTTPS เท่านั้น
+      sameSite: "None", // ✅ รองรับ CORS
+      maxAge: 24 * 60 * 60 * 1000, // 24 ชั่วโมง
     },
   })
 );
+
+// 🔹 Debug log ดูว่ามีเซสชันสร้างหรือไม่
+app.use((req, res, next) => {
+  console.log("🔍 Checking Session:", req.session);
+  next();
+});
 
 app.use(express.json());
 app.use(bodyParser.json());

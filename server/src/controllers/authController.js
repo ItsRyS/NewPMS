@@ -22,7 +22,7 @@ exports.login = async (req, res) => {
       return res.status(401).json({ error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" });
     }
 
-    // ✅ บันทึก Session
+    // ✅ บันทึกข้อมูล Session
     req.session.user = {
       user_id: user.user_id,
       role: user.role,
@@ -47,6 +47,7 @@ exports.login = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 
 
 exports.register = async (req, res) => {
