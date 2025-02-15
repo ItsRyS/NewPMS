@@ -21,7 +21,15 @@ app.use(express.urlencoded({ extended: true }));
 // 🟢 ใช้ CORS ให้รองรับ Credential + Cookie
 app.use(
   cors({
+<<<<<<< HEAD
     origin: ["https://new-pms.vercel.app"],
+=======
+    origin: [
+      "http://localhost:5173",
+      "https://itnewpms.vercel.app",
+      "https://newpms.onrender.com"
+    ],
+>>>>>>> parent of 45609dc (API_BASE_URL)
     credentials: true,
   })
 );

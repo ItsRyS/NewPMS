@@ -1,8 +1,6 @@
 const multer = require('multer');
 const path = require('path');
-// ใช้ MemoryStorage แทน DiskStorage
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
+
 // ตั้งค่าอัปโหลดไฟล์เอกสารโครงงานเก่า
 const oldProjectsStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -48,6 +46,5 @@ const uploadProfile = multer({
 // **แก้ไขการ export**
 module.exports = {
   uploadOldProject,
-  uploadProfile,
-  upload
+  uploadProfile
 };

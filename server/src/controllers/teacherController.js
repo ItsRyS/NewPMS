@@ -3,8 +3,6 @@ const path = require('path');
 const db = require('../config/db');
 const fs = require('fs');
 
-
-const { uploadFileToSupabase } = require("../config/storage");
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, './upload/pic'); // เก็บในโฟลเดอร์ pic
@@ -55,55 +53,83 @@ exports.getTeacherById = async (req, res) => {
   }
 };
 
+// สร้างข้อมูลอาจารย์ใหม่
 exports.createTeacher = async (req, res) => {
+  const {
+    teacher_name,
+    teacher_phone,
+    teacher_email,
+    teacher_academic,
+    teacher_expert,
+  } = req.body;
+  const teacher_image = req.file ? req.file.filename : null;
+
+  if (!teacher_name || !teacher_email) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
   try {
-    if (!req.file) return res.status(400).json({ message: "❌ No file uploaded" });
-
-    const fileUrl = await uploadFileToSupabase(req.file, "profile-images"); // อัปโหลดไปยัง Supabase
-
-    const { teacher_name, teacher_phone, teacher_email, teacher_academic, teacher_expert } = req.body;
-
     const [result] = await db.query(
       `INSERT INTO teacher_info (teacher_name, teacher_phone, teacher_email, teacher_academic, teacher_expert, teacher_image)
        VALUES (?, ?, ?, ?, ?, ?)`,
-      [teacher_name, teacher_phone, teacher_email, teacher_academic, teacher_expert, fileUrl]
+      [
+        teacher_name,
+        teacher_phone,
+        teacher_email,
+        teacher_academic,
+        teacher_expert,
+        teacher_image,
+      ]
     );
-
-    res.status(201).json({ message: "✅ Teacher created successfully", teacherId: result.insertId, fileUrl });
+    res.status(201).json({
+      message: 'Teacher created successfully',
+      teacherId: result.insertId,
+    });
   } catch (error) {
-    console.error("Error creating teacher:", error);
-    res.status(500).json({ message: "❌ Failed to create teacher" });
+    console.error('Error creating teacher:', error.message);
+    res.status(500).json({ error: 'Database insert failed' });
   }
 };
 
+// อัปเดตข้อมูลอาจารย์
 exports.updateTeacher = async (req, res) => {
+  const { id } = req.params;
+  const {
+    teacher_name,
+    teacher_phone,
+    teacher_email,
+    teacher_academic,
+    teacher_expert,
+  } = req.body;
+  const teacher_image = req.file ? req.file.filename : req.body.teacher_image;
+
   try {
-    const { id } = req.params;
-    const { teacher_name, teacher_phone, teacher_email, teacher_academic, teacher_expert } = req.body;
-
-    let fileUrl = req.body.teacher_image; // ถ้าไม่มีอัปโหลดใหม่ ให้ใช้รูปเดิม
-
-    if (req.file) {
-      fileUrl = await uploadFileToSupabase(req.file, "profile-images"); // อัปโหลดไปยัง Supabase
-    }
-
     const [result] = await db.query(
       `UPDATE teacher_info
        SET teacher_name = ?, teacher_phone = ?, teacher_email = ?, teacher_academic = ?, teacher_expert = ?, teacher_image = ?
        WHERE teacher_id = ?`,
-      [teacher_name, teacher_phone, teacher_email, teacher_academic, teacher_expert, fileUrl, id]
+      [
+        teacher_name,
+        teacher_phone,
+        teacher_email,
+        teacher_academic,
+        teacher_expert,
+        teacher_image,
+        id,
+      ]
     );
 
     if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "❌ Teacher not found" });
+      return res.status(404).json({ error: 'Teacher not found' });
     }
 
-    res.status(200).json({ message: "✅ Teacher updated successfully", fileUrl });
+    res.status(200).json({ message: 'Teacher updated successfully' });
   } catch (error) {
-    console.error("Error updating teacher:", error);
-    res.status(500).json({ message: "❌ Failed to update teacher" });
+    console.error('Error updating teacher:', error.message);
+    res.status(500).json({ error: 'Database update failed' });
   }
 };
+
 // ลบข้อมูลอาจารย์
 exports.deleteTeacher = async (req, res) => {
   const { id } = req.params;

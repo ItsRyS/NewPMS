@@ -123,7 +123,7 @@ const UploadProjectDocument = () => {
 
   const handleViewDocument = (filePath) => {
     if (filePath) {
-      setSelectedFilePath(filePath); // ใช้ URL จาก Supabase
+      setSelectedFilePath(`http://localhost:5000/${filePath}`);
       setDialog((prev) => ({ ...prev, view: true }));
     } else {
       console.error('Invalid file path:', filePath);

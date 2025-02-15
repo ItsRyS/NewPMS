@@ -18,6 +18,7 @@ import {
 import api from '../../services/api';
 import NavbarHome from '../../components/NavHome';
 import FooterHome from '../../components/FooterHome';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 const TeacherPage = () => {
   const [teachers, setTeachers] = useState([]);
@@ -51,12 +52,8 @@ const TeacherPage = () => {
         setFilteredTeachers(response.data);
 
         // Extract unique academic and expertise options
-        const uniqueAcademic = [
-          ...new Set(response.data.map((teacher) => teacher.teacher_academic)),
-        ];
-        const uniqueExpertise = [
-          ...new Set(response.data.map((teacher) => teacher.teacher_expert)),
-        ];
+        const uniqueAcademic = [...new Set(response.data.map((teacher) => teacher.teacher_academic))];
+        const uniqueExpertise = [...new Set(response.data.map((teacher) => teacher.teacher_expert))];
 
         setAcademicOptions(uniqueAcademic);
         setExpertiseOptions(uniqueExpertise);
@@ -173,11 +170,11 @@ const TeacherPage = () => {
                       }}
                       image={
                         teacher.teacher_image
-                          ? teacher.teacher_image
+                          ? `${API_BASE_URL}/upload/pic/${teacher.teacher_image}`
                           : placeholderImage
-                      } // ใช้ URL จาก Supabase
+                      }
+                      alt={teacher.teacher_name || 'No Image'}
                     />
-
                     <CardContent sx={{ textAlign: 'center' }}>
                       <Typography variant="h6">
                         {teacher.teacher_name}

@@ -193,7 +193,7 @@ const ProfileUser = () => {
                     <Avatar
                       src={
                         user.profileImage
-                          ? `? user.profileImage`
+                          ? `http://localhost:5000/${user.profileImage}`
                           : 'https://i.pravatar.cc/300'
                       }
                       sx={{

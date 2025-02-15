@@ -123,7 +123,7 @@ const ViewProjectDocuments = () => {
                     variant="contained"
                     onClick={() =>
                       setSelectedDocument({
-                        url: `doc.file_url`,
+                        url: `http://localhost:5000/${doc.file_path}`,
                         name: doc.type_name,
                         document_id: doc.document_id,
                       })
