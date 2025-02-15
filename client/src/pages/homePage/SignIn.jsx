@@ -13,7 +13,7 @@ import {
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import HomeIcon from "@mui/icons-material/Home";
-
+import * as z from 'zod';
 import api from '../../services/api';
 import { useSnackbar } from '../../components/ReusableSnackbar';
 
@@ -77,42 +77,63 @@ const BackButton = styled(IconButton)({
 });
 
 // Schema สำหรับตรวจสอบข้อมูล
-
+const signInSchema = z.object({
+  email: z.string().email('กรุณากรอกอีเมลที่ถูกต้อง'),
+  password: z.string().min(6, 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร'),
+});
 
 export default function SignIn() {
-  const [errors] = useState({});
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
   const showSnackbar = useSnackbar();
 
   useEffect(() => {
-    if (!sessionStorage.getItem("tabId")) {
-      sessionStorage.setItem("tabId", `${Date.now()}-${Math.random()}`);
+    if (!sessionStorage.getItem('tabId')) {
+      sessionStorage.setItem('tabId', `${Date.now()}-${Math.random()}`);
     }
   }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
+    const data = {
+      email: formData.get('email'),
+      password: formData.get('password'),
+    };
+    const tabId = sessionStorage.getItem('tabId');
 
     try {
-      const response = await api.post("/auth/login", {
-        email: formData.get("email"),
-        password: formData.get("password"),
-        tabId: sessionStorage.getItem("tabId"), // ✅ เพิ่ม tabId
-      });
-
-      if (response.data.user) {
-        sessionStorage.setItem("sessionActive", "true"); // ✅ บันทึก Session Active
-        setTimeout(() => {
-          navigate(response.data.user.role === "teacher" ? "/adminHome" : "/studentHome");
-        }, 1000);
+      signInSchema.parse(data);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        const fieldErrors = err.formErrors?.fieldErrors || {};
+        setErrors({
+          email: fieldErrors.email ? fieldErrors.email[0] : '',
+          password: fieldErrors.password ? fieldErrors.password[0] : '',
+        });
       }
+      return;
+    }
+
+    setErrors({});
+    try {
+      const response = await api.post(
+        '/auth/login',
+        { ...data, tabId },
+        { withCredentials: true }
+      );
+      const { role } = response.data;
+      showSnackbar('เข้าสู่ระบบสำเร็จ!', 'success');
+      setTimeout(() => {
+        navigate(role === 'teacher' ? '/adminHome' : '/studentHome');
+      }, 1500);
     } catch (error) {
-      console.error("❌ Login error:", error);
-      showSnackbar(error.response?.data?.error || "เข้าสู่ระบบไม่สำเร็จ", "error");
+      showSnackbar(
+        error.response?.data?.error || 'เข้าสู่ระบบไม่สำเร็จ',
+        'error'
+      );
     }
   };
-
 
   return (
     <>

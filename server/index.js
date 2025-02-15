@@ -5,68 +5,70 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const session = require("express-session");
 const MySQLStore = require("express-mysql-session")(session);
-const db = require("./src/config/db");
-
 
 const app = express();
 
+// ตรวจสอบ Environment
 const ENV = process.env.NODE_ENV || "development";
 const PORT = ENV === "development" ? process.env.DEV_PORT : process.env.PROD_PORT;
-// ✅ ตั้งค่า Session Store
-const sessionStore = new MySQLStore({}, db);
+const DB_HOST = ENV === "development" ? process.env.DEV_DB_HOST : process.env.PROD_DB_HOST;
+const DB_PORT = ENV === "development" ? process.env.DEV_DB_PORT : process.env.PROD_DB_PORT;
+const DB_USER = ENV === "development" ? process.env.DEV_DB_USER : process.env.PROD_DB_USER;
+const DB_PASSWORD = ENV === "development" ? process.env.DEV_DB_PASSWORD : process.env.PROD_DB_PASSWORD;
+const DB_NAME = ENV === "development" ? process.env.DEV_DB_NAME : process.env.PROD_DB_NAME;
 
-// ✅ Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-// 🟢 ใช้ CORS ให้รองรับ Credential + Cookie
+// CORS Configuration
 app.use(
   cors({
-    origin: ["https://new-pms.vercel.app"],
+    origin: [
+      "http://localhost:5173",
+      "https://itnewpms.vercel.app",
+      "https://newpms.onrender.com"
+    ],
     credentials: true,
   })
 );
 
-app.use(session({
-  secret: 'itPmsKey',
-  resave: false,
-  saveUninitialized: false,
-  store: sessionStore,
-  cookie: {
-    httpOnly: true,
-    secure: true, // ✅ ใช้ secure: true ใน production เท่านั้น
-    sameSite: 'None' ,
-    maxAge: 1000 * 60 * 60 * 24, // 1 วัน
-  }
-}));
 
-app.use((req, res, next) => {
-  console.log("🔍 Session Middleware:", req.session);
-  next();
+// Session Store Configuration
+const sessionStore = new MySQLStore({
+  host: DB_HOST,
+  user: DB_USER,
+  password: DB_PASSWORD,
+  database: DB_NAME,
+  port: DB_PORT,
 });
-
-
-// 🔹 Debug log ดูว่ามีเซสชันสร้างหรือไม่
-app.use((req, res, next) => {
-  console.log("🔍 Checking Session:", req.session);
-  next();
-});
-
-app.use(express.json());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(
-  "/upload",
-  express.static(path.join(__dirname, "upload"), {
-    setHeaders: (res, filePath) => {
-      if ([".pdf", ".jpg", ".png"].includes(path.extname(filePath))) {
-        res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-      }
+  session({
+    key: "user_sid",
+    secret: "itpms2024",
+    resave: false,
+    saveUninitialized: false,
+    store: sessionStore,
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24, // อายุ 1 วัน
+      secure: ENV === "production",
+      httpOnly: true,
     },
   })
 );
 
-// ✅ Import Routes
+// Middleware
+app.use(express.json());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// Static Files สำหรับอัปโหลด PDF และรูปภาพ
+app.use('/upload', express.static(path.join(__dirname, 'upload'), {
+  setHeaders: (res, filePath) => {
+    if (path.extname(filePath) === '.pdf'|| path.extname(filePath) === '.jpg' || path.extname(filePath) === '.png') {
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    }
+  },
+}));
+
+// Import Routes
 const authRoutes = require("./src/routes/auth");
 const projectRoutes = require("./src/routes/projects");
 const teacherRoutes = require("./src/routes/teacher");
@@ -74,11 +76,10 @@ const documentRoutes = require("./src/routes/document");
 const userRoutes = require("./src/routes/users");
 const projectRequestsRoutes = require("./src/routes/projectRequests");
 const projectDocumentsRoutes = require("./src/routes/project_documents");
-const projectReleaseRoutes = require("./src/routes/projectRelease");
-const projectTypesRoutes = require("./src/routes/projectTypes");
+const projectReleaseRoutes = require('./src/routes/projectRelease');
+const projectTypesRoutes = require('./src/routes/projectTypes');
 const oldProjectsRoutes = require("./src/routes/oldProjects");
-
-// ✅ API Routes
+// API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/teacher", teacherRoutes);
@@ -88,30 +89,35 @@ app.use("/api/project-requests", projectRequestsRoutes);
 app.use("/api/document-types", projectDocumentsRoutes);
 app.use("/api/project-documents", projectDocumentsRoutes);
 app.use("/api/project-release", projectReleaseRoutes);
-app.use("/api/project-types", projectTypesRoutes);
+app.use('/api/project-types', projectTypesRoutes);
 app.use("/api/old-projects", oldProjectsRoutes);
-
+// Test API
 app.get("/api/test", (req, res) => {
   res.json({ message: "API is working!" });
 });
 
+// Root Endpoint
 app.get("/", (req, res) => {
   res.send("Hello from server");
 });
 
+// Health Check
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "OK", uptime: process.uptime() });
 });
 
+// Handle 404 Not Found
 app.use((req, res) => {
   res.status(404).json({ error: "Endpoint not found" });
 });
 
+// Global Error Handler
 app.use((err, req, res) => {
   console.error("Error:", err);
   res.status(500).json({ error: "Unexpected error occurred", details: err.message });
 });
 
+// Start Server
 app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
+  console.log(`index.js  : ${ENV} Server running on http://localhost:${PORT}`);
 });
