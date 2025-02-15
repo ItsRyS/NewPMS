@@ -1,66 +1,56 @@
 const bcrypt = require('bcrypt');
 const db = require('../config/db');
-const { z } = require('zod');
-
-// สร้าง Zod schema สำหรับ login
-
-
-
-
-
-
-// สร้าง Zod schema สำหรับ register
-const registerSchema = z.object({
-  username: z.string().min(1, 'Username is required'),
-  email: z.string().email('Invalid email format'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-});
-
-// สร้าง Zod schema สำหรับ logout
-const logoutSchema = z.object({
-  tabId: z.string().nonempty('Missing tabId'),
-});
 
 // ฟังก์ชันเข้าสู่ระบบ
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const [user] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
 
-    if (!user[0] || !(await bcrypt.compare(password, user[0].password))) {
-      return res.status(401).json({ error: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
     }
 
+    const [userResult] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
+    const user = userResult[0];
+
+    if (!user) {
+      return res.status(401).json({ error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" });
+    }
+
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" });
+    }
+
+    // ✅ บันทึก Session
     req.session.user = {
-      id: user[0].id,
-      email: user[0].email,
-      role: user[0].role,
-      username: user[0].username,
+      user_id: user.user_id,
+      role: user.role,
+      username: user.username,
+      profileImage: user.profile_image,
     };
 
     req.session.save((err) => {
       if (err) {
-        console.error("❌ Session save error:", err);
+        console.error("Session Save Error:", err);
         return res.status(500).json({ error: "Failed to create session" });
       }
-      console.log("✅ Session Created:", req.session);
       res.status(200).json({
         message: "Login successful",
         user: req.session.user,
       });
     });
+
   } catch (error) {
-    console.error("❌ Login error:", error);
-    res.status(500).json({ error: "Internal server error" });
+    console.error("Login Error:", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
-
 
 exports.register = async (req, res) => {
   try {
     // ตรวจสอบข้อมูล req.body ด้วย Zod
-    const { username, email, password } = registerSchema.parse(req.body);
+    const { username, email, password } = (req.body);
 
     // ทำงาน logic ต่อเมื่อ parse ผ่านแล้ว
     // ตรวจสอบว่า email ซ้ำหรือไม่
@@ -94,7 +84,7 @@ exports.register = async (req, res) => {
 exports.logout = (req, res) => {
   try {
     // ตรวจสอบข้อมูล req.body ด้วย Zod
-    const { tabId } = logoutSchema.parse(req.body);
+    const { tabId } = (req.body);
 
     if (req.session && req.session.tabs && req.session.tabs[tabId]) {
       delete req.session.tabs[tabId];

@@ -16,15 +16,15 @@ const PORT = ENV === "development" ? process.env.DEV_PORT : process.env.PROD_POR
 app.use(
   cors({
     origin: ["https://new-pms.vercel.app"],
-    credentials: true, // ✅ ต้องใช้ true เพื่อให้เบราว์เซอร์ส่ง Cookie กลับไป
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
   })
 );
 
+
 const sessionStore = new MySQLStore({
   clearExpired: true,
-  checkExpirationInterval: 900000, // ลบเซสชันที่หมดอายุทุก 15 นาที
-  expiration: 86400000, // อายุเซสชัน 1 วัน
+  checkExpirationInterval: 900000,
+  expiration: 86400000,
   createDatabaseTable: true,
   connectionLimit: 10,
   host: process.env.PROD_DB_HOST,
@@ -44,9 +44,9 @@ app.use(
     cookie: {
       path: "/",
       httpOnly: true,
-      secure: true, // สำคัญ: ต้องใช้ `true` เพราะ production ใช้ HTTPS
-      sameSite: "None", // สำคัญ: ต้องเป็น None เพื่อให้ Cookie ส่งข้ามโดเมนได้
-      maxAge: 24 * 60 * 60 * 1000, // 1 วัน
+      secure: true,
+      sameSite: "None",
+      maxAge: 24 * 60 * 60 * 1000,
     },
   })
 );
