@@ -32,9 +32,10 @@ exports.login = async (req, res) => {
 
     req.session.save((err) => {
       if (err) {
-        console.error("Session Save Error:", err);
+        console.error("❌ Session Save Error:", err);
         return res.status(500).json({ error: "Failed to create session" });
       }
+      console.log("✅ Session Created:", req.session);
       res.status(200).json({
         message: "Login successful",
         user: req.session.user,
@@ -42,15 +43,16 @@ exports.login = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Login Error:", error.message);
+    console.error("❌ Login Error:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
+
 exports.register = async (req, res) => {
   try {
     // ตรวจสอบข้อมูล req.body ด้วย Zod
-    const { username, email, password } = (req.body);
+    const { username, email, password } = req.body;
 
     // ทำงาน logic ต่อเมื่อ parse ผ่านแล้ว
     // ตรวจสอบว่า email ซ้ำหรือไม่
@@ -83,8 +85,7 @@ exports.register = async (req, res) => {
 // ฟังก์ชันออกจากระบบ
 exports.logout = (req, res) => {
   try {
-    // ตรวจสอบข้อมูล req.body ด้วย Zod
-    const { tabId } = (req.body);
+    const { tabId } = req.body;
 
     if (req.session && req.session.tabs && req.session.tabs[tabId]) {
       delete req.session.tabs[tabId];
