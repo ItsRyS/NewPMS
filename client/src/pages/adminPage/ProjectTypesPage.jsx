@@ -1,3 +1,4 @@
+// filepath: f:\lptc-it\lptc-client\src\pages\adminPage\ProjectTypesPage.jsx
 import { useState, useEffect } from 'react';
 import {
   Box,
@@ -82,72 +83,83 @@ const ProjectTypesPage = () => {
   };
 
   return (
-    <Box sx={{ padding: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Manage Project Types
-      </Typography>
-      <Button variant="contained" onClick={() => handleOpenDialog()} sx={{ mb: 2 }}>
-        Add New Project Type
-      </Button>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Description</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {projectTypes.map((type) => (
-              <TableRow key={type.project_type_id}>
-                <TableCell>{type.project_type_id}</TableCell>
-                <TableCell>{type.project_type_name}</TableCell>
-                <TableCell>{type.project_type_description}</TableCell>
-                <TableCell>
-                  <IconButton onClick={() => handleOpenDialog(type)}>
-                    <Edit />
-                  </IconButton>
-                  <IconButton onClick={() => handleDelete(type.project_type_id)}>
-                    <Delete />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+    <Paper elevation={3} sx={{ padding: 4, borderRadius: 3 }}>
+      <Box sx={{ padding: 4 }}>
+         <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                mb={2}
 
-      <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>{isEditing ? 'Edit Project Type' : 'Add New Project Type'}</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Project Type Name"
-            fullWidth
-            value={currentProjectType.project_type_name || ''}
-            onChange={(e) =>
-              setCurrentProjectType({ ...currentProjectType, project_type_name: e.target.value })
-            }
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            label="Description"
-            fullWidth
-            value={currentProjectType.project_type_description || ''}
-            onChange={(e) =>
-              setCurrentProjectType({ ...currentProjectType, project_type_description: e.target.value })
-            }
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button onClick={handleSubmit} variant="contained">
-            {isEditing ? 'Update' : 'Create'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+              >
+                 <Typography variant="h4" gutterBottom>
+          จัดการประเภทโครงงาน
+        </Typography>
+        <Button variant="contained" onClick={() => handleOpenDialog()} sx={{ mb: 2 }}>
+          เพิ่มประเภทโครงงาน
+        </Button>
+              </Box>
+
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>ID</TableCell>
+                <TableCell>Name</TableCell>
+                <TableCell>Description</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {projectTypes.map((type) => (
+                <TableRow key={type.project_type_id}>
+                  <TableCell>{type.project_type_id}</TableCell>
+                  <TableCell>{type.project_type_name}</TableCell>
+                  <TableCell>{type.project_type_description}</TableCell>
+                  <TableCell>
+                    <IconButton onClick={() => handleOpenDialog(type)}>
+                      <Edit />
+                    </IconButton>
+                    <IconButton onClick={() => handleDelete(type.project_type_id)}>
+                      <Delete />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        <Dialog open={openDialog} onClose={handleCloseDialog}>
+          <DialogTitle>{isEditing ? 'Edit Project Type' : 'Add New Project Type'}</DialogTitle>
+          <DialogContent>
+            <TextField
+              label="Project Type Name"
+              fullWidth
+              value={currentProjectType.project_type_name || ''}
+              onChange={(e) =>
+                setCurrentProjectType({ ...currentProjectType, project_type_name: e.target.value })
+              }
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              label="Description"
+              fullWidth
+              value={currentProjectType.project_type_description || ''}
+              onChange={(e) =>
+                setCurrentProjectType({ ...currentProjectType, project_type_description: e.target.value })
+              }
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDialog}>Cancel</Button>
+            <Button onClick={handleSubmit} variant="contained">
+              {isEditing ? 'Update' : 'Create'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Box>
+    </Paper>
   );
 };
 

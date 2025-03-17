@@ -12,13 +12,14 @@ import {
   Tooltip,
   Grid,
   Paper,
+  CircularProgress,
 } from '@mui/material';
 import { Visibility, VisibilityOff, CameraAlt } from '@mui/icons-material';
 import api from '../../services/api';
 import { useSnackbar } from '../../components/ReusableSnackbar';
 
 const ProfileUser = () => {
-  const { updateProfileImage, updateUserData } = useOutletContext();
+  const { updateUserData } = useOutletContext();
   const [initialUser, setInitialUser] = useState(null);
   const [user, setUser] = useState({
     id: '',
@@ -31,6 +32,7 @@ const ProfileUser = () => {
   });
 
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const showSnackbar = useSnackbar();
@@ -45,14 +47,14 @@ const ProfileUser = () => {
           username,
           email,
           role,
-          profileImage: profile_image,
+          profileImage: profile_image || '',
           password: '',
           confirmPassword: '',
         };
         setUser(userData);
         setInitialUser(userData);
-      } catch {
-        showSnackbar('Failed to fetch user data', 'error');
+      } catch (error) {
+        showSnackbar('Failed to fetch user data: ' + error.message, 'error');
       } finally {
         setLoading(false);
       }
@@ -82,12 +84,13 @@ const ProfileUser = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const maxSize = 2 * 1024 * 1024;
+    const maxSize = 2 * 1024 * 1024; // 2MB
     if (file.size > maxSize) {
       showSnackbar('File size exceeds the maximum limit of 2MB', 'error');
       return;
     }
 
+    setUploading(true);
     const formData = new FormData();
     formData.append('profileImage', file);
 
@@ -95,21 +98,30 @@ const ProfileUser = () => {
       const response = await api.post('/users/upload-profile-image', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      setUser((prevUser) => ({
-        ...prevUser,
-        profileImage: response.data.profileImage,
-      }));
 
-      if (updateProfileImage) {
-        updateProfileImage(response.data.profileImage);
-      }
-      if (updateUserData) {
-        updateUserData(user.username, response.data.profileImage);
-      }
+      if (response.data && response.data.profileImage) {
+        setUser((prevUser) => ({
+          ...prevUser,
+          profileImage: response.data.profileImage,
+        }));
 
-      showSnackbar('Profile picture updated successfully', 'success');
-    } catch {
-      showSnackbar('Failed to upload profile picture', 'error');
+        // Update parent components
+        if (updateUserData) {
+          updateUserData(user.username, response.data.profileImage);
+        }
+
+        showSnackbar('Profile picture updated successfully', 'success');
+      } else {
+        throw new Error('Invalid response from server');
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      showSnackbar(
+        'Failed to upload profile picture: ' + error.message,
+        'error'
+      );
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -131,7 +143,6 @@ const ProfileUser = () => {
 
       const response = await api.put(`/users/${user.id}`, payload);
       if (response.status === 200) {
-        // Detailed success messages
         if (user.username !== initialUser.username) {
           showSnackbar('Username updated successfully', 'success');
         }
@@ -142,38 +153,37 @@ const ProfileUser = () => {
           showSnackbar('Password changed successfully', 'success');
         }
 
+        // Update parent components and session
         if (updateUserData) {
           updateUserData(user.username, user.profileImage);
         }
 
-        const tabId = sessionStorage.getItem('tabId');
-        if (tabId) {
-          await api.post('/auth/update-session', {
-            tabId,
-            username: user.username,
-            profileImage: user.profileImage,
-          });
-        }
-
         // Reset password fields and update initial state
-        setUser(prev => ({
+        setUser((prev) => ({
           ...prev,
           password: '',
-          confirmPassword: ''
+          confirmPassword: '',
         }));
-        setInitialUser(prev => ({
+        setInitialUser((prev) => ({
           ...prev,
           username: user.username,
-          email: user.email
+          email: user.email,
         }));
       }
-    } catch (err) {
-      showSnackbar(err.response?.data?.error || 'Failed to update profile', 'error');
+    } catch (error) {
+      showSnackbar(
+        'Failed to update profile: ' + (error.response?.data?.error || error.message),
+        'error'
+      );
     }
   };
 
   if (loading) {
-    return <Typography>Loading...</Typography>;
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+        <CircularProgress />
+      </Box>
+    );
   }
 
   return (
@@ -187,25 +197,42 @@ const ProfileUser = () => {
           <Grid container spacing={4}>
             {/* Left Column - Profile Image */}
             <Grid item xs={12} md={4}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  position: 'relative',
+                }}
+              >
                 <label htmlFor="profile-image-upload">
                   <Tooltip title="คลิกเพื่อเปลี่ยนรูปโปรไฟล์" arrow>
-                    <Avatar
-                      src={
-                        user.profileImage
-                          ? `http://localhost:5000/${user.profileImage}`
-                          : 'https://i.pravatar.cc/300'
-                      }
-                      sx={{
-                        width: 200,
-                        height: 200,
-                        cursor: 'pointer',
-                        position: 'relative',
-                        '&:hover': {
-                          opacity: 0.8,
-                        },
-                      }}
-                    >
+                    <Box position="relative">
+                      <Avatar
+                        src={user.profileImage || '/default-avatar.png'}
+                        sx={{
+                          width: 200,
+                          height: 200,
+                          cursor: 'pointer',
+                          '&:hover': { opacity: 0.8 },
+                        }}
+                      />
+                      {uploading && (
+                        <Box
+                          position="absolute"
+                          top={0}
+                          left={0}
+                          right={0}
+                          bottom={0}
+                          display="flex"
+                          alignItems="center"
+                          justifyContent="center"
+                          bgcolor="rgba(0, 0, 0, 0.5)"
+                          borderRadius="50%"
+                        >
+                          <CircularProgress color="primary" />
+                        </Box>
+                      )}
                       <CameraAlt
                         sx={{
                           position: 'absolute',
@@ -217,7 +244,7 @@ const ProfileUser = () => {
                           color: 'white',
                         }}
                       />
-                    </Avatar>
+                    </Box>
                   </Tooltip>
                   <input
                     id="profile-image-upload"
@@ -225,6 +252,7 @@ const ProfileUser = () => {
                     accept="image/*"
                     style={{ display: 'none' }}
                     onChange={handleProfileImageChange}
+                    disabled={uploading}
                   />
                 </label>
                 <Typography variant="h6" sx={{ mt: 2 }}>
@@ -258,7 +286,6 @@ const ProfileUser = () => {
                     required
                   />
                 </Grid>
-
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
@@ -270,7 +297,9 @@ const ProfileUser = () => {
                     InputProps={{
                       endAdornment: (
                         <InputAdornment position="end">
-                          <IconButton onClick={() => setShowPassword(!showPassword)}>
+                          <IconButton
+                            onClick={() => setShowPassword(!showPassword)}
+                          >
                             {showPassword ? <VisibilityOff /> : <Visibility />}
                           </IconButton>
                         </InputAdornment>
@@ -289,8 +318,16 @@ const ProfileUser = () => {
                     InputProps={{
                       endAdornment: (
                         <InputAdornment position="end">
-                          <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-                            {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                          <IconButton
+                            onClick={() =>
+                              setShowConfirmPassword(!showConfirmPassword)
+                            }
+                          >
+                            {showConfirmPassword ? (
+                              <VisibilityOff />
+                            ) : (
+                              <Visibility />
+                            )}
                           </IconButton>
                         </InputAdornment>
                       ),
@@ -302,7 +339,7 @@ const ProfileUser = () => {
                     type="submit"
                     variant="contained"
                     color="primary"
-                    disabled={!hasChanges()}
+                    disabled={!hasChanges() || uploading}
                     fullWidth
                   >
                     Save Changes

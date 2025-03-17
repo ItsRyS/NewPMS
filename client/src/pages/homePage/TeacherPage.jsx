@@ -7,7 +7,7 @@ import {
   Box,
   Grid,
   Modal,
-  Button,
+ 
   Container,
   TextField,
   Select,
@@ -18,7 +18,6 @@ import {
 import api from '../../services/api';
 import NavbarHome from '../../components/NavHome';
 import FooterHome from '../../components/FooterHome';
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 const TeacherPage = () => {
   const [teachers, setTeachers] = useState([]);
@@ -28,9 +27,9 @@ const TeacherPage = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [academicFilter, setAcademicFilter] = useState('');
-  const [expertiseFilter, setExpertiseFilter] = useState(''); // New state for expertise filter
+  const [expertiseFilter, setExpertiseFilter] = useState('');
   const [academicOptions, setAcademicOptions] = useState([]);
-  const [expertiseOptions, setExpertiseOptions] = useState([]); // New state for expertise options
+  const [expertiseOptions, setExpertiseOptions] = useState([]);
 
   const placeholderImage = 'https://via.placeholder.com/140x100?text=No+Image';
 
@@ -51,9 +50,12 @@ const TeacherPage = () => {
         setTeachers(response.data);
         setFilteredTeachers(response.data);
 
-        // Extract unique academic and expertise options
-        const uniqueAcademic = [...new Set(response.data.map((teacher) => teacher.teacher_academic))];
-        const uniqueExpertise = [...new Set(response.data.map((teacher) => teacher.teacher_expert))];
+        const uniqueAcademic = [
+          ...new Set(response.data.map((teacher) => teacher.teacher_academic)),
+        ];
+        const uniqueExpertise = [
+          ...new Set(response.data.map((teacher) => teacher.teacher_expert)),
+        ];
 
         setAcademicOptions(uniqueAcademic);
         setExpertiseOptions(uniqueExpertise);
@@ -65,7 +67,6 @@ const TeacherPage = () => {
   }, []);
 
   useEffect(() => {
-    // Combined filter for name, academic position, and expertise
     const filtered = teachers.filter((teacher) => {
       const matchesName = teacher.teacher_name
         .toLowerCase()
@@ -85,21 +86,20 @@ const TeacherPage = () => {
       <NavbarHome />
       <Box sx={{ flex: 1, paddingBottom: '64px' }}>
         <Container
-          className="content-teacher"
           maxWidth="lg"
           sx={{
-            backgroundColor: '#ffffff',
+
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             marginBlock: '90px',
             justifyContent: 'center',
-            boxShadow: 10,
+
             borderRadius: '12px',
             padding: 0,
           }}
         >
-          <Box sx={{ width: '100%', padding: 2 }}>
+
             {error && (
               <Typography variant="body1" color="error" sx={{ mb: 3 }}>
                 {error}
@@ -168,11 +168,7 @@ const TeacherPage = () => {
                         margin: 'auto',
                         padding: '10px',
                       }}
-                      image={
-                        teacher.teacher_image
-                          ? `${API_BASE_URL}/upload/pic/${teacher.teacher_image}`
-                          : placeholderImage
-                      }
+                      image={teacher.teacher_image || placeholderImage}
                       alt={teacher.teacher_name || 'No Image'}
                     />
                     <CardContent sx={{ textAlign: 'center' }}>
@@ -213,18 +209,16 @@ const TeacherPage = () => {
                     <CardMedia
                       component="img"
                       sx={{
-                        maxWidth: '100%',
-                        maxHeight: '50vh',
+                        height: 300,
+                        width: 'auto',
                         objectFit: 'contain',
-                        marginBottom: '24px',
+                        margin: 'auto',
+                        padding: '10px',
                       }}
-                      image={
-                        selectedTeacher.teacher_image
-                          ? `http://localhost:5000/upload/pic/${selectedTeacher.teacher_image}`
-                          : placeholderImage
-                      }
+                      image={selectedTeacher.teacher_image || placeholderImage}
                       alt={selectedTeacher.teacher_name || 'No Image'}
                     />
+
                     <Typography
                       variant="h5"
                       gutterBottom
@@ -247,18 +241,12 @@ const TeacherPage = () => {
                       <strong>ตำแหน่ง:</strong>{' '}
                       {selectedTeacher.teacher_academic}
                     </Typography>
-                    <Button
-                      onClick={handleClose}
-                      variant="contained"
-                      sx={{ mt: 2 }}
-                    >
-                      ปิด
-                    </Button>
+
                   </>
                 )}
               </Box>
             </Modal>
-          </Box>
+
         </Container>
       </Box>
       <FooterHome />

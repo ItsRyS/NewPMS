@@ -45,15 +45,13 @@ const Documentation = () => {
 
   const handleViewDocument = (docPath) => {
     if (!docPath) {
-      showSnackbar('Document not found.', 'error');
+      showSnackbar("Document not found.", "error");
       return;
     }
-    setLoading(true);
-    const normalizedPath = docPath.replace(/\\/g, '/');
-    const fullPath = `http://localhost:5000/${normalizedPath}`;
-    setPdfPath(fullPath);
+    setPdfPath(docPath); //  ใช้ URL จาก Supabase แทน Local Path
     setOpenDialog(true);
   };
+
 
   const handleCloseDialog = () => {
     setOpenDialog(false);

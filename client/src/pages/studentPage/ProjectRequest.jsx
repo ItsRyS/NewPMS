@@ -8,11 +8,12 @@ import {
   MenuItem,
   CircularProgress,
   Paper,
+  IconButton,
 } from '@mui/material';
 import api from '../../services/api';
 import { useSearchParams } from 'react-router-dom';
 import { useSnackbar } from '../../components/ReusableSnackbar';
-
+import DeleteIcon from '@mui/icons-material/Delete';
 const ProjectRequest = () => {
   const [projectNameTh, setProjectNameTh] = useState('');
   const [projectNameEng, setProjectNameEng] = useState('');
@@ -35,13 +36,17 @@ const ProjectRequest = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [advisorResponse, studentResponse, sessionResponse, projectTypeResponse] =
-          await Promise.all([
-            api.get('/teacher'),
-            api.get('/users'),
-            api.get('/auth/check-session'),
-            api.get('/projects/project-types'),
-          ]);
+        const [
+          advisorResponse,
+          studentResponse,
+          sessionResponse,
+          projectTypeResponse,
+        ] = await Promise.all([
+          api.get('/teacher'),
+          api.get('/users'),
+          api.get('/auth/check-session'),
+          api.get('/projects/project-types'),
+        ]);
 
         const studentUsers = studentResponse.data.filter(
           (user) => user.role === 'student'
@@ -56,11 +61,12 @@ const ProjectRequest = () => {
         const statusResponse = await api.get('/project-requests/status', {
           params: { studentId: user_id },
         });
+        console.log("📌 Project Status Data:", statusResponse.data.data);
 
         const statuses = statusResponse.data.data.sort(
           (a, b) => new Date(b.created_at) - new Date(a.created_at)
         );
-        setProjectStatus(statuses);
+        setProjectStatus(statusResponse.data.data || []);
 
         const hasApproved = statuses.some(
           (status) => status.status === 'approved'
@@ -68,7 +74,8 @@ const ProjectRequest = () => {
         setLatestStatus(hasApproved ? 'approved' : statuses[0]?.status || '');
 
         const hasPendingOrApproved = statuses.some(
-          (status) => status.status === 'pending' || status.status === 'approved'
+          (status) =>
+            status.status === 'pending' || status.status === 'approved'
         );
         setHasPendingOrApproved(hasPendingOrApproved);
 
@@ -148,7 +155,20 @@ const ProjectRequest = () => {
     selectedAdvisor,
     showSnackbar,
   ]);
+  const handleDeleteRequest = async (requestId) => {
+    try {
+      await api.delete(`/project-requests/delete/${requestId}`);
+      showSnackbar('ลบคำร้องสำเร็จ', 'success');
 
+      // อัปเดตสถานะใหม่
+      setProjectStatus((prevStatus) =>
+        prevStatus.filter((status) => status.request_id !== requestId)
+      );
+    } catch (error) {
+      console.error('Error deleting request:', error);
+      showSnackbar('เกิดข้อผิดพลาดในการลบคำร้อง', 'error');
+    }
+  };
   if (loading) {
     return (
       <Box
@@ -177,7 +197,7 @@ const ProjectRequest = () => {
         sx={{ padding: 4, borderRadius: 3, width: '100%', maxWidth: 800 }}
       >
         <Typography variant="h5" gutterBottom>
-          Request a Project
+          ยืนคำร้องขอเปิดโครงงาน
         </Typography>
         {isOwner && latestStatus === 'approved' ? (
           <Box
@@ -205,8 +225,8 @@ const ProjectRequest = () => {
             }}
           >
             <Typography>
-              คุณเป็นสมาชิกของโครงงานอื่นที่อยู่ในสถานะ &quot;pending&quot; หรือ &quot;approved&quot; แล้ว
-              ไม่สามารถส่งคำร้องใหม่ได้
+              คุณเป็นสมาชิกของโครงงานอื่นที่อยู่ในสถานะ &quot;รออนุมัติ&quot; หรือ
+              &quot;ได้รับก่ารอนุมัติ&quot; แล้ว ไม่สามารถส่งคำร้องใหม่ได้
             </Typography>
           </Box>
         ) : null}
@@ -238,7 +258,10 @@ const ProjectRequest = () => {
         >
           {projectTypes.length > 0 ? (
             projectTypes.map((type) => (
-              <MenuItem key={type.project_type_id} value={type.project_type_name}>
+              <MenuItem
+                key={type.project_type_id}
+                value={type.project_type_name}
+              >
                 {type.project_type_name}
               </MenuItem>
             ))
@@ -315,7 +338,8 @@ const ProjectRequest = () => {
         </TextField>
         {hasPendingOrApproved && !isOwner ? (
           <Typography variant="body1" color="error" sx={{ mt: 2 }}>
-            คุณไม่สามารถส่งคำร้องใหม่ได้ เนื่องจากคุณเป็นสมาชิกของโครงงานอื่นอยู่แล้ว
+            คุณไม่สามารถส่งคำร้องใหม่ได้
+            เนื่องจากคุณเป็นสมาชิกของโครงงานอื่นอยู่แล้ว
           </Typography>
         ) : (
           <Button
@@ -334,36 +358,52 @@ const ProjectRequest = () => {
         sx={{ padding: 4, borderRadius: 3, width: '100%', maxWidth: 800 }}
       >
         <Typography variant="h6" gutterBottom>
-          Document Status
+          ผลการยืนคำร้อง
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {projectStatus.map((status, index) => (
-            <Box
-              key={status.request_id}
-              sx={{
-                padding: 2,
-                borderRadius: 2,
-                backgroundColor:
-                  status.status === 'pending'
-                    ? '#9e9e9e'
-                    : status.status === 'approved'
-                    ? '#4caf50'
-                    : '#f44336',
-                color: '#fff',
-                border: index === 0 ? '2px solid #000' : 'none',
-              }}
-            >
-              <Typography variant="body1">
-                <strong>
-                  {index === 0 ? 'Latest Request:' : ''} {status.project_name}
-                </strong>
-              </Typography>
-              <Typography variant="body2">
-                Status:{' '}
-                {status.status.charAt(0).toUpperCase() + status.status.slice(1)}
-              </Typography>
-            </Box>
-          ))}
+          {projectStatus.length > 0 ? (
+            projectStatus.map((status) => (
+              <Box
+                key={status.request_id}
+                sx={{
+                  padding: 2,
+                  borderRadius: 2,
+                  backgroundColor:
+                    status.status === 'pending'
+                      ? '#9e9e9e'
+                      : status.status === 'approved'
+                        ? '#4caf50'
+                        : '#f44336',
+                  color: '#fff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Box>
+                  <Typography variant="body1">
+                    <strong>{status.project_name}</strong>
+                  </Typography>
+                  <Typography variant="body2">
+                    Status:{' '}
+                    {status.status.charAt(0).toUpperCase() +
+                      status.status.slice(1)}
+                  </Typography>
+                </Box>
+
+                {status.status === 'pending' && (
+                  <IconButton
+                    onClick={() => handleDeleteRequest(status.request_id)}
+                    color="error"
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                )}
+              </Box>
+            ))
+          ) : (
+            <Typography variant="body2">ยังไม่มีคำร้อง</Typography>
+          )}
         </Box>
       </Paper>
     </Box>

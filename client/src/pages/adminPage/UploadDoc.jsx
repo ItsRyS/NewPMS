@@ -18,7 +18,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useSnackbar } from '../../components/ReusableSnackbar'; // ใช้ useSnackbar
 
 const UploadDoc = () => {
-  const showSnackbar = useSnackbar(); // เรียกใช้ showSnackbar
+  const showSnackbar = useSnackbar();
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState('');
   const [docTitle, setDocTitle] = useState('');
@@ -56,7 +56,7 @@ const UploadDoc = () => {
 
     fetchUsername();
     fetchDocuments();
-  }, [searchParams]);
+  }, [searchParams, showSnackbar]);
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -72,30 +72,32 @@ const UploadDoc = () => {
 
   const handleUpload = async () => {
     if (!file || !docTitle || !docDescription) {
-      showSnackbar('Please fill out all fields.', 'error');
+      showSnackbar("Please fill out all fields.", "error");
       return;
     }
 
     const formData = new FormData();
-    formData.append('file', file);
-    formData.append('doc_title', docTitle);
-    formData.append('doc_description', docDescription);
-    formData.append('uploaded_by', username);
+    formData.append("file", file);
+    formData.append("doc_title", docTitle.trim());
+    formData.append("doc_description", docDescription.trim());
+    formData.append("uploaded_by", username);
 
     try {
-      const response = await api.post('/document/upload', formData);
-      showSnackbar(response.data.message, 'success');
+      await api.post("/document/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      showSnackbar("อัปโหลดสำเร็จ!", "success");
 
-      const updatedDocuments = await api.get('/document');
+      const updatedDocuments = await api.get("/document");
       setDocuments(updatedDocuments.data);
 
       setFile(null);
-      setFileName('');
-      setDocTitle('');
-      setDocDescription('');
+      setFileName("");
+      setDocTitle("");
+      setDocDescription("");
     } catch (error) {
-      console.error('Error uploading document:', error);
-      showSnackbar('Failed to upload document.', 'error');
+      console.error("Error uploading document:", error);
+      showSnackbar("Failed to upload document.", "error");
     }
   };
 
@@ -105,9 +107,7 @@ const UploadDoc = () => {
       return;
     }
     setLoading(true);
-    const normalizedPath = docPath.replace(/\\/g, '/');
-    const fullPath = `http://localhost:5000/${normalizedPath}`;
-    setPdfPath(fullPath);
+    setPdfPath(docPath);
     setOpenDialog(true);
   };
 
@@ -130,8 +130,9 @@ const UploadDoc = () => {
       <Grid container spacing={4}>
         <Grid item xs={12} md={6}>
           <Box>
-            <Typography variant="h5" sx={{ mb: 2 }}>
-              Upload Document
+            <Typography variant="h4" sx={{ mb: 2 }}>
+
+              เพิ่มเอกสารแบบฟอร์ม
             </Typography>
             <TextField
               label="Document Title"
@@ -151,44 +152,45 @@ const UploadDoc = () => {
               onChange={(e) => setDocDescription(e.target.value)}
               sx={{ mb: 2 }}
             />
-            <Button
-              variant="contained"
-              component="label"
-              sx={{ mb: 2, display: 'block' }}
-            >
-              Select File
-              <input
-                type="file"
-                hidden
-                accept=".pdf"
-                onChange={handleFileChange}
-              />
-            </Button>
-            {fileName && (
-              <Typography variant="body2" sx={{ mb: 2 }}>
-                Selected File: {fileName}
-              </Typography>
-            )}
-            <Button
-              variant="contained"
-              color="primary"
-              fullWidth
-              onClick={handleUpload}
-            >
-              Upload Document
-            </Button>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Button
+                variant="contained"
+                component="label"
+                sx={{ mr: 2 }}
+              >
+                เลือกไฟล์ PDF
+                <input
+                  type="file"
+                  hidden
+                  accept=".pdf"
+                  onChange={handleFileChange}
+                />
+              </Button>
+              {fileName && (
+                <Typography variant="body2" sx={{ mr: 2 }}>
+                  Selected File: {fileName}
+                </Typography>
+              )}
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleUpload}
+              >
+                ยืนยัน
+              </Button>
+            </Box>
           </Box>
         </Grid>
         <Grid item xs={12} md={6}>
-          <Typography variant="h5" sx={{ mb: 2 }}>
-            Document List
+          <Typography variant="h4" sx={{ mb: 2 }}>
+            ประวัติการอัปโหลดเอกสาร
           </Typography>
           {documents.length === 0 ? (
             <Typography variant="body2" color="textSecondary">
-              No documents found.
+              ไม่มีเอกสาร
             </Typography>
           ) : (
-            <Box sx={{ maxHeight: 400, overflowY: 'auto' }}>
+            <Box sx={{ maxHeight: 600, overflowY: 'auto' }}>
               {documents.map((doc) => (
                 <Paper
                   key={doc.doc_id}
@@ -208,7 +210,7 @@ const UploadDoc = () => {
                       {doc.doc_description}
                     </Typography>
                     <Typography variant="caption" color="textSecondary">
-                      Uploaded by: {doc.uploaded_by} |{' '}
+                      เพิ่มโดย: {doc.uploaded_by} |{' '}
                       {new Date(doc.upload_date).toLocaleString()}
                     </Typography>
                   </Box>

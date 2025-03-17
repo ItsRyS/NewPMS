@@ -1,13 +1,14 @@
 import AppRoutes from './AppRoutes/AppRoutes';
-
-import AppTheme from './utils/shared-theme/AppTheme';
-import { CssBaseline } from '@mui/material';
+import { CssBaseline, Box } from '@mui/material';
+import './Css/scrollbar.css';
 function App() {
   return (
-    <AppTheme disableCustomTheme>
+    <>
       <CssBaseline />
-      <AppRoutes />
-    </AppTheme>
+      <Box sx={{ backgroundColor: '#FFFFFF', minHeight: '100vh' }}>
+        <AppRoutes />
+      </Box>
+    </>
   );
 }
 

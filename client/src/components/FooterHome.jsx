@@ -1,6 +1,6 @@
 import { Box, Typography, IconButton } from '@mui/material';
 import GitHubIcon from '@mui/icons-material/GitHub';
-import EmailIcon from '@mui/icons-material/Email';
+import ContactMailTwoToneIcon from "@mui/icons-material/ContactMailTwoTone"
 
 const FooterHome = () => {
   return (
@@ -8,27 +8,25 @@ const FooterHome = () => {
       component="footer"
       sx={{
         display: 'flex',
-        flexDirection: { xs: 'column', sm: 'row' }, // Stack on small screens
+        flexDirection: { xs: 'column', sm: 'row' },
         alignItems: 'center',
-        justifyContent: 'space-between', // Space between text and icons
+        justifyContent: 'space-between',
         padding: '16px',
-        backgroundColor: '#FFA64D',
-        color: '#f0f4f8',
+        backgroundColor: '#FF6700',
+        color: '#ffffff',
         width: '100%',
         boxSizing: 'border-box',
-        mt: 'auto', // Push footer to the bottom
+        mt: 'auto',
+        textAlign: { xs: 'center', sm: 'left' },
       }}
     >
-      {/* Footer Text */}
-      <Typography variant="body2" align="center" sx={{ mb: { xs: 1, sm: 0 } }}>
-        สงวนลิขสิทธิ์ © 2567 - ข้อมูลและเนื้อหาทั้งหมด - บริษัท ไลลาร์ เพอฟอร์ม
-        จำกัด
+      <Typography variant="body2" sx={{ mb: { xs: 1, sm: 0 } }}>
+        สงวนลิขสิทธิ์ © 2567 - บริษัท ไลลาร์ เพอฟอร์ม จำกัด
       </Typography>
 
-      {/* Footer Icons */}
       <Box sx={{ display: 'flex', gap: '8px' }}>
         <IconButton
-          href="https://github.com/ItsRyS"
+          href="https://github.com/ItsRyS/NewPMS"
           target="_blank"
           sx={{ color: '#f0f4f8' }}
         >
@@ -38,7 +36,7 @@ const FooterHome = () => {
           href="mailto:ForzaLyraBelil@outlook.com"
           sx={{ color: '#f0f4f8' }}
         >
-          <EmailIcon />
+          <ContactMailTwoToneIcon />
         </IconButton>
       </Box>
     </Box>

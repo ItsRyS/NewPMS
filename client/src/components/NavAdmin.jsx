@@ -8,7 +8,7 @@ const NavAdmin = ({ handleDrawerToggle, title }) => {
       position="fixed"
       sx={{
         zIndex: (theme) => theme.zIndex.drawer + 1,
-        backgroundColor: '#FFA64D',
+        backgroundColor: '#FF6700',
         color: '#fff',
         width: '100%',
       }}

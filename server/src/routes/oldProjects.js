@@ -1,21 +1,25 @@
 const express = require('express');
-const { addOldProject, getOldProjects, updateOldProject, patchOldProject, deleteOldProject, uploadFile } = require('../controllers/oldProjectsController');
-
 const router = express.Router();
+const oldProjectsController = require('../controllers/oldProjectsController');
+const multer = require('multer');
 
-// 📌 API เพิ่มโครงงานเก่า (รองรับการอัปโหลดไฟล์)
-router.post('/', uploadFile, addOldProject);
+const upload = multer({ storage: multer.memoryStorage() }); //  ใช้ memoryStorage() เพื่ออัปโหลดไฟล์ไปยัง Supabase
 
-// 📌 API ดึงข้อมูลโครงงานเก่าทั้งหมด
-router.get('/', getOldProjects);
+//  เส้นทาง API สำหรับโครงงานเก่า
+router.get('/', oldProjectsController.getOldProjects);
+router.post('/', upload.single('file'), oldProjectsController.addOldProject);
+router.put('/:id', upload.single('file'), oldProjectsController.updateOldProject);
+router.delete('/:id', oldProjectsController.deleteOldProject);
 
-// 📌 API อัปเดตโครงงาน (รองรับไฟล์ใหม่)
-router.put('/:id', uploadFile, updateOldProject);
-
-// 📌 API แก้ไขบางฟิลด์
-router.patch('/:id', patchOldProject);
-
-// 📌 API ลบโครงงานเก่า
-router.delete('/:id', deleteOldProject);
+//  Middleware จัดการ Error
+router.use((err, req, res) => {
+  console.error('Old Project Route Error:', err);
+  res.status(err.status || 500).json({
+    error: {
+      message: err.message || 'Error processing old project request',
+      status: err.status || 500,
+    },
+  });
+});
 
 module.exports = router;

@@ -62,13 +62,13 @@ const ReleaseProjectPage = () => {
 
       if (unapprovedDocuments && unapprovedDocuments.length > 0) {
         const unapprovedNames = unapprovedDocuments.map((doc) => doc.type_name).join(', ');
-        showSnackbar(`Cannot release project. Missing documents: ${unapprovedNames}`, 'error');
+        showSnackbar(`ไม่สามารถเผยแพร่ได้ เนื่องจากมีเอกสารที่ยังไม่ได้อนุมัติ: ${unapprovedNames}`, 'error');
         handleCloseDialog();
         return;
       }
 
       await api.put(`/project-release/update-status/${selectedProject.project_id}`);
-      showSnackbar('Project released successfully.', 'success');
+      showSnackbar('โครงงานได้รับการเผยแพร่เรียบร้อย.', 'success');
       fetchProjects();
     } catch (error) {
       console.error('Error releasing project:', error);
@@ -83,7 +83,7 @@ const ReleaseProjectPage = () => {
   return (
     <Paper elevation={3} sx={{ padding: 4, borderRadius: 3 }}>
       <Typography variant="h4" gutterBottom>
-        Release Projects
+      หน้าเผยแพร่โครงงาน
       </Typography>
       <TableContainer component={Paper}>
         <Table>
@@ -107,7 +107,7 @@ const ReleaseProjectPage = () => {
                 <TableCell>{project.project_status}</TableCell>
                 <TableCell>
                   <Button variant="contained" color="primary" onClick={() => handleOpenDialog(project)}>
-                    Release
+                    เผยแพร่โครงการ
                   </Button>
                 </TableCell>
               </TableRow>
@@ -117,16 +117,16 @@ const ReleaseProjectPage = () => {
       </TableContainer>
 
       <Dialog open={openDialog} onClose={handleCloseDialog}>
-        <DialogTitle>Confirm Project Release</DialogTitle>
+        <DialogTitle>ยืนยันที่จะเผยแพร่โครงงานนี้</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to release the project {selectedProject?.project_name_th} ?
+            แน่ใจว่าคุณต้องการเผยแพร่โครงงาน :  {selectedProject?.project_name_th} ?
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button onClick={handleCloseDialog}>ยกเลิก</Button>
           <Button onClick={handleReleaseProject} color="primary" variant="contained">
-            Confirm
+            ยืนยัน
           </Button>
         </DialogActions>
       </Dialog>

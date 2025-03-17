@@ -6,9 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint .",
     "preview": "vite preview",
-    "format": "prettier --write src"
+    "start": "vite preview --port $PORT --host"
   },
   "dependencies": {
     "@emotion/react": "^11.13.3",
@@ -25,9 +24,9 @@
     "pdfjs-dist": "^3.11.174",
     "prop-types": "^15.8.1",
     "react": "^18.2.0",
+    "react-chartjs-2": "^5.3.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.27.0",
-    "zod": "^3.24.1"
+    "react-router-dom": "^6.27.0"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.25.9",

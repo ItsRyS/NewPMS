@@ -11,60 +11,68 @@ import {
   InputLabel,
 } from '@mui/material';
 import api from '../../services/api';
-import { useSearchParams } from 'react-router-dom';
+import { useSnackbar } from '../../components/ReusableSnackbar';
 const CheckProject = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filterStatus, setFilterStatus] = useState('all'); // เก็บสถานะที่ต้องการกรอง
-  const [searchParams] = useSearchParams();
+  const [filterStatus, setFilterStatus] = useState('all');
+  const showSnackbar = useSnackbar();
   useEffect(() => {
     const fetchRequests = async () => {
       try {
         const response = await api.get('/project-requests/all');
-        setRequests(Array.isArray(response.data) ? response.data : []);
+        console.log("API Response Data:", response.data);
+        const uniqueRequests = [...new Map(response.data.data.map(item => [item.request_id, item])).values()];
+
+        setRequests(uniqueRequests);
       } catch (error) {
-        console.error(
-          'Error fetching project requests:',
-          error.response?.data || error.message
-        );
+        console.error('Error fetching project requests:', error.response?.data || error.message);
       } finally {
         setLoading(false);
       }
     };
 
     fetchRequests();
-  }, [searchParams]);
+  }, []);
+
 
   const handleStatusUpdate = async (requestId, status) => {
     try {
-      // เรียก Endpoint อัปเดตสถานะ
       await api.put('/projects/update-status', { requestId, status });
 
-      // อัปเดตสถานะใน UI
       setRequests((prev) =>
         prev.map((request) =>
           request.request_id === requestId ? { ...request, status } : request
         )
+      );
+      showSnackbar(
+        `Project ${status === 'approved' ? 'Approved ' : 'Rejected '} Successfully.`,
+        'success'
       );
     } catch (error) {
       console.error('Error updating status:', error);
     }
   };
 
-  // ฟังก์ชันสำหรับกรองสถานะ
-  const filteredRequests =
-    filterStatus === 'all'
-      ? requests
-      : requests.filter((request) => request.status === filterStatus);
+  //  Debugging: ตรวจสอบค่าของ filterStatus และ requests ก่อนกรอง
+  //console.log("Filter Status:", filterStatus);
+  //console.log("Requests Before Filtering:", requests);
+
+  {/* ทดสองปิด
+const filteredRequests =
+    requests && requests.length > 0
+      ? filterStatus === 'all'
+        ? requests
+        : requests.filter((request) => request.status === filterStatus)
+      : [];
+
+    */}
+  //  Debugging: ตรวจสอบว่าหลังจากกรองข้อมูลแล้ว filteredRequests เป็นอย่างไร
+  // console.log("Requests After Filtering:", filteredRequests);
 
   if (loading) {
     return (
-      <Grid
-        container
-        justifyContent="center"
-        alignItems="center"
-        style={{ height: '100vh' }}
-      >
+      <Grid container justifyContent="center" alignItems="center" style={{ height: '100vh' }}>
         <Typography>Loading...</Typography>
       </Grid>
     );
@@ -72,16 +80,15 @@ const CheckProject = () => {
 
   return (
     <Paper elevation={3} sx={{ padding: 4, borderRadius: 3 }}>
-      {/* หัวข้อและตัวเลือกกรอง */}
       <Grid container spacing={2} alignItems="center">
         <Grid item xs={12} md={6}>
-          <Typography variant="h5" gutterBottom>
-            Approve or Reject Projects
+          <Typography variant="h4" gutterBottom>
+            ตรวจสอบคำร้องโครงงาน
           </Typography>
         </Grid>
         <Grid item xs={12} md={6}>
           <FormControl fullWidth>
-            <InputLabel id="status-filter-label">Filter Status</InputLabel>
+            <InputLabel id="status-filter-label">กรองสถานะ</InputLabel>
             <Select
               labelId="status-filter-label"
               value={filterStatus}
@@ -98,9 +105,11 @@ const CheckProject = () => {
       </Grid>
 
       {/* รายการคำร้อง */}
-      <Grid container spacing={2} sx={{ marginTop: 2, overflowX: 'auto' }}>
-        {filteredRequests.length > 0 ? (
-          filteredRequests.map((request) => (
+      <Grid container spacing={2} sx={{ marginTop: 2 }}>
+      {requests.length > 0 ? (
+          requests
+            .filter((request) => filterStatus === 'all' || request.status === filterStatus)
+            .map((request) => (
             <Grid item xs={12} md={6} key={request.request_id}>
               <Paper
                 elevation={3}
@@ -115,48 +124,35 @@ const CheckProject = () => {
                   color: 'white',
                 }}
               >
-                <Typography
-                  variant="h4"
-                  gutterBottom
-                  sx={{
-                    textDecoration: 'underline',
-                    fontWeight: 'bold',
-                  }}
-                >
+                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                   {request.project_name}
                 </Typography>
                 <Typography>
                   <strong>Advisor:</strong> {request.teacher_name || 'N/A'}
                 </Typography>
                 <Typography>
-                  <strong>Students:</strong> {request.students || 'N/A'}
+                  <strong>Student:</strong> {request.student_name || 'N/A'}
                 </Typography>
                 <Typography>
-                  <strong>Status:</strong>{' '}
-                  {request.status.charAt(0).toUpperCase() +
-                    request.status.slice(1)}
+                  <strong>Status:</strong> {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
                 </Typography>
                 <Box sx={{ marginTop: 2 }}>
                   <Button
                     variant="contained"
                     color="success"
-                    onClick={() =>
-                      handleStatusUpdate(request.request_id, 'approved')
-                    }
+                    onClick={() => handleStatusUpdate(request.request_id, 'approved')}
                     disabled={request.status === 'approved'}
                     sx={{ marginRight: 1 }}
                   >
-                    Approve
+                    อนุมัติ
                   </Button>
                   <Button
                     variant="contained"
                     color="error"
-                    onClick={() =>
-                      handleStatusUpdate(request.request_id, 'rejected')
-                    }
+                    onClick={() => handleStatusUpdate(request.request_id, 'rejected')}
                     disabled={request.status === 'rejected'}
                   >
-                    Reject
+                    ไม่อนุมัติ
                   </Button>
                 </Box>
               </Paper>

@@ -13,44 +13,48 @@ import {
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
-import * as z from 'zod';
 import api from '../../services/api';
 import { useSnackbar } from '../../components/ReusableSnackbar';
 
-// ปรับแต่ง Layout
-const RootContainer = styled(Box)({
+//  กำหนดโครงสร้าง Layout หลัก
+const RootContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   height: '100vh',
-});
+  flexDirection: 'row',
+  [theme.breakpoints.down('sm')]: {
+    flexDirection: 'column',
+    height: 'auto',
+  },
+}));
 
-const LeftContainer = styled(Box)({
+const LeftContainer = styled(Box)(({ theme }) => ({
   flex: 1,
-  backgroundColor: '#F7941E', // สีส้มเหมือนในภาพ
+  backgroundColor: '#FF6700',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  color: '#fff',
   textAlign: 'center',
   padding: '2rem',
-});
+  color: '#fff',
+  [theme.breakpoints.down('sm')]: {
+    padding: '1rem',
+  },
+}));
 
-const LogoImage = styled('img')({
-  width: '580px',
-  height: '580px',
-  objectFit: 'contain',
-});
-
-const RightContainer = styled(Box)({
+const RightContainer = styled(Box)(({ theme }) => ({
   flex: 1,
-  backgroundColor: '#fff',
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
   alignItems: 'center',
   padding: '2rem',
   position: 'relative',
-});
+  overflow: 'auto',
+  [theme.breakpoints.down('sm')]: {
+    padding: '1rem',
+  },
+}));
 
 const FormContainer = styled(Box)({
   width: '100%',
@@ -68,18 +72,15 @@ const StyledButton = styled(Button)({
   borderRadius: '8px',
 });
 
-const BackButton = styled(IconButton)({
+const HomeButton = styled(IconButton)({
   position: 'absolute',
   bottom: '20px',
   right: '20px',
-  color: '#000',
-});
-
-// Schema ตรวจสอบข้อมูล
-const signUpSchema = z.object({
-  username: z.string().min(1, 'กรุณากรอกชื่อผู้ใช้'),
-  email: z.string().email('กรุณากรอกอีเมลที่ถูกต้อง'),
-  password: z.string().min(6, 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร'),
+  backgroundColor: '#FFA64D',
+  color: '#fff',
+  '&:hover': {
+    backgroundColor: '#FF8C00',
+  },
 });
 
 export default function SignUp() {
@@ -95,20 +96,6 @@ export default function SignUp() {
       email: formData.get('email'),
       password: formData.get('password'),
     };
-
-    try {
-      signUpSchema.parse(data);
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        const fieldErrors = err.formErrors?.fieldErrors || {};
-        setErrors({
-          username: fieldErrors.username ? fieldErrors.username[0] : '',
-          email: fieldErrors.email ? fieldErrors.email[0] : '',
-          password: fieldErrors.password ? fieldErrors.password[0] : '',
-        });
-      }
-      return;
-    }
 
     setErrors({});
     try {
@@ -131,20 +118,23 @@ export default function SignUp() {
     <>
       <CssBaseline />
       <RootContainer>
-        {/* ด้านซ้าย: โลโก้ และชื่อสถาบัน */}
+        {/*  กล่องซ้าย */}
         <LeftContainer>
-          <LogoImage src="/software.png" alt="IT Logo" />
-        </LeftContainer>
-
-        {/* ด้านขวา: ฟอร์มสมัครสมาชิก */}
-        <RightContainer>
-          <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+          <img
+            src="/IT-PMS.svg"
+            alt="IT-PMS Logo"
+            style={{ width: '60%', maxWidth: '500px' }}
+          />
+          <Typography variant="h4" sx={{ mt: 2, fontWeight: 'bold' }}>
             สมัครสมาชิก
           </Typography>
-          <Typography variant="body2" sx={{ color: 'gray', mb: 2 }}>
+          <Typography variant="body2">
             กรุณากรอกข้อมูลเพื่อสมัครสมาชิก
           </Typography>
+        </LeftContainer>
 
+        {/*  กล่องขวา */}
+        <RightContainer>
           <FormContainer component="form" onSubmit={handleSubmit}>
             <FormControl>
               <FormLabel>ชื่อผู้ใช้</FormLabel>
@@ -188,13 +178,27 @@ export default function SignUp() {
               />
             </FormControl>
 
-            <StyledButton type="submit" variant="contained" fullWidth>
+            <StyledButton
+              type="submit"
+              variant="contained"
+              fullWidth
+              sx={{
+                backgroundColor: '#FF6700',
+                '&:hover': { backgroundColor: '#FF8C00' },
+                padding: '12px',
+                fontSize: '1rem',
+                fontWeight: 'bold',
+                mt: '1rem',
+                mb: '4rem',
+              }}
+            >
               สมัครสมาชิก
             </StyledButton>
+
             <Typography sx={{ textAlign: 'center', mt: 2 }}>
               มีบัญชีอยู่แล้ว?{' '}
               <Link
-                href="/signin"
+                onClick={() => navigate('/signin')}
                 sx={{ color: '#F7941E', fontWeight: 'bold' }}
               >
                 เข้าสู่ระบบที่นี่
@@ -202,10 +206,10 @@ export default function SignUp() {
             </Typography>
           </FormContainer>
 
-          {/* ปุ่มย้อนกลับที่ขวาล่าง */}
-          <BackButton onClick={() => navigate('/')}>
-            <HomeIcon fontSize="large" />
-          </BackButton>
+          {/*  ปุ่ม Home */}
+          <HomeButton onClick={() => navigate('/')}>
+            <HomeIcon />
+          </HomeButton>
         </RightContainer>
       </RootContainer>
     </>

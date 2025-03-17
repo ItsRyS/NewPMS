@@ -1,5 +1,5 @@
 const bcrypt = require("bcrypt");
-const newPassword = "Admin123"; // กำหนดรหัสผ่านใหม่
+const newPassword = ""; // กำหนดรหัสผ่านใหม่
 const saltRounds = 10; // ค่า salt
 
 bcrypt.hash(newPassword, saltRounds, function (err, hash) {

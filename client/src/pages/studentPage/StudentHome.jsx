@@ -12,16 +12,12 @@ function StudentHome() {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const tabId = sessionStorage.getItem('tabId');
-        const response = await api.get('/auth/check-session', {
-          headers: { 'x-tab-id': tabId },
-        });
+        const response = await api.get("/auth/check-session");
         if (!response.data.isAuthenticated) {
-          navigate('/SignIn');
+          navigate("/SignIn");
         }
-      } catch (error) {
-        console.error('Session check failed:', error);
-        navigate('/SignIn');
+      } catch {
+        navigate("/SignIn");
       }
     };
 
@@ -37,15 +33,12 @@ function StudentHome() {
       }
     };
 
-
     checkSession();
     fetchProjects();
   }, [navigate]);
 
   return (
-
-  <ProjectTable rows={projects} loading={loading} />
-
+    <ProjectTable rows={projects} loading={loading} />
   );
 }
 

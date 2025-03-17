@@ -14,79 +14,77 @@ import {
   Toolbar,
   Skeleton,
 } from '@mui/material';
-import { Home, School, Assignment, PresentToAll } from '@mui/icons-material';
 import { NavLink, useNavigate, useOutletContext } from 'react-router-dom';
 import LogoutIcon from '@mui/icons-material/Logout';
-import api,{ API_BASE_URL } from '../services/api';
+import api from '../services/api';
 import { useSnackbar } from '../components/ReusableSnackbar';
-
+import DashboardTwoToneIcon from '@mui/icons-material/DashboardTwoTone';
+import AccountCircleTwoToneIcon from '@mui/icons-material/AccountCircleTwoTone';
+import PlagiarismTwoToneIcon from '@mui/icons-material/PlagiarismTwoTone';
+import RateReviewTwoToneIcon from '@mui/icons-material/RateReviewTwoTone';
+import UploadFileTwoToneIcon from '@mui/icons-material/UploadFileTwoTone';
 // Constants
 const drawerWidth = 240;
+
 const COLORS = {
-  drawer: '#EEEDED',
-  divider: '#374151',
+  navbar: '#FF6700', // สี Navbar
+  drawer: '#FFB38A', // สี Sidebar ที่เหมาะสม
+  divider: '#FFD7B5', // เส้นแบ่งหรือพื้นหลัง Hover
   text: {
-    primary: '#000000',
-    secondary: '#374151',
+    primary: '#000000', // สีข้อความหลัก
+    secondary: '#374151', // สีข้อความรอง
   },
 };
 
 // Memoized User Info Component
-const UserInfo = React.memo(({ username, role, profileImage, loading }) => (
-  <Box
-    sx={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      padding: 2,
-      minHeight: { xs: 'auto', sm: '200px' },
-    }}
-  >
-    {loading ? (
-      <>
-        <Skeleton variant="circular" width={100} height={100} />
-        <Skeleton variant="text" width={120} sx={{ mt: 1 }} />
-        <Skeleton variant="text" width={80} />
-      </>
-    ) : (
-      <>
-        <Avatar
-          src={
-            profileImage
-              ? `${API_BASE_URL}/${profileImage}`
-              : '/default-avatar.png'
-          }
-          alt={username}
-          sx={{ width: 100, height: 100 }}
-        />
-        <Typography
-          variant="body1"
-          sx={{
-            color: COLORS.text.primary,
-            marginTop: 1,
-            display: { xs: 'none', sm: 'block' },
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {username}
-        </Typography>
-        <Typography
-          variant="body2"
-          sx={{
-            color: COLORS.text.secondary,
-            display: { xs: 'none', sm: 'block' },
-            textTransform: 'capitalize',
-          }}
-        >
-          {role}
-        </Typography>
-      </>
-    )}
-    <Divider sx={{ borderColor: '#ff0000', width: '100%', mt: 2 }} />
-  </Box>
-));
+const UserInfo = React.memo(({ username, role, profileImage, loading }) => {
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        padding: 2,
+      }}
+    >
+      {loading ? (
+        <>
+          <Skeleton variant="circular" width={100} height={100} />
+          <Skeleton variant="text" width={120} sx={{ mt: 1 }} />
+          <Skeleton variant="text" width={80} />
+        </>
+      ) : (
+        <>
+          <Avatar
+            src={profileImage}
+            alt={username}
+            sx={{
+              width: 100,
+              height: 100,
+              objectFit: 'cover',
+              mx: 'auto',
+              border: '2px solid #e0e0e0',
+            }}
+            onError={(e) => (e.target.src = '/default-avatar.png')}
+          />
+          <Typography variant="body1" sx={{ mt: 1, fontWeight: 'medium' }}>
+            {username}
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              textTransform: 'capitalize',
+              color: 'text.secondary',
+            }}
+          >
+            {role}
+          </Typography>
+        </>
+      )}
+      <Divider sx={{ width: '100%', mt: 2 }} />
+    </Box>
+  );
+});
 
 UserInfo.displayName = 'UserInfo';
 
@@ -105,53 +103,73 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
   const showSnackbar = useSnackbar();
   const navigate = useNavigate();
 
-  // ฟังก์ชันสำหรับอัปเดตข้อมูลผู้ใช้
+  const outletContext = useOutletContext() || {};
+
   const updateUserData = (newUsername, newProfileImage) => {
     if (newUsername) setUsername(newUsername);
-    if (newProfileImage) setProfileImage(newProfileImage);
+    if (newProfileImage) {
+      const supabaseUrl =
+        'https://tgyexptoqpnoxcalnkyo.supabase.co/storage/v1/object/public/profile-images/';
+      const fullImageUrl = `${supabaseUrl}${newProfileImage}`;
+
+      // Validate image URL before updating
+      const img = new Image();
+      img.onload = () => setProfileImage(fullImageUrl);
+      img.onerror = () => setProfileImage('/default-avatar.png');
+      img.src = fullImageUrl;
+    }
+
+    // Update Session
+    const updateSession = async () => {
+      try {
+        await api.post('/auth/update-session', {
+          username: newUsername,
+          profileImage: newProfileImage,
+        });
+      } catch (error) {
+        console.error('Failed to update session:', error.message);
+        showSnackbar('Failed to update session', 'error');
+      }
+    };
+    updateSession();
   };
 
-  // ส่งฟังก์ชันนี้ไปยัง ProfileUser ผ่าน useOutletContext
-  useOutletContext({ updateUserData });
+  outletContext.updateUserData = updateUserData;
 
   useEffect(() => {
-    const fetchSession = async () => {
+    const fetchUserData = async () => {
       try {
-        const response = await api.get('/auth/check-session', {
-          headers: { 'x-tab-id': sessionStorage.getItem('tabId') },
-        });
-        if (response.data.isAuthenticated) {
-          setUsername(response.data.user.username);
-          setRole(response.data.user.role);
-          setProfileImage(response.data.user.profileImage);
+        setLoading(true);
+        const response = await api.get('/auth/check-session');
+        const userData = response.data.user;
+        console.log('User Data:', userData);
+        setUsername(userData.username);
+        setRole(userData.role);
+
+        if (userData.profile_image && userData.profile_image !== 'NULL') {
+          setProfileImage(userData.profile_image);
         } else {
-          navigate('/SignIn');
+          setProfileImage('/default-avatar.png');
         }
       } catch (error) {
-        console.error('Failed to fetch session:', error);
-        showSnackbar(
-          error.response?.data?.message || 'Failed to load user data',
-          'error'
-        );
+        console.error('Error fetching user data:', error);
+        setProfileImage('/default-avatar.png');
+        navigate('/SignIn');
       } finally {
         setLoading(false);
       }
     };
-    fetchSession();
-  }, [navigate, showSnackbar]);
+
+    fetchUserData();
+  }, [navigate]);
 
   const handleLogout = async () => {
     try {
-      const tabId = sessionStorage.getItem('tabId');
-      if (!tabId) return;
-
-      const response = await api.post('/auth/logout', { tabId });
-      if (response.data.success) {
-        sessionStorage.removeItem('tabId');
-        navigate('/SignIn');
-      }
+      await api.post('/auth/logout');
+      localStorage.removeItem('token');
+      navigate('/SignIn');
     } catch (error) {
-      console.error('Logout failed:', error.response?.data || error.message);
+      console.error('Logout failed:', error);
       showSnackbar('Logout failed', 'error');
     }
   };
@@ -160,31 +178,31 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
     {
       to: '/studentHome',
       text: 'หน้าหลัก',
-      icon: <Home sx={{ color: COLORS.text.secondary }} />,
+      icon: <DashboardTwoToneIcon sx={{ color: COLORS.text.secondary }} />,
       title: 'หน้าหลัก',
     },
     {
       to: '/studentHome/ProfileUser',
       text: 'ข้อมูลส่วนตัว',
-      icon: <Home sx={{ color: COLORS.text.secondary }} />,
+      icon: <AccountCircleTwoToneIcon sx={{ color: COLORS.text.secondary }} />,
       title: 'ข้อมูลส่วนตัว',
     },
     {
       to: '/studentHome/Documentation',
       text: 'แบบร่างเอกสาร',
-      icon: <School sx={{ color: COLORS.text.secondary }} />,
+      icon: <PlagiarismTwoToneIcon sx={{ color: COLORS.text.secondary }} />,
       title: 'แบบร่างเอกสาร',
     },
     {
       to: '/studentHome/projectRequest',
       text: 'คำร้องโครงการ',
-      icon: <Assignment sx={{ color: COLORS.text.secondary }} />,
+      icon: <RateReviewTwoToneIcon sx={{ color: COLORS.text.secondary }} />,
       title: 'คำร้องโครงการ',
     },
     {
       to: '/studentHome/uploadProjectDocument',
       text: 'ส่งเอกสาร',
-      icon: <PresentToAll sx={{ color: COLORS.text.secondary }} />,
+      icon: <UploadFileTwoToneIcon sx={{ color: COLORS.text.secondary }} />,
       title: 'ส่งเอกสาร',
     },
   ];
@@ -228,10 +246,6 @@ const SideStudent = ({ mobileOpen, handleDrawerToggle, setTitle }) => {
       </Box>
     </>
   );
-
-  if (loading) {
-    return <Typography>Loading...</Typography>;
-  }
 
   return (
     <>

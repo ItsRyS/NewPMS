@@ -1,22 +1,27 @@
+import { useState } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import MenuIcon from '@mui/icons-material/Menu';
+import Drawer from '@mui/material/Drawer';
 import { Link } from 'react-router-dom';
 import LoginTwoToneIcon from '@mui/icons-material/LoginTwoTone';
-import AssignmentIndTwoToneIcon from '@mui/icons-material/AssignmentIndTwoTone';
-
+import FindInPageTwoToneIcon from '@mui/icons-material/FindInPageTwoTone';
+import { Typography } from '@mui/material';
+import Groups3TwoToneIcon from '@mui/icons-material/Groups3TwoTone';
 const menuItems = [
   {
     text: 'คณะอาจารย์',
-    icon: <AssignmentIndTwoToneIcon />,
+    icon: <Groups3TwoToneIcon />,
     to: '/TeacherPage',
     color: '#000000',
-    variant: 'text',
+    variant: 'squared',
   },
   {
     text: 'โครงงานเก่า',
-    icon: <AssignmentIndTwoToneIcon />,
+    icon: <FindInPageTwoToneIcon />,
     to: '/OldProject',
     variant: 'text',
     color: '#000000',
@@ -33,27 +38,37 @@ const menuItems = [
 ];
 
 const NavbarHome = () => {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const toggleDrawer = (open) => () => setMobileOpen(open);
+
   return (
     <AppBar
       position="sticky"
       sx={{
-        backgroundColor: '#FFA64D',
+        backgroundColor: '#FF6700',
         width: '100%',
         zIndex: 99,
-        paddingX: 2,
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.2)', // เพิ่มเงาให้ AppBar
       }}
     >
       <Toolbar sx={{ justifyContent: 'space-between' }}>
-        {/* Enhanced Logo Section */}
+        {/* Mobile Menu Button */}
+        <IconButton
+          color="inherit"
+          edge="start"
+          sx={{ display: { xs: 'block', sm: 'none' } }}
+          onClick={toggleDrawer(true)}
+        >
+          <MenuIcon />
+        </IconButton>
+
+        {/* Logo & Title */}
         <Box
           sx={{
             display: 'flex',
             alignItems: 'center',
-            transition: 'transform 0.2s ease-in-out',
-            '&:hover': {
-              transform: 'scale(1.05)',
-            },
+            gap: 0.5,
+            px: 1.5,
           }}
         >
           <Link
@@ -64,87 +79,66 @@ const NavbarHome = () => {
               alignItems: 'center',
             }}
           >
-            <img
-              src="/PMS-logo2.svg"
-              alt="IT-PMS Logo"
-              style={{
-                height: '48px',
-                width: 'auto',
-                marginRight: '12px',
-                filter: 'drop-shadow(0 2px 2px rgb(0, 0, 0))',
+            <Typography
+              variant="h3"
+              component="div"
+              sx={{
+                fontWeight: 600,
+                ml: 0.5, // ปรับระยะห่างจากโลโก้
+                textShadow: '6px 1px 1px rgba(0, 0, 0, 0.2)', // เพิ่มเงาให้ตัวอักษร
+                '&:hover': { color: '#FFF4F4' },
               }}
-            />
+            >
+              <span style={{ color: '#FFFFFF' }}>IT</span>
+              <span style={{ color: '#000000' }}>-PMS</span>
+            </Typography>
           </Link>
         </Box>
 
-        {/* Enhanced Menu Items */}
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 3, // Increased gap between items
-            ml: 'auto',
-          }}
-        >
-          {menuItems.map(({ text, icon, to, variant, color, fontWeight }, index) => (
+        {/* Desktop Menu */}
+        <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 3, ml: 'auto' }}>
+          {menuItems.map(({ text, icon, to }, index) => (
             <Button
               key={index}
               component={Link}
               to={to}
-              startIcon={
-                <Box sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  transform: 'scale(1.2)', // Larger icons
-                }}>
-                  {icon}
-                </Box>
-              }
-              variant={variant}
-              color={color || 'inherit'}
+              variant="text"
               sx={{
-                fontSize: '1rem', // Slightly larger font
-                fontWeight: fontWeight || 500, // Bolder text
-                transition: 'all 0.2s ease-in-out',
-                padding: '10px 20px', // Larger padding
-                borderRadius: '10px', // More rounded corners
-                textTransform: 'none', // Preserve original text case
-                position: 'relative',
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  backgroundColor: variant === 'contained'
-                    ? ''
-                    : 'rgba(255,255,255,0.2)',
-                  '&::after': {
-                    opacity: 1,
-                    transform: 'scaleX(1)',
-                  }
-                },
-                '&::after': variant === 'text' ? {
-                  content: '""',
-                  position: 'absolute',
-                  bottom: '5px',
-                  left: '10%',
-                  width: '80%',
-                  height: '2px',
-                  backgroundColor: '#000000',
-                  opacity: 0,
-                  transform: 'scaleX(0)',
-                  transition: 'all 0.2s ease-in-out',
-                } : {},
-                ...(variant === 'contained' && {
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                  '&:hover': {
-                    boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-                    transform: 'translateY(-2px)',
-                  }
-                }),
+                fontSize: '1rem',
+                color: '#000',
+                fontWeight: 500,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                '&:hover': { color: '#FFF4F4' },
               }}
             >
-              {text}
+              {icon} {text}
             </Button>
           ))}
         </Box>
+
+        {/* Mobile Drawer Menu */}
+        <Drawer anchor="left" open={mobileOpen} onClose={toggleDrawer(false)}>
+          <Box sx={{ width: 250, padding: '16px' }}>
+            {menuItems.map(({ text, to }, index) => (
+              <Button
+                key={index}
+                component={Link}
+                to={to}
+                fullWidth
+                sx={{
+                  fontSize: '1rem',
+                  color: '#000',
+                  fontWeight: 500,
+                  '&:hover': { color: '#FF5722' },
+                }}
+              >
+                {text}
+              </Button>
+            ))}
+          </Box>
+        </Drawer>
       </Toolbar>
     </AppBar>
   );

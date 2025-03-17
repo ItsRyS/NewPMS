@@ -18,11 +18,10 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Box,
 } from '@mui/material';
 import api from '../../services/api'; // Axios instance
 import { useSearchParams } from 'react-router-dom';
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 const TeacherInfo = () => {
   const [teachers, setTeachers] = useState([]);
@@ -42,6 +41,7 @@ const TeacherInfo = () => {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [teacherToDelete, setTeacherToDelete] = useState(null);
   const [searchParams] = useSearchParams();
+
   useEffect(() => {
     fetchTeachers();
   }, [searchParams]);
@@ -152,13 +152,18 @@ const TeacherInfo = () => {
   };
 
   return (
-    <div>
-      <h1>Teacher Info</h1>
+    <Paper elevation={3} sx={{ padding: 4, borderRadius: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between' ,alignItems: 'center',mb: 2}}>
+<Typography variant="h4" gutterBottom>
+        ข้อมูลอาจารย์
+      </Typography>
       <Button variant="contained" color="primary" onClick={handleOpenForm}>
-        Add New Teacher
+        เพิ่มข้อมูลอาจารย์
       </Button>
 
-      <TableContainer component={Paper}>
+      </Box>
+
+      <TableContainer component={Paper} sx={{ marginTop: 2 }}>
         <Table>
           <TableHead>
             <TableRow>
@@ -184,7 +189,7 @@ const TeacherInfo = () => {
                 <TableCell>
                   {teacher.teacher_image ? (
                     <img
-                      src={`${API_BASE_URL}/upload/pic/${teacher.teacher_image}`}
+                      src={teacher.teacher_image} //  ใช้ URL ที่ถูกต้อง
                       alt={teacher.teacher_name}
                       style={{ width: 50, height: 50, objectFit: 'cover' }}
                     />
@@ -192,6 +197,7 @@ const TeacherInfo = () => {
                     <span>No Image</span>
                   )}
                 </TableCell>
+
                 <TableCell>
                   <Button onClick={() => handleView(teacher)} color="primary">
                     View
@@ -249,9 +255,11 @@ const TeacherInfo = () => {
             </p>
             {viewTeacher.teacher_image && (
               <img
-                src={`http://localhost:5000/upload/pic/${viewTeacher.teacher_image}`}
+                src={
+                  viewTeacher.teacher_image || 'https://via.placeholder.com/50'
+                } // ถ้าไม่มีรูป ใช้ placeholder
                 alt={viewTeacher.teacher_name}
-                style={{ width: 100, height: 100, objectFit: 'cover' }}
+                style={{ width: 50, height: 50, objectFit: 'cover' }}
               />
             )}
           </DialogContent>
@@ -337,7 +345,7 @@ const TeacherInfo = () => {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+    </Paper>
   );
 };
 

@@ -6,5 +6,5 @@ router.post('/create', projectRequestsController.createRequest);
 router.get('/status', projectRequestsController.getStudentRequests);
 router.get('/all', projectRequestsController.getAllRequests);
 //router.post("/update-status", projectRequestsController.updateRequestStatus); ย้ายไป PUT /projects/update-status
-
+router.delete('/delete/:requestId', projectRequestsController.deleteRequest);
 module.exports = router;

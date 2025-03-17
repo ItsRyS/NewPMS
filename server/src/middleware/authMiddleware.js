@@ -1,35 +1,27 @@
-const authenticateSession = (req, res, next) => {
-  const tabId = req.headers['x-tab-id']; // รับ tabId จาก Header
+const jwt = require("jsonwebtoken");
 
-  if (!tabId) {
-    return res.status(400).json({ error: 'Missing Tab ID in request headers' });
-  }
+const verifyToken = (req, res, next) => {
+  try {
+    const token = req.cookies.token || req.headers["authorization"]?.split(" ")[1];
 
-  if (req.session && req.session.tabs && req.session.tabs[tabId]) {
-    req.session.user = req.session.tabs[tabId]; // แนบข้อมูล user ไว้ใน request
-    next();
-  } else {
-    res.status(401).json({ error: 'Unauthorized: กรุณาเข้าสู่ระบบ' });
-  }
-};
+    if (!token) {
+      console.error('No token provided');
+      return res.status(401).json({ message: "กรุณาเข้าสู่ระบบ" });
+    }
 
-const authenticateAndRefreshSession = (req, res, next) => {
-  const tabId = req.headers['x-tab-id']; // รับ tabId จาก Header
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+      if (err) {
+        console.error('Token verification failed:', err);
+        return res.status(403).json({ message: "Token ไม่ถูกต้องหรือหมดอายุ" });
+      }
 
-  if (!tabId) {
-    return res.status(400).json({ error: 'Missing Tab ID in request headers' });
-  }
-
-  if (req.session && req.session.tabs && req.session.tabs[tabId]) {
-    req.session.touch(); // ต่ออายุ Session
-    req.session.user = req.session.tabs[tabId]; // แนบข้อมูล user ไว้ใน request
-    next();
-  } else {
-    res.status(401).json({ error: 'Session expired, please login again' });
+      req.user = decoded;
+      next();
+    });
+  } catch (error) {
+    console.error('Auth middleware error:', error);
+    return res.status(500).json({ message: "เกิดข้อผิดพลาดในการตรวจสอบสิทธิ์" });
   }
 };
 
-module.exports = {
-  authenticateSession,
-  authenticateAndRefreshSession,
-};
+module.exports = { verifyToken };

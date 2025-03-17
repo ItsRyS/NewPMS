@@ -1,12 +1,9 @@
+// filepath: f:\lptc-it\lptc-client\src\pages\adminPage\AddOldProject.jsx
 import { useState, useEffect } from 'react';
 import {
-  Card,
-  CardContent,
-  CardHeader,
   TextField,
   Button,
   MenuItem,
-  Box,
   Table,
   TableBody,
   TableCell,
@@ -24,7 +21,7 @@ import {
   Select,
   FormControl,
   InputLabel,
-
+  Box,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -33,6 +30,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { useSnackbar } from '../../components/ReusableSnackbar';
 import api from '../../services/api';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import { useSearchParams } from 'react-router-dom';
 
 const AddOldProject = () => {
   const [projects, setProjects] = useState([]);
@@ -48,11 +46,12 @@ const AddOldProject = () => {
   const [openYearDialog, setOpenYearDialog] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const showSnackbar = useSnackbar();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     fetchProjectTypes();
     fetchProjects();
-  }, []);
+  }, [showSnackbar, searchParams]);
 
   const fetchProjectTypes = async () => {
     try {
@@ -92,15 +91,17 @@ const AddOldProject = () => {
     setIsEditMode(false);
     setOpenDialog(true);
   };
+
   const handleOpenPdfDialog = (filePath) => {
     if (!filePath) {
       showSnackbar('No document available', 'error');
       return;
     }
     setPdfLoading(true);
-    setPdfUrl(`http://localhost:5000/${filePath}`);
+    setPdfUrl(filePath);
     setOpenPdfDialog(true);
   };
+
   const handleInputChange = (field, value) => {
     setEditedData((prev) => ({ ...prev, [field]: value }));
   };
@@ -108,10 +109,12 @@ const AddOldProject = () => {
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
   };
+
   const handleYearSelection = (year) => {
     setEditedData((prev) => ({ ...prev, document_year: year }));
     setOpenYearDialog(false);
   };
+
   const handleSave = async () => {
     if (
       !editedData.old_project_name_th ||
@@ -134,16 +137,21 @@ const AddOldProject = () => {
     }
 
     try {
+      let response;
       if (isEditMode) {
-        await api.put(`/old-projects/${editingProject.old_id}`, formData, {
+        response = await api.put(`/old-projects/${editingProject.old_id}`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
         showSnackbar('Project updated successfully', 'success');
       } else {
-        await api.post('/old-projects', formData, {
+        response = await api.post('/old-projects', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
         showSnackbar('Project added successfully', 'success');
+      }
+
+      if (response.data.fileUrl) {
+        setEditedData((prev) => ({ ...prev, file_path: response.data.fileUrl }));
       }
 
       fetchProjects();
@@ -166,72 +174,72 @@ const AddOldProject = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: 1200, mx: 'auto', mt: 4 }}>
-      <Card>
-        <CardHeader title="Manage Old Project Documents" />
-        <CardContent>
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
-            onClick={handleOpenAddDialog}
-            sx={{ mb: 2 }}
-          >
-            Add New Project
-          </Button>
+    <Paper elevation={3} sx={{ padding: 4, borderRadius: 3 }}>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" gutterBottom>
+          เอกสารโครงงานเก่า
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<AddIcon />}
+          onClick={handleOpenAddDialog}
+          sx={{ mb: 2 }}
+        >
+          เพิ่มเอกสารโครงงานเก่า
+        </Button>
 
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Project Name (Thai)</TableCell>
-                  <TableCell>Project Name (English)</TableCell>
-                  <TableCell>Type</TableCell>
-                  <TableCell>Year</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {projects.map((project) => (
-                  <TableRow key={project.old_id}>
-                    <TableCell>{project.old_project_name_th}</TableCell>
-                    <TableCell>{project.old_project_name_eng}</TableCell>
-                    <TableCell>{project.project_type}</TableCell>
-                    <TableCell>{project.document_year}</TableCell>
-                    <TableCell>
-                      {project.file_path ? (
-                        <IconButton
-                          color="primary"
-                          onClick={() => handleOpenPdfDialog(project.file_path)}
-                        >
-                          <VisibilityIcon />
-                        </IconButton>
-                      ) : (
-                        <Typography variant="body2" color="textSecondary">
-                          No File
-                        </Typography>
-                      )}
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Project Name (Thai)</TableCell>
+                <TableCell>Project Name (English)</TableCell>
+                <TableCell>Type</TableCell>
+                <TableCell>Year</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {projects.map((project) => (
+                <TableRow key={project.old_id}>
+                  <TableCell>{project.old_project_name_th}</TableCell>
+                  <TableCell>{project.old_project_name_eng}</TableCell>
+                  <TableCell>{project.project_type}</TableCell>
+                  <TableCell>{project.document_year}</TableCell>
+                  <TableCell>
+                    {project.file_path ? (
                       <IconButton
                         color="primary"
-                        onClick={() => handleOpenEditDialog(project)}
+                        onClick={() => handleOpenPdfDialog(project.file_path)}
                       >
-                        <EditIcon />
+                        <VisibilityIcon />
                       </IconButton>
-                      <IconButton
-                        color="error"
-                        onClick={() => handleDelete(project.old_id)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </CardContent>
-      </Card>
-      {/* ✅ Dialog สำหรับดูเอกสาร PDF */}
+                    ) : (
+                      <Typography variant="body2" color="textSecondary">
+                        No File
+                      </Typography>
+                    )}
+                    <IconButton
+                      color="primary"
+                      onClick={() => handleOpenEditDialog(project)}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      color="error"
+                      onClick={() => handleDelete(project.old_id)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+      {/*Dialog สำหรับดูเอกสาร PDF */}
       <Dialog
         open={openPdfDialog}
         onClose={() => setOpenPdfDialog(false)}
@@ -262,7 +270,7 @@ const AddOldProject = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      {/* ✅ Dialog สำหรับเพิ่ม/แก้ไขโครงงาน */}
+      {/*  Dialog สำหรับเพิ่ม/แก้ไขโครงงาน */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle>
           {isEditMode ? 'Edit Project' : 'Add New Project'}
@@ -343,8 +351,8 @@ const AddOldProject = () => {
           </Button>
         </DialogActions>
       </Dialog>
-        {/* ✅ Dialog เลือกปีของเอกสาร */}
-        <Dialog open={openYearDialog} onClose={() => setOpenYearDialog(false)}>
+      {/*  Dialog เลือกปีของเอกสาร */}
+      <Dialog open={openYearDialog} onClose={() => setOpenYearDialog(false)}>
         <DialogTitle>Select Document Year</DialogTitle>
         <DialogContent>
           <FormControl fullWidth sx={{ my: 1 }}>
@@ -367,7 +375,7 @@ const AddOldProject = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </Paper>
   );
 };
 

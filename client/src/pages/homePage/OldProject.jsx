@@ -1,8 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import {
-  Card,
   CardContent,
-  CardHeader,
   Table,
   TableBody,
   TableCell,
@@ -17,7 +15,7 @@ import {
   Container,
   Dialog,
   DialogContent,
-  IconButton
+  IconButton,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import api from '../../services/api';
@@ -34,22 +32,22 @@ const OldProject = () => {
   const [pdfLoading, setPdfLoading] = useState(false);
   const showSnackbar = useSnackbar();
 
-  // ✅ ใช้ useCallback ป้องกันการสร้างฟังก์ชันใหม่ทุกครั้งที่คอมโพเนนต์รีเรนเดอร์
-  const fetchProjects = useCallback(async () => {
-    try {
-      const response = await api.get('/old-projects');
-      setProjects(response.data);
-    } catch {
-      setError(true);
-      showSnackbar('Failed to fetch projects', 'error');
-    } finally {
-      setLoading(false);
-    }
-  }, [showSnackbar]);
-
   useEffect(() => {
-    fetchProjects();
-  }, [fetchProjects]); // ✅ เพิ่ม fetchProjects ใน dependency array
+    const fetchData = async () => {
+      try {
+        const response = await api.get('/old-projects');
+        console.log(' API Response:', response.data);
+        setProjects(response.data);
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+        setError('Failed to load data.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleViewDocument = (filePath) => {
     if (!filePath) {
@@ -57,22 +55,25 @@ const OldProject = () => {
       return;
     }
     setPdfLoading(true);
-    const normalizedPath = filePath.replace(/\\/g, '/');
-    const fullPath = `http://localhost:5000/${normalizedPath}`;
-    setPdfPath(fullPath);
+    setPdfPath(filePath);
     setOpenDialog(true);
   };
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <NavbarHome />
+
       <Box sx={{ flex: 1 }}>
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-          <Card sx={{ width: '100%', boxShadow: 3 }}>
-            <CardHeader title="Old Project Documents" sx={{ textAlign: 'center', bgcolor: 'primary.light', color: 'white' }} />
+          <Box sx={{ width: '100%', textAlign: 'center', padding: 2 }}>
             <CardContent>
               {loading ? (
-                <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+                <Box
+                  display="flex"
+                  justifyContent="center"
+                  alignItems="center"
+                  minHeight={200}
+                >
                   <CircularProgress />
                 </Box>
               ) : error ? (
@@ -87,7 +88,7 @@ const OldProject = () => {
                 <TableContainer component={Paper} sx={{ maxHeight: 500 }}>
                   <Table stickyHeader>
                     <TableHead>
-                      <TableRow>
+                      <TableRow sx={{ backgroundColor: '#FF6700' }}>
                         <TableCell>Project Name (Thai)</TableCell>
                         <TableCell>Project Name (English)</TableCell>
                         <TableCell>Type</TableCell>
@@ -98,16 +99,22 @@ const OldProject = () => {
                     <TableBody>
                       {projects.map((project) => (
                         <TableRow key={project.old_id}>
-                          <TableCell>{project.old_project_name_th || "-"}</TableCell>
-                          <TableCell>{project.old_project_name_eng || "-"}</TableCell>
-                          <TableCell>{project.project_type || "-"}</TableCell>
-                          <TableCell>{project.document_year || "-"}</TableCell>
+                          <TableCell>
+                            {project.old_project_name_th || '-'}
+                          </TableCell>
+                          <TableCell>
+                            {project.old_project_name_eng || '-'}
+                          </TableCell>
+                          <TableCell>{project.project_type || '-'}</TableCell>
+                          <TableCell>{project.document_year || '-'}</TableCell>
                           <TableCell>
                             <Button
                               variant="contained"
                               color="primary"
                               size="small"
-                              onClick={() => handleViewDocument(project.file_path)}
+                              onClick={() =>
+                                handleViewDocument(project.file_path)
+                              }
                             >
                               View
                             </Button>
@@ -119,7 +126,7 @@ const OldProject = () => {
                 </TableContainer>
               )}
             </CardContent>
-          </Card>
+          </Box>
         </Container>
       </Box>
 

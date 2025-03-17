@@ -1,0 +1,18 @@
+
+::-webkit-scrollbar {
+    width: 8px;
+
+  ::-webkit-scrollbar-track {
+    background: #2f456f; /* สีพื้นหลังของ track */
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: #FF6700; /* สีของ thumb */
+    border-radius: 10px;
+    border: 2px solid #2f456f; /* สีของ border */
+  }
+
+  /* สำหรับ Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: #FF6700 #2f456f;
+  }

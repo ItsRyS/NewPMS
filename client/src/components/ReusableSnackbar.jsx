@@ -1,11 +1,10 @@
 import { createContext, useContext, useState } from 'react';
 import { Snackbar, Alert } from '@mui/material';
 import PropTypes from 'prop-types';
+import Slide from '@mui/material/Slide';
 
-// สร้าง Context
 const SnackbarContext = createContext();
 
-// Provider สำหรับ ReusableSnackbar
 export const SnackbarProvider = ({ children }) => {
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -13,12 +12,10 @@ export const SnackbarProvider = ({ children }) => {
     severity: 'info',
   });
 
-  // ฟังก์ชันแสดง Snackbar
   const showSnackbar = (message, severity = 'info') => {
     setSnackbar({ open: true, message, severity });
   };
 
-  // ฟังก์ชันปิด Snackbar
   const handleClose = () => {
     setSnackbar({ ...snackbar, open: false });
   };
@@ -30,6 +27,7 @@ export const SnackbarProvider = ({ children }) => {
         open={snackbar.open}
         autoHideDuration={4000}
         onClose={handleClose}
+        TransitionComponent={Slide}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
       >
         <Alert onClose={handleClose} severity={snackbar.severity}>
@@ -40,12 +38,10 @@ export const SnackbarProvider = ({ children }) => {
   );
 };
 
-// กำหนด PropTypes
 SnackbarProvider.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
-// Hook สำหรับเรียกใช้ Snackbar
 export const useSnackbar = () => {
   const context = useContext(SnackbarContext);
   if (!context) {

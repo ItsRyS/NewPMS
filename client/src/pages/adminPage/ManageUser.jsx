@@ -22,6 +22,7 @@ import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
 import api from '../../services/api';
 import { useSearchParams } from 'react-router-dom';
+
 const ManageUser = () => {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
@@ -41,6 +42,7 @@ const ManageUser = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [searchParams] = useSearchParams();
+
   // Fetch Users
   useEffect(() => {
     const fetchUsers = async () => {
@@ -152,9 +154,9 @@ const ManageUser = () => {
         alignItems="center"
         mb={2}
       >
-        <Typography variant={isMobile ? 'h6' : 'h5'}>Manage Users</Typography>
+        <Typography variant={isMobile ? 'h4' : 'h4'}>จัดการผู้ใช้</Typography>
         <Button variant="contained" onClick={() => handleOpenDialog()}>
-          Add User
+          เพิ่มผู้ใช้
         </Button>
       </Box>
       <Box
@@ -164,7 +166,7 @@ const ManageUser = () => {
         mb={2}
       >
         <FormControl fullWidth>
-          <InputLabel>Search By</InputLabel>
+          <InputLabel>ค้นหาตาม</InputLabel>
           <Select
             value={searchField}
             onChange={(e) => setSearchField(e.target.value)}

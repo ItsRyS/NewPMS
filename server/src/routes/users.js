@@ -1,26 +1,42 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
-const { authenticateSession } = require('../middleware/authMiddleware');
 const { uploadProfile } = require('../config/multer');
+const { verifyToken } = require('../middleware/authMiddleware');
 
-// Fetch current user data
-router.get('/me', authenticateSession, userController.getCurrentUser);
+// Middleware to handle file size limit exceeded
+const handleFileSizeError = (err, req, res, next) => {
+  if (err) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({
+        error: 'File size limit exceeded. Maximum size is 2MB'
+      });
+    }
+    return res.status(400).json({
+      error: 'File upload error',
+      details: err.message
+    });
+  }
+  next();
+};
 
-// Update user data
-router.put('/:id', authenticateSession, userController.updateUser);
+// Update routes with better error handling
+router.get('/me', verifyToken, userController.getCurrentUser);
 
-// Upload profile picture
+router.put('/:id', verifyToken, userController.updateUser);
+
 router.post(
   '/upload-profile-image',
-  authenticateSession,
+  verifyToken,
   uploadProfile.single('profileImage'),
+  handleFileSizeError,
   userController.uploadProfileImage
 );
 
-// Other routes
-router.get('/', userController.getAllUsers);
-router.post('/', userController.createUser);
-router.delete('/:id', userController.deleteUser);
+router.get('/', verifyToken, userController.getAllUsers);
+
+router.post('/', verifyToken, userController.createUser);
+
+router.delete('/:id', verifyToken, userController.deleteUser);
 
 module.exports = router;

@@ -3,18 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const projectDocumentsController = require('../controllers/projectDocumentsController');
 
-const storage = multer.diskStorage({
-  destination: 'upload/project-documents',
-  filename: (req, file, cb) => {
-    const originalName = Buffer.from(file.originalname, 'latin1').toString('utf8');
-    const uniqueSuffix = Date.now();
-    const sanitizedName = originalName
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/\s+/g, '_');
-    cb(null, `${uniqueSuffix}-${sanitizedName}`);
-  },
-});
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage,

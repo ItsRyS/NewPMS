@@ -1,6 +1,5 @@
 const db = require('../config/db');
 
-// ฟังก์ชันสำหรับดึง Complete Report
 exports.getCompleteReport = async (req, res) => {
   const { projectId } = req.params;
 
@@ -20,39 +19,44 @@ exports.getCompleteReport = async (req, res) => {
     if (!projectCheck.length || !projectCheck[0].complete_report_path) {
       return res.status(404).json({
         success: false,
-        message: 'Complete report not available or project not completed.'
+        message: 'Complete report not available or project not completed.',
       });
     }
 
-    // ✅ แก้ไขให้ Path ถูกต้อง
-    let documentPath = projectCheck[0].complete_report_path.replace(/\\/g, '/');
-    documentPath = documentPath.replace(/^upload\/project-documents\//, ''); // ลบ path ซ้ำที่อาจเกิดขึ้น
+    let documentPath = projectCheck[0].complete_report_path;
+    if (!documentPath.startsWith('https')) {
+      documentPath = `${process.env.SUPABASE_URL}/storage/v1/object/public/${documentPath}`;
+    }
+    console.log('Generated Supabase URL:', documentPath);
 
     res.status(200).json({
       success: true,
-      documentPath: `/upload/project-documents/${documentPath}`
+      documentPath: documentPath,
     });
   } catch (error) {
     console.error('Error fetching complete report:', error);
-    res.status(500).json({ success: false, message: 'Failed to fetch complete report.' });
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch complete report.',
+    });
   }
 };
-
-
 
 // ฟังก์ชันตรวจสอบเอกสารที่ยังไม่ได้รับการอนุมัติ
 exports.checkProjectDocuments = async (req, res) => {
   const { projectId } = req.params;
 
   try {
-    // ✅ แก้ไข Query ให้เลือกเฉพาะ request_id ล่าสุดของ projectId
+    //  แก้ไข Query ให้เลือกเฉพาะ request_id ล่าสุดของ projectId
     const [latestRequest] = await db.query(
       `SELECT request_id FROM students_projects WHERE project_id = ? ORDER BY request_id DESC LIMIT 1`,
       [projectId]
     );
 
     if (!latestRequest.length) {
-      return res.status(404).json({ success: false, message: 'No project request found.' });
+      return res
+        .status(404)
+        .json({ success: false, message: 'No project request found.' });
     }
 
     const requestId = latestRequest[0].request_id;
@@ -70,31 +74,34 @@ exports.checkProjectDocuments = async (req, res) => {
     res.status(200).json({ unapprovedDocuments });
   } catch (error) {
     console.error('Error checking project documents:', error.message);
-    res.status(500).json({ success: false, message: 'Failed to check project documents.' });
+    res
+      .status(500)
+      .json({ success: false, message: 'Failed to check project documents.' });
   }
 };
-
 
 // ฟังก์ชันสำหรับอัปเดตสถานะโครงการ (แก้ไขปัญหา HTTP 400 Bad Request)
 exports.updateProjectStatus = async (req, res) => {
   const { projectId } = req.params;
 
   try {
-    // ✅ 1. ตรวจสอบว่าโครงการมีอยู่จริงหรือไม่
     const [projectExist] = await db.query(
       'SELECT project_status FROM project_release WHERE project_id = ?',
       [projectId]
     );
 
     if (!projectExist.length) {
-      return res.status(404).json({ success: false, message: 'Project not found.' });
+      return res
+        .status(404)
+        .json({ success: false, message: 'Project not found.' });
     }
 
     if (projectExist[0].project_status === 'complete') {
-      return res.status(400).json({ success: false, message: 'Project is already completed.' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'Project is already completed.' });
     }
 
-    // ✅ 2. ตรวจสอบว่ามีเอกสารที่อนุมัติครบถ้วนหรือไม่
     const [result] = await db.query(
       `SELECT
           (SELECT COUNT(*) FROM project_documents pd
@@ -119,20 +126,25 @@ exports.updateProjectStatus = async (req, res) => {
       });
     }
 
-    // ✅ 3. อัปเดตสถานะโครงการเป็น complete
     const [updateResult] = await db.query(
       'UPDATE project_release SET project_status = "complete" WHERE project_id = ?',
       [projectId]
     );
 
     if (updateResult.affectedRows === 0) {
-      return res.status(500).json({ success: false, message: 'Failed to update project status.' });
+      return res
+        .status(500)
+        .json({ success: false, message: 'Failed to update project status.' });
     }
 
-    res.status(200).json({ success: true, message: 'Project released successfully.' });
+    res
+      .status(200)
+      .json({ success: true, message: 'Project released successfully.' });
   } catch (error) {
     console.error('Error releasing project:', error.message);
-    res.status(500).json({ success: false, message: 'Failed to release project.' });
+    res
+      .status(500)
+      .json({ success: false, message: 'Failed to release project.' });
   }
 };
 
@@ -156,6 +168,8 @@ exports.getPendingProjects = async (req, res) => {
     res.status(200).json({ success: true, data: projects });
   } catch (error) {
     console.error('Error fetching pending projects:', error.message);
-    res.status(500).json({ success: false, message: 'Failed to fetch projects.' });
+    res
+      .status(500)
+      .json({ success: false, message: 'Failed to fetch projects.' });
   }
 };
